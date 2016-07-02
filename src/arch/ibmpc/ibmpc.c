@@ -1291,25 +1291,45 @@ void pc_setup_hdc (ibmpc_t *pc, ini_sct_t *ini)
 #define XTIDE_CS(a) ((a) & 8)
 #endif
 
+static inline unsigned xtide_reg (xtide_t *xtide, unsigned long addr)
+{
+	if ( xtide->model == 1 )
+		return ((addr & 8) >> 3) | (addr & 6);
+		
+	return addr & 7;
+}
+
+static inline unsigned xtide_cs (xtide_t *xtide, unsigned long addr)
+{
+	if ( xtide->model == 1 )
+		return addr & 1;
+		
+	return addr & 8;
+}
+
 static unsigned char xtide_get_uint8 (ibmpc_t *pc, unsigned long addr)
 {xtide_t *xtide = pc->xtide;
+	unsigned cs = xtide_cs(xtide, addr);
+	unsigned reg = xtide_reg(xtide, addr);
 	fprintf(stderr,"%s %.4x:%.4x %lx\n",__FUNCTION__,e86_get_cs(pc->cpu),e86_get_ip(pc->cpu), addr);
-	if ( XTIDE_CS(addr) )
+	
+	
+	if ( cs )
 	{
-		if ( XTIDE_ADDR(addr) == 0 )
+		if ( reg == 0 )
 			return xtide->rdbuf >> 8;
 		else
-			return ata_ctl_get_uint8 (&xtide->ata, XTIDE_ADDR(addr) );
+			return ata_ctl_get_uint8 (&xtide->ata, reg );
 	}
 	else
 	{
-		if ( XTIDE_ADDR(addr) == 0 )
+		if ( reg == 0 )
 		{
-			xtide->rdbuf = ata_cmd_get_uint16 (&xtide->ata, XTIDE_ADDR(addr));
+			xtide->rdbuf = ata_cmd_get_uint16 (&xtide->ata, reg);
 			return xtide->rdbuf;
 		}
 		else
-			return ata_cmd_get_uint8 (&xtide->ata, XTIDE_ADDR(addr));
+			return ata_cmd_get_uint8 (&xtide->ata, reg);
 	}
 }
 
@@ -1322,20 +1342,22 @@ static unsigned short xtide_get_uint16 (ibmpc_t *pc, unsigned long addr)
 
 static void xtide_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 {xtide_t *xtide = pc->xtide;
+	unsigned cs = xtide_cs(xtide, addr);
+	unsigned reg = xtide_reg(xtide, addr);
 	fprintf(stderr,"%s %.4x:%.4x %lx\n",__FUNCTION__,e86_get_cs(pc->cpu),e86_get_ip(pc->cpu), addr);
-	if ( XTIDE_CS(addr) )
+	if ( cs )
 	{
-		if ( XTIDE_ADDR(addr) == 0 )
+		if ( reg == 0 )
 			xtide->wrbuf = val << 8;
 		else 
-			ata_ctl_set_uint8 (&xtide->ata, XTIDE_ADDR(addr), val);
+			ata_ctl_set_uint8 (&xtide->ata, reg, val);
 	}
 	else
 	{
 		if ( XTIDE_ADDR(addr) == 0 )
-			ata_cmd_set_uint16 (&xtide->ata, XTIDE_ADDR(addr), val | xtide->wrbuf);
+			ata_cmd_set_uint16 (&xtide->ata, reg, val | (xtide->wrbuf & 0xFF00));
 		else
-			ata_cmd_set_uint8 (&xtide->ata, XTIDE_ADDR(addr), val);
+			ata_cmd_set_uint8 (&xtide->ata, reg, val);
 	}	
 }
 
@@ -1351,6 +1373,7 @@ void pc_setup_xtide (ibmpc_t *pc, ini_sct_t *ini)
 	unsigned long addr;
 	ini_sct_t     *sct;
 	ata_chn_t *ata;
+	unsigned      model;
 
 	pc->xtide = NULL;
 
@@ -1361,6 +1384,7 @@ void pc_setup_xtide (ibmpc_t *pc, ini_sct_t *ini)
 	}
 
 	ini_get_uint32 (sct, "address", &addr, 0x320);
+	ini_get_uint16 (sct, "model", &model, 0);
 
 	pce_log_tag (MSG_INF, "XTIDE:",
 		"addr=0x%08lx\n",
@@ -1372,6 +1396,8 @@ void pc_setup_xtide (ibmpc_t *pc, ini_sct_t *ini)
 		pce_log (MSG_ERR, "*** creating xtide failed\n");
 		return;
 	}
+	
+	pc->xtide->model = model;
 	
 	ata = &pc->xtide->ata;
 

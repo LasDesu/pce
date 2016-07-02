@@ -16,6 +16,7 @@
 typedef struct {
 	ata_chn_t	ata;
 	mem_blk_t   mem;
+	int model;
 	
 	unsigned rdbuf, wrbuf;	
 } xtide_t;
