@@ -377,6 +377,7 @@ void e86_irq_ack (e8086_t *c)
 	unsigned char irq;
 
 	c->irq = 0;
+	c->nmi = 0;
 	c->halt = 0;
 
 	if (c->inta != NULL) {
@@ -386,6 +387,11 @@ void e86_irq_ack (e8086_t *c)
 
 		e86_trap (c, irq);
 	}
+}
+
+void e86_nmi (e8086_t *cpu, unsigned char val)
+{
+	cpu->nmi = (val != 0);
 }
 
 int e86_interrupt (e8086_t *cpu, unsigned n)
@@ -504,7 +510,7 @@ void e86_execute (e8086_t *c)
 			c->halt = 0;
 			e86_trap (c, 1);
 		}
-		else if (irq && c->irq && e86_get_if (c)) {
+		else if (c->nmi || (irq && c->irq && e86_get_if (c))) {
 			e86_irq_ack (c);
 		}
 	}

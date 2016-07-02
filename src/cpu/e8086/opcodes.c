@@ -2426,6 +2426,8 @@ static
 unsigned op_9b (e8086_t *c)
 {
 	e86_set_clk (c, 4);
+	if ( c->test )
+		return (0);
 
 	return (1);
 }

@@ -138,6 +138,12 @@ typedef struct ibmpc_t {
 
 	unsigned           brk;
 	char               pause;
+	
+	/* Praktik */
+	unsigned irq_stat;
+	unsigned irq_601;
+	unsigned irq_400;
+	unsigned irq_800;
 } ibmpc_t;
 
 

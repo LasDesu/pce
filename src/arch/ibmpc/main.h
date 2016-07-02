@@ -34,6 +34,7 @@
 #define PCE_IBMPC_5150 1
 #define PCE_IBMPC_5160 2
 #define PCE_IBMPC_M24  4
+#define PCE_IBMPC_EC7879  8
 
 
 extern const char *par_terminal;

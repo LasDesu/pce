@@ -80,6 +80,370 @@ void pc_e86_hook (void *ext, unsigned char op1, unsigned char op2);
 
 static char *par_intlog[256];
 
+/* EC7879 specific */
+static
+void ec7879_update_irq(ibmpc_t *pc)
+{
+	unsigned mask = 0x17000;
+	/*if ( (pc->irq_601 & 0x08) )		
+		//mask = 0x18000;
+		mask |= 0x8000;*/
+	e86_irq( pc->cpu, (pc->irq_stat & mask) ? 1 : 0 );
+//printf("%s %d: %d %x\n",__FUNCTION__,__LINE__,pc->cpu->irq,pc->irq_stat);
+}
+
+static
+void ec7879_memio_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
+{	
+	//printf("%.4x:%.4x %s %d: %.5lx <- %.2x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,val);
+	if ( (addr & 0xE01) == 0x000 )
+	{
+		mem_blk_t *reg = pce_video_get_reg( pc->video );
+		reg->set_uint8( pc->video, (addr >> 1) & 0xF, val );
+	}
+	else if ( (addr & 0xE01) == 0x001 )
+	{
+		e8255_set_uint8 (&pc->ppi, (addr >> 1) & 3, val);
+	}
+	else if ( (addr & 0xE01) == 0x200 )
+	{
+		mem_blk_t *reg = pce_video_get_reg( pc->video );
+		reg->set_uint8( pc->video, 9, val );
+	}
+	else if ( (addr & 0xE01) == 0x201 )
+	{
+		mem_blk_t *reg = pce_video_get_reg( pc->video );
+		reg->set_uint8( pc->video, 8, val );
+	}
+	else if ( (addr & 0xE01) == 0x600 )
+	{//fprintf(stderr,"!");
+		//ec7879_update_irq(pc);
+		e8272_set_uint8 (&pc->fdc->e8272, (addr >> 1) & 1 | 4, val);
+	}
+	else if ( (addr & 0xE01) == 0x601 )
+	{//fprintf(stderr,"%s %d: %.5lx <- %.2x\n",__FUNCTION__,__LINE__,addr,val);
+		//e8272_set_uint8 (&pc->fdc->e8272, 2, val);
+		pc->irq_601 = val;
+		e8272_set_uint8 (&pc->fdc->e8272, 2, (val & 0x3D));
+		ec7879_update_irq(pc);
+	}
+	else if ( (addr & 0xE01) == 0x800 )
+	{
+		e8272_write_data (&pc->fdc->e8272, val);
+		if ( addr & 8 )
+			e8272_set_tc (&pc->fdc->e8272, 1);
+	}
+	else if ( (addr & 0xE01) == 0xA00 )
+	{
+		e8253_set_uint8 (&pc->pit, (addr >> 1) & 3, val);
+	}
+	else
+		printf("%.4x:%.4x %s %d: %.5lx <- %.2x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,val);
+}
+
+static
+unsigned char ec7879_memio_get_uint8 (ibmpc_t *pc, unsigned long addr)
+{
+	unsigned char ret = 0xFF;
+	
+	/*if ( (addr & 0xE00) != 0x200 )
+		printf("%.4x:%.4x %s %d: %.5lx",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr);*/
+	
+	if ( (addr & 0xE01) == 0x000 )
+	{//fprintf(stderr,"!\n");
+		mem_blk_t *reg = pce_video_get_reg( pc->video );
+		ret = reg->get_uint8( pc->video, (addr >> 1) & 0xF );
+	}
+	else if ( (addr & 0xE01) == 0x001 )
+	{//fprintf(stderr,"!\n");
+		pc->irq_stat &= ~(1 << 14);
+		ec7879_update_irq(pc);
+		ret = e8255_get_uint8 (&pc->ppi, (addr >> 1) & 3);
+	}
+	else if ( (addr & 0xE01) == 0x600 )
+	{//fprintf(stderr,"!");
+		ret = e8272_get_uint8 (&pc->fdc->e8272, (addr >> 1) & 1 | 4);
+	}
+	else if ( (addr & 0xE01) == 0x800 )
+	{
+		ret = e8272_read_data (&pc->fdc->e8272);
+		if ( addr & 8 )
+			e8272_set_tc (&pc->fdc->e8272, 1);
+	}
+	else if ( (addr & 0xE01) == 0xA00 )
+	{
+		ret = e8253_get_uint8 (&pc->pit, (addr >> 1) & 3);
+	}
+	else if ( (addr & 0xE01) == 0x200 )
+	{
+		//return e8259_get_uint8 (&pc->pic, addr);
+		//printf(": %x\n",pc->irq_stat);
+		ret = pc->irq_stat;
+	}
+	else if ( (addr & 0xE01) == 0x201 )
+	{
+		//return e8259_get_uint8 (&pc->pic, addr);
+		//printf("%s %d: %x\n",__FUNCTION__,__LINE__,pc->irq_stat);
+		ret = pc->irq_stat >> 8;
+	}
+	else if ( (addr & 0xE01) == 0x400 )
+	{
+		pc->irq_stat &= 0xF000;
+		ret = pc->irq_400;
+	}
+	else if ( (addr & 0xE01) == 0x401 )
+	{
+		pc->irq_stat &= 0xF000;
+		ret = pc->irq_400 >> 8;
+	}
+	
+	/*if ( (addr & 0xE00) != 0x200 )
+		printf(" -> %x\n",ret);*/
+	
+	return ( ret );
+}
+
+static
+void ec7879_memio_set_uint16 (ibmpc_t *pc, unsigned long addr, unsigned short val)
+{
+	ec7879_memio_set_uint8 (pc, addr, val & 0xff);
+
+	if ((addr + 1) < 0x1000) {
+		ec7879_memio_set_uint8 (pc, addr + 1, val >> 8);
+	}
+}
+
+static
+unsigned short ec7879_memio_get_uint16 (ibmpc_t *pc, unsigned long addr)
+{
+	unsigned short ret;
+
+	ret = ec7879_memio_get_uint8 (pc, addr);
+
+	if ((addr + 1) < 0x1000) {
+		ret |= ec7879_memio_get_uint8 (pc, addr + 1) << 8;
+	}
+
+	return (ret);
+}
+
+static
+void ec7879_timer0_irq (ibmpc_t *pc, unsigned char val)
+{//printf("%s %d %d\n",__FUNCTION__,__LINE__,val);
+	if (val != 0) {
+		pc->irq_stat |= 1 << 14;
+	}
+	ec7879_update_irq(pc);
+}
+
+static
+void ec7879_kbd_irq (ibmpc_t *pc, unsigned char val)
+{//printf("%s %d %d\n",__FUNCTION__,__LINE__,val);	
+	if (val != 0)
+	{
+		pc->ppi_port_a[1] = pc_kbd_get_key (&pc->kbd);
+		pc->irq_stat |= 1 << 13;
+	}
+	ec7879_update_irq(pc);
+}
+
+static
+void ec7879_fdc_irq (ibmpc_t *pc, unsigned char val)
+{//printf("%s %d %d\n",__FUNCTION__,__LINE__,val);
+	if (val != 0)
+		pc->irq_stat |= 1 << 15;
+	else
+		pc->irq_stat &= ~(1 << 15);
+	ec7879_update_irq(pc);
+}
+
+unsigned char ec7879_inta (ibmpc_t *pc)
+{//printf("%s %d: %x\n",__FUNCTION__,__LINE__,pc->irq_stat);
+	/*if ( pc->irq_601 & 8 )
+		if ( pc->irq_stat & (1 << 15) ){
+			printf("%s %d\n",__FUNCTION__,__LINE__);
+			return 0x2;
+		}*/
+	if ( pc->irq_stat & (1 << 16) ){
+		pc->irq_stat &= ~ (1 << 16);
+		//printf("%s %d\n",__FUNCTION__,__LINE__);
+		return 0x2;
+	}
+	return 0xf;
+}
+
+static
+void ec7879_fdc_dreq(ibmpc_t *pc, unsigned char val)
+{//printf("%s %d %d\n",__FUNCTION__,__LINE__,val);
+	//pc->irq_800 = val;
+	/*if ( val )
+		pc->cpu->test = 0;*/
+	pc->cpu->test = !val;
+}
+
+static
+unsigned char ec7879_port_get_uint8 (ibmpc_t *pc, unsigned long addr)
+{//printf("%.4x:%.4x %s %d %x>\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr);
+	pc->irq_stat |= addr & 0x3FF;
+	pc->irq_stat |= 0x0800;
+	
+	pc->irq_stat |= 0x10000;	
+	e86_nmi(pc->cpu, 1);
+}
+
+static
+void ec7879_port_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
+{//printf("%.4x:%.4x %s %d %x<%x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,val);
+	pc->irq_stat &= 0xF000;
+	pc->irq_stat |= addr & 0x3FF;
+	pc->irq_stat |= 0x0800 | 0x0400;
+	
+	pc->irq_400 = val | (val << 8);
+	
+	pc->irq_stat |= 0x10000;	
+	e86_nmi(pc->cpu, 1);
+}
+
+static
+void ec7879_port_set_uint16 (ibmpc_t *pc, unsigned long addr, unsigned short val)
+{//printf("%s %d %x<%x\n",__FUNCTION__,__LINE__,addr,val);
+	pc->irq_stat &= 0xF000;
+	pc->irq_stat |= addr & 0x3FF;
+	pc->irq_stat |= 0x0800 | 0x0400;
+	
+	pc->irq_400 = val;
+	pc->irq_stat |= 0x10000;
+	
+	e86_nmi(pc->cpu, 1);
+}
+
+static
+void ec7879_ppi_set_port_b (ibmpc_t *pc, unsigned char val)
+{
+	unsigned char old;
+//printf("%s %d %x\n",__FUNCTION__,__LINE__,val);
+	old = pc->ppi_port_b;
+	pc->ppi_port_b = val;
+	
+	pc_kbd_set_clk (&pc->kbd, (val & 0x40) == 0);
+	pc_kbd_set_enable (&pc->kbd, (val & 0x20) == 0);
+	
+	if ( val & 0x80 )
+		pc->ppi_port_a[1] = 0;
+	
+	if ( val & 0x20 )
+		pc->irq_stat &= ~(1 << 13);		
+	ec7879_update_irq(pc);
+
+	e8253_set_gate (&pc->pit, 2, val & 0x01);
+
+	if ((old ^ val) & 0x02) {
+		pc_speaker_set_msk (&pc->spk, val & 0x02);
+	}
+
+	if (pc->model & PCE_IBMPC_5150) {
+		if ((old ^ val) & 0x08) {
+			/* cassette motor change */
+
+			if (pc->cas != NULL) {
+				pc_cas_set_motor (pc->cas, (val & 0x08) == 0);
+
+				if (val & 0x08) {
+					/* motor off: restore clock */
+					pc->speed_current = pc->speed_saved;
+					pc->speed_clock_extra = 0;
+				}
+				else {
+					/* motor on: set clock to 4.77 MHz */
+					pc->speed_saved = pc->speed_current;
+					pc->speed_current = 1;
+					pc->speed_clock_extra = 0;
+				}
+			}
+		}
+	}
+}
+
+static
+unsigned char ec7879_ppi_get_port_a (ibmpc_t *pc)
+{
+	if (pc->ppi_port_b & 0x80) {
+		return (pc->ppi_port_a[0]);
+	}
+	else {
+		return (pc->ppi_port_a[1]);
+	}
+}
+
+
+static
+int pc_setup_ec7879_periph(ibmpc_t *pc, ini_sct_t *sct)
+{
+	if ((pc->model & PCE_IBMPC_EC7879) == 0) {
+		return (-1);
+	}
+
+	e86_set_inta_fct (pc->cpu, pc, ec7879_inta);
+	e8253_set_out_fct (&pc->pit, 0, pc, ec7879_timer0_irq);
+	pc_kbd_set_irq_fct (&pc->kbd, pc, ec7879_kbd_irq);
+	e8272_set_irq_fct (&pc->fdc->e8272, pc, ec7879_fdc_irq);
+	
+	e8272_set_dreq_fct (&pc->fdc->e8272, pc, ec7879_fdc_dreq);
+	dev_fdc_mem_rmv_io (pc->fdc, pc->prt);
+	pc->cpu->test = 1;
+	
+	pc->ppi.port[0].read = (void *) ec7879_ppi_get_port_a;
+	pc->ppi.port[1].write = (void *) ec7879_ppi_set_port_b;
+	
+	pc_kbd_set_enable (&pc->kbd, 1);
+	pc_kbd_set_clk (&pc->kbd, 1);
+	
+	//pc->irq_stat = 1 << 15;
+	pc->irq_601 = 0;
+	ec7879_update_irq(pc);
+		
+	//e8259_free (&pc->pic);
+	
+	/*mem_blk_t *reg = pce_video_get_reg( pc->video );
+	reg->set_uint8( pc->video, 8, 0x08 );*/
+
+	e8272_set_uint8 (&pc->fdc->e8272, 2, 0x00);
+	
+	return (0);
+}
+
+static
+int pc_setup_ec7879(ibmpc_t *pc, ini_sct_t *sct)
+{
+	mem_blk_t *blk;
+	
+	if ((pc->model & PCE_IBMPC_EC7879) == 0) {
+		return (-1);
+	}
+	
+	blk = mem_blk_new (0xF0000, 0x1000, 0);
+	mem_blk_set_fct (blk, pc,
+		ec7879_memio_get_uint8, ec7879_memio_get_uint16, NULL,
+		ec7879_memio_set_uint8, ec7879_memio_set_uint16, NULL
+	);	
+	mem_add_blk (pc->mem, blk, 0);
+	
+	blk = mem_blk_new (0x0000, 0x400, 0);
+	if (blk == NULL) {
+		return;
+	}
+	mem_blk_set_fct (blk, pc,
+		ec7879_port_get_uint8, NULL, NULL,
+		ec7879_port_set_uint8, ec7879_port_set_uint16, NULL
+	);
+	mem_add_blk (pc->prt, blk, 1);
+	
+	//mem_move_to_front (pc->prt, 0x000);
+	
+	return (0);
+}
+/* EC7879 specific */
+
 
 static
 unsigned char pc_get_port8 (ibmpc_t *pc, unsigned long addr)
@@ -445,6 +809,9 @@ void pc_setup_system (ibmpc_t *pc, ini_sct_t *ini)
 	}
 	else if (strcmp (model, "m24") == 0) {
 		pc->model = PCE_IBMPC_5160 | PCE_IBMPC_M24;
+	}
+	else if (strcmp (model, "ec7879") == 0) {
+		pc->model = PCE_IBMPC_EC7879 | PCE_IBMPC_5160;
 	}
 	else {
 		pce_log (MSG_ERR, "*** unknown model (%s)\n", model);
@@ -1498,6 +1865,8 @@ ibmpc_t *pc_new (ini_sct_t *ini)
 
 	pc_setup_mem (pc, ini);
 	pc_setup_ports (pc, ini);
+	
+	pc_setup_ec7879 (pc, ini);
 
 	pc_setup_nvram (pc, ini);
 	pc_setup_cpu (pc, ini);
@@ -1525,6 +1894,9 @@ ibmpc_t *pc_new (ini_sct_t *ini)
 	pc_setup_parport (pc, ini);
 	pc_setup_ems (pc, ini);
 	pc_setup_xms (pc, ini);
+	
+	pc_setup_ec7879_periph (pc, ini);
+
 
 	pce_load_mem_ini (pc->mem, ini);
 
