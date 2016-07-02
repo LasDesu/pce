@@ -41,6 +41,7 @@
 
 #include <devices/fdc.h>
 #include <devices/hdc.h>
+#include <devices/xtide.h>
 #include <devices/memory.h>
 #include <devices/nvram.h>
 #include <devices/parport.h>
@@ -90,6 +91,7 @@ typedef struct ibmpc_t {
 
 	dev_fdc_t          *fdc;
 	hdc_t              *hdc;
+	xtide_t            *xtide;
 	ems_t              *ems;
 	xms_t              *xms;
 
