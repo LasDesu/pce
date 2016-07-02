@@ -73,6 +73,7 @@ PCE_IBMPC_OBJ_EXT := \
 	src/devices/video/vga.o \
 	src/devices/video/video.o \
 	src/devices/video/wy700.o \
+	src/devices/ata.o \
 	src/devices/device.o \
 	src/devices/fdc.o \
 	src/devices/hdc.o \
@@ -80,6 +81,7 @@ PCE_IBMPC_OBJ_EXT := \
 	src/devices/nvram.o \
 	src/devices/parport.o \
 	src/devices/serport.o \
+	src/devices/xtide.o \
 	src/drivers/block/block.a \
 	src/drivers/char/char.a \
 	src/drivers/psi/psi.a \
@@ -89,6 +91,7 @@ PCE_IBMPC_OBJ_EXT := \
 	src/lib/cmd.o \
 	src/lib/console.o \
 	src/lib/getopt.o \
+	src/lib/iniata.o \
 	src/lib/inidsk.o \
 	src/lib/iniram.o \
 	src/lib/initerm.o \

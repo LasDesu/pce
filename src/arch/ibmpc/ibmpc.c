@@ -1280,6 +1280,116 @@ void pc_setup_hdc (ibmpc_t *pc, ini_sct_t *ini)
 	pc->dma.chn[3].memwr = (void *) pc_dma3_set_mem8;
 }
 
+//#define XTIDE_HISPEED
+
+#ifdef XTIDE_HISPEED
+#define XTIDE_ADDR(a) ( ( ( (a) & 8) >> 3 ) | ( (a) & 6 ) )
+#define XTIDE_CS(a) ((a) & 1)
+#else
+/* compatibility */
+#define XTIDE_ADDR(a) ((a) & 7)
+#define XTIDE_CS(a) ((a) & 8)
+#endif
+
+static unsigned char xtide_get_uint8 (ibmpc_t *pc, unsigned long addr)
+{xtide_t *xtide = pc->xtide;
+	fprintf(stderr,"%s %.4x:%.4x %lx\n",__FUNCTION__,e86_get_cs(pc->cpu),e86_get_ip(pc->cpu), addr);
+	if ( XTIDE_CS(addr) )
+	{
+		if ( XTIDE_ADDR(addr) == 0 )
+			return xtide->rdbuf >> 8;
+		else
+			return ata_ctl_get_uint8 (&xtide->ata, XTIDE_ADDR(addr) );
+	}
+	else
+	{
+		if ( XTIDE_ADDR(addr) == 0 )
+		{
+			xtide->rdbuf = ata_cmd_get_uint16 (&xtide->ata, XTIDE_ADDR(addr));
+			return xtide->rdbuf;
+		}
+		else
+			return ata_cmd_get_uint8 (&xtide->ata, XTIDE_ADDR(addr));
+	}
+}
+
+static unsigned short xtide_get_uint16 (ibmpc_t *pc, unsigned long addr)
+{xtide_t *xtide = pc->xtide;
+	fprintf(stderr,"%s %.4x:%.4x %lx\n",__FUNCTION__,e86_get_cs(pc->cpu),e86_get_ip(pc->cpu), addr);
+	return xtide_get_uint8(xtide, addr);
+}
+
+
+static void xtide_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
+{xtide_t *xtide = pc->xtide;
+	fprintf(stderr,"%s %.4x:%.4x %lx\n",__FUNCTION__,e86_get_cs(pc->cpu),e86_get_ip(pc->cpu), addr);
+	if ( XTIDE_CS(addr) )
+	{
+		if ( XTIDE_ADDR(addr) == 0 )
+			xtide->wrbuf = val << 8;
+		else 
+			ata_ctl_set_uint8 (&xtide->ata, XTIDE_ADDR(addr), val);
+	}
+	else
+	{
+		if ( XTIDE_ADDR(addr) == 0 )
+			ata_cmd_set_uint16 (&xtide->ata, XTIDE_ADDR(addr), val | xtide->wrbuf);
+		else
+			ata_cmd_set_uint8 (&xtide->ata, XTIDE_ADDR(addr), val);
+	}	
+}
+
+static void xtide_set_uint16 (ibmpc_t *pc, unsigned long addr, unsigned short val)
+{xtide_t *xtide = pc->xtide;
+	fprintf(stderr,"%s %.4x:%.4x %lx\n",__FUNCTION__,e86_get_cs(pc->cpu),e86_get_ip(pc->cpu), addr);
+	xtide_set_uint8(xtide, addr, val);
+}
+
+static
+void pc_setup_xtide (ibmpc_t *pc, ini_sct_t *ini)
+{
+	unsigned long addr;
+	ini_sct_t     *sct;
+	ata_chn_t *ata;
+
+	pc->xtide = NULL;
+
+	sct = ini_next_sct (ini, NULL, "xtide");
+
+	if (sct == NULL) {
+		return;
+	}
+
+	ini_get_uint32 (sct, "address", &addr, 0x320);
+
+	pce_log_tag (MSG_INF, "XTIDE:",
+		"addr=0x%08lx\n",
+		addr
+	);
+
+	pc->xtide = calloc (1, sizeof (xtide_t));
+	if (pc->xtide == NULL) {
+		pce_log (MSG_ERR, "*** creating xtide failed\n");
+		return;
+	}
+	
+	ata = &pc->xtide->ata;
+
+	mem_blk_init (&pc->xtide->mem, addr, 64, 0);
+	pc->xtide->mem.ext = pc;
+	pc->xtide->mem.get_uint8 = (mem_get_uint8_f) xtide_get_uint8;
+	pc->xtide->mem.get_uint16 = (mem_get_uint16_f) xtide_get_uint16;
+	pc->xtide->mem.set_uint8 = (mem_set_uint8_f) xtide_set_uint8;
+	pc->xtide->mem.set_uint16 = (mem_set_uint16_f) xtide_set_uint16;
+	
+	mem_add_blk (pc->prt, &pc->xtide->mem, 0);
+
+	ata_init (&pc->xtide->ata, 0, 0);
+	//ata_set_irq_f (&pc->xtide->ata, e8259_set_irq5, &pc->pic);
+	
+	ini_get_ata_chn (ata, pc->dsk, sct, 0);
+}
+
 static
 void pc_setup_parport (ibmpc_t *pc, ini_sct_t *ini)
 {
@@ -1521,6 +1631,7 @@ ibmpc_t *pc_new (ini_sct_t *ini)
 	pc_setup_disks (pc, ini);
 	pc_setup_fdc (pc, ini);
 	pc_setup_hdc (pc, ini);
+	pc_setup_xtide (pc, ini);
 	pc_setup_serport (pc, ini);
 	pc_setup_parport (pc, ini);
 	pc_setup_ems (pc, ini);
@@ -1785,6 +1896,17 @@ void pc_reset (ibmpc_t *pc)
 
 	if (pc->hdc != NULL) {
 		hdc_reset (pc->hdc);
+	}
+	
+	if (pc->xtide != NULL) {
+		int i;
+		for ( i = 0; i < 2; i ++ )
+		{
+			pc->xtide->ata.dev[i].reg_cmd = 0;
+			pc->xtide->ata.dev[i].reg_status = 0x50;
+			pc->xtide->ata.dev[i].reg_features = 0;
+			pc->xtide->ata.dev[i].reg_error = 0;
+		}
 	}
 
 	if (pc->xms != NULL) {
