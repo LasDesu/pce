@@ -437,7 +437,7 @@ void e8272_select_cylinder (e8272_t *fdc, unsigned pd, unsigned pc)
 	drv = &fdc->drv[pd & 3];
 
 	drv->ok = 0;
-	drv->c = pc;
+	drv->c = pc;///2;
 	drv->sct_cnt = 0;
 
 	fdc->curdrv = drv;

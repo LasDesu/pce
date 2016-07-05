@@ -137,6 +137,26 @@ void ec7879_memio_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 	{
 		e8253_set_uint8 (&pc->pit, (addr >> 1) & 3, val);
 	}
+	else if ( (addr & 0xF01) == 0xC00 )
+	{//printf("%.4x:%.4x %s %d: %.5lx <- %.2x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,val);
+		xtide_t *xtide = pc->xtide;
+		if ( addr & 0x10 )
+		{
+			ata_ctl_set_uint8 (&xtide->ata, (addr >> 1) & 7, val);
+		}
+		else
+		{
+			if ( (addr & 0xE) == 0 ){printf("%.4x:%.4x %s %d: %.5lx <- %.2x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,val | (xtide->wrbuf & 0xFF00));
+				ata_cmd_set_uint16 (&xtide->ata, (addr >> 1) & 7, val | (xtide->wrbuf & 0xFF00));
+			}else
+				ata_cmd_set_uint8 (&xtide->ata, (addr >> 1) & 7, val);
+		}
+	}
+	else if ( (addr & 0xF01) == 0xC01 )
+	{
+		xtide_t *xtide = pc->xtide;
+		xtide->wrbuf = val << 8;
+	}
 	else
 		printf("%.4x:%.4x %s %d: %.5lx <- %.2x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,val);
 }
@@ -195,6 +215,33 @@ unsigned char ec7879_memio_get_uint8 (ibmpc_t *pc, unsigned long addr)
 	{
 		pc->irq_stat &= 0xF000;
 		ret = pc->irq_400 >> 8;
+	}
+	else if ( (addr & 0xF01) == 0xC00 )
+	{
+		xtide_t *xtide = pc->xtide;
+		if ( addr & 0x10 )
+		{
+			ret =  ata_ctl_get_uint8 (&xtide->ata, (addr >> 1) & 7);
+		}
+		else
+		{
+			if ( (addr & 0xE) == 0 )
+			{
+				xtide->rdbuf = ata_cmd_get_uint16 (&xtide->ata, (addr >> 1) & 7);
+				ret =  xtide->rdbuf;
+			}
+			else
+			{
+				ret =  ata_cmd_get_uint8 (&xtide->ata, (addr >> 1) & 7);
+			}
+		}
+		//printf("%.4x:%.4x %s %d: %.5lx <- %.2x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,ret);
+	}
+	else if ( (addr & 0xF01) == 0xC01 )
+	{
+		xtide_t *xtide = pc->xtide;
+		ret = xtide->rdbuf >> 8;
+		//printf("%.4x:%.4x %s %d: %.5lx <- %.2x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,ret);
 	}
 	
 	/*if ( (addr & 0xE00) != 0x200 )
@@ -1678,8 +1725,7 @@ static unsigned char xtide_get_uint8 (ibmpc_t *pc, unsigned long addr)
 {xtide_t *xtide = pc->xtide;
 	unsigned cs = xtide_cs(xtide, addr);
 	unsigned reg = xtide_reg(xtide, addr);
-	fprintf(stderr,"%s %.4x:%.4x %lx\n",__FUNCTION__,e86_get_cs(pc->cpu),e86_get_ip(pc->cpu), addr);
-	
+	//fprintf(stderr,"%s %.4x:%.4x %lx\n",__FUNCTION__,e86_get_cs(pc->cpu),e86_get_ip(pc->cpu), addr);
 	
 	if ( cs )
 	{
@@ -1702,7 +1748,7 @@ static unsigned char xtide_get_uint8 (ibmpc_t *pc, unsigned long addr)
 
 static unsigned short xtide_get_uint16 (ibmpc_t *pc, unsigned long addr)
 {xtide_t *xtide = pc->xtide;
-	fprintf(stderr,"%s %.4x:%.4x %lx\n",__FUNCTION__,e86_get_cs(pc->cpu),e86_get_ip(pc->cpu), addr);
+	//fprintf(stderr,"%s %.4x:%.4x %lx\n",__FUNCTION__,e86_get_cs(pc->cpu),e86_get_ip(pc->cpu), addr);
 	return xtide_get_uint8(xtide, addr);
 }
 
@@ -1711,7 +1757,7 @@ static void xtide_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 {xtide_t *xtide = pc->xtide;
 	unsigned cs = xtide_cs(xtide, addr);
 	unsigned reg = xtide_reg(xtide, addr);
-	fprintf(stderr,"%s %.4x:%.4x %lx\n",__FUNCTION__,e86_get_cs(pc->cpu),e86_get_ip(pc->cpu), addr);
+//	fprintf(stderr,"%s %.4x:%.4x %lx\n",__FUNCTION__,e86_get_cs(pc->cpu),e86_get_ip(pc->cpu), addr);
 	if ( cs )
 	{
 		if ( reg == 0 )
@@ -1730,7 +1776,7 @@ static void xtide_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 
 static void xtide_set_uint16 (ibmpc_t *pc, unsigned long addr, unsigned short val)
 {xtide_t *xtide = pc->xtide;
-	fprintf(stderr,"%s %.4x:%.4x %lx\n",__FUNCTION__,e86_get_cs(pc->cpu),e86_get_ip(pc->cpu), addr);
+	//fprintf(stderr,"%s %.4x:%.4x %lx\n",__FUNCTION__,e86_get_cs(pc->cpu),e86_get_ip(pc->cpu), addr);
 	xtide_set_uint8(xtide, addr, val);
 }
 
