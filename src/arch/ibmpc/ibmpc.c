@@ -85,9 +85,17 @@ static
 void ec7879_update_irq(ibmpc_t *pc)
 {
 	unsigned mask = 0x17000;
-	/*if ( (pc->irq_601 & 0x08) )		
-		//mask = 0x18000;
-		mask |= 0x8000;*/
+	
+	if ( pc->serport[0]->uart.irq_val || pc->serport[1]->uart.irq_val )
+		pc->irq_stat |= (1 << 12);
+	else
+		pc->irq_stat &= ~(1 << 12);
+	
+	if ( (pc->irq_601 & 0x08) )
+		mask = 0x17000;
+	else
+		mask = 0x18000;
+		//mask |= 0x8000;
 	e86_irq( pc->cpu, (pc->irq_stat & mask) ? 1 : 0 );
 //printf("%s %d: %d %x\n",__FUNCTION__,__LINE__,pc->cpu->irq,pc->irq_stat);
 }
@@ -95,6 +103,9 @@ void ec7879_update_irq(ibmpc_t *pc)
 static
 void ec7879_memio_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 {	
+	static unsigned long ticks = 0;
+	unsigned long interval = pce_get_interval_us( &ticks );
+	
 	//printf("%.4x:%.4x %s %d: %.5lx <- %.2x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,val);
 	if ( (addr & 0xE01) == 0x000 )
 	{
@@ -102,7 +113,7 @@ void ec7879_memio_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 		reg->set_uint8( pc->video, (addr >> 1) & 0xF, val );
 	}
 	else if ( (addr & 0xE01) == 0x001 )
-	{
+	{//fprintf(stderr,"%s %d %lu: %.5lx <- %.2x\n",__FUNCTION__,__LINE__,interval,addr,val);
 		e8255_set_uint8 (&pc->ppi, (addr >> 1) & 3, val);
 	}
 	else if ( (addr & 0xE01) == 0x200 )
@@ -134,8 +145,16 @@ void ec7879_memio_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 			e8272_set_tc (&pc->fdc->e8272, 1);
 	}
 	else if ( (addr & 0xE01) == 0xA00 )
-	{
+	{//fprintf(stderr,"%s %d %lu: %.5lx <- %.2x\n",__FUNCTION__,__LINE__,interval,addr,val);
 		e8253_set_uint8 (&pc->pit, (addr >> 1) & 3, val);
+	}
+	else if ( (addr & 0xFF1) == 0xDF0 )
+	{
+		e8250_set_uint8(&pc->serport[1]->uart, (addr >> 1) & 7, val);
+	}
+	else if ( (addr & 0xFF1) == 0xE10 )
+	{
+		e8250_set_uint8(&pc->serport[0]->uart, (addr >> 1) & 7, val);
 	}
 	else if ( (addr & 0xF01) == 0xC00 )
 	{//printf("%.4x:%.4x %s %d: %.5lx <- %.2x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,val);
@@ -146,19 +165,30 @@ void ec7879_memio_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 		}
 		else
 		{
-			if ( (addr & 0xE) == 0 ){printf("%.4x:%.4x %s %d: %.5lx <- %.2x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,val | (xtide->wrbuf & 0xFF00));
-				ata_cmd_set_uint16 (&xtide->ata, (addr >> 1) & 7, val | (xtide->wrbuf & 0xFF00));
-			}else
-				ata_cmd_set_uint8 (&xtide->ata, (addr >> 1) & 7, val);
+			ata_cmd_set_uint8 (&xtide->ata, (addr >> 1) & 7, val);
 		}
 	}
-	else if ( (addr & 0xF01) == 0xC01 )
-	{
-		xtide_t *xtide = pc->xtide;
-		xtide->wrbuf = val << 8;
-	}
+
 	else
 		printf("%.4x:%.4x %s %d: %.5lx <- %.2x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,val);
+}
+
+static
+void ec7879_memio_set_uint16 (ibmpc_t *pc, unsigned long addr, unsigned short val)
+{
+	if ( (addr & 0xF01) == 0xC00 )
+	{//printf("%.4x:%.4x %s %d: %.5lx <- %.4x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,val);
+		xtide_t *xtide = pc->xtide;
+		ata_cmd_set_uint16 (&xtide->ata, (addr >> 1) & 7, val);
+	}
+	else
+	{
+		ec7879_memio_set_uint8 (pc, addr, val & 0xff);
+
+		if ((addr + 1) < 0x1000) {
+			ec7879_memio_set_uint8 (pc, addr + 1, val >> 8);
+		}
+	}
 }
 
 static
@@ -216,6 +246,14 @@ unsigned char ec7879_memio_get_uint8 (ibmpc_t *pc, unsigned long addr)
 		pc->irq_stat &= 0xF000;
 		ret = pc->irq_400 >> 8;
 	}
+	else if ( (addr & 0xFF1) == 0xDF0 )
+	{
+		ret = e8250_get_uint8(&pc->serport[1]->uart, (addr >> 1) & 7);
+	}
+	else if ( (addr & 0xFF1) == 0xE10 )
+	{
+		ret = e8250_get_uint8(&pc->serport[0]->uart, (addr >> 1) & 7);
+	}
 	else if ( (addr & 0xF01) == 0xC00 )
 	{
 		xtide_t *xtide = pc->xtide;
@@ -225,22 +263,8 @@ unsigned char ec7879_memio_get_uint8 (ibmpc_t *pc, unsigned long addr)
 		}
 		else
 		{
-			if ( (addr & 0xE) == 0 )
-			{
-				xtide->rdbuf = ata_cmd_get_uint16 (&xtide->ata, (addr >> 1) & 7);
-				ret =  xtide->rdbuf;
-			}
-			else
-			{
-				ret =  ata_cmd_get_uint8 (&xtide->ata, (addr >> 1) & 7);
-			}
+			ret =  ata_cmd_get_uint8 (&xtide->ata, (addr >> 1) & 7);
 		}
-		//printf("%.4x:%.4x %s %d: %.5lx <- %.2x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,ret);
-	}
-	else if ( (addr & 0xF01) == 0xC01 )
-	{
-		xtide_t *xtide = pc->xtide;
-		ret = xtide->rdbuf >> 8;
 		//printf("%.4x:%.4x %s %d: %.5lx <- %.2x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,ret);
 	}
 	
@@ -251,24 +275,23 @@ unsigned char ec7879_memio_get_uint8 (ibmpc_t *pc, unsigned long addr)
 }
 
 static
-void ec7879_memio_set_uint16 (ibmpc_t *pc, unsigned long addr, unsigned short val)
-{
-	ec7879_memio_set_uint8 (pc, addr, val & 0xff);
-
-	if ((addr + 1) < 0x1000) {
-		ec7879_memio_set_uint8 (pc, addr + 1, val >> 8);
-	}
-}
-
-static
 unsigned short ec7879_memio_get_uint16 (ibmpc_t *pc, unsigned long addr)
 {
 	unsigned short ret;
 
-	ret = ec7879_memio_get_uint8 (pc, addr);
+	if ( (addr & 0xF01) == 0xC00 )
+	{
+		xtide_t *xtide = pc->xtide;
+		ret = ata_cmd_get_uint16 (&xtide->ata, (addr >> 1) & 7);
+		//printf("%.4x:%.4x %s %d: %.5lx <- %.4x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,ret);
+	}
+	else
+	{
+		ret = ec7879_memio_get_uint8 (pc, addr);
 
-	if ((addr + 1) < 0x1000) {
-		ret |= ec7879_memio_get_uint8 (pc, addr + 1) << 8;
+		if ((addr + 1) < 0x1000) {
+			ret |= ec7879_memio_get_uint8 (pc, addr + 1) << 8;
+		}
 	}
 
 	return (ret);
@@ -301,6 +324,12 @@ void ec7879_fdc_irq (ibmpc_t *pc, unsigned char val)
 		pc->irq_stat |= 1 << 15;
 	else
 		pc->irq_stat &= ~(1 << 15);
+	ec7879_update_irq(pc);
+}
+
+static
+void ec7879_uart_irq (ibmpc_t *pc, unsigned char val)
+{
 	ec7879_update_irq(pc);
 }
 
@@ -415,7 +444,16 @@ static
 unsigned char ec7879_ppi_get_port_a (ibmpc_t *pc)
 {
 	if (pc->ppi_port_b & 0x80) {
-		return (pc->ppi_port_a[0]);
+		/* joystick
+		* bits:
+		* 0 - left
+		* 1 - right
+		* 2 - up
+		* 3 - down
+		* 4-7 - trigger buttons
+		* active zero
+		*/
+		return (0xFF);
 	}
 	else {
 		return (pc->ppi_port_a[1]);
@@ -438,6 +476,9 @@ int pc_setup_ec7879_periph(ibmpc_t *pc, ini_sct_t *sct)
 	e8272_set_dreq_fct (&pc->fdc->e8272, pc, ec7879_fdc_dreq);
 	dev_fdc_mem_rmv_io (pc->fdc, pc->prt);
 	pc->cpu->test = 1;
+	
+	e8250_set_irq_fct (&pc->serport[0]->uart, pc, ec7879_uart_irq);
+	e8250_set_irq_fct (&pc->serport[1]->uart, pc, ec7879_uart_irq);
 	
 	pc->ppi.port[0].read = (void *) ec7879_ppi_get_port_a;
 	pc->ppi.port[1].write = (void *) ec7879_ppi_set_port_b;

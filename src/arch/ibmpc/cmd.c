@@ -531,7 +531,7 @@ void pce_op_stat (void *ext, unsigned char op1, unsigned char op2)
 	ibmpc_t *pc;
 
 	pc = (ibmpc_t *) ext;
-
+	
 }
 #endif
 

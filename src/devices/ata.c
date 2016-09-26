@@ -66,6 +66,7 @@
 #define ATA_CMD_READ_RETRY         0x21
 #define ATA_CMD_WRITE              0x30
 #define ATA_CMD_WRITE_RETRY        0x31
+#define ATA_CMD_VERIFY             0x40
 #define ATA_CMD_DIAGNOSTIC         0x90
 #define ATA_CMD_SET_GEOMETRY       0x91
 #define ATA_CMD_STANDBY_IMMEDIATE1 0x94
@@ -710,6 +711,10 @@ void ata_command (ata_chn_t *ata, unsigned cmd)
 	case ATA_CMD_READ:
 	case ATA_CMD_READ_RETRY:
 		ata_cmd_read (ata->sel);
+		break;
+
+	case ATA_CMD_VERIFY:
+		ata->sel->reg_status = ATA_STATUS_DRDY | ATA_STATUS_DSC;
 		break;
 
 	case ATA_CMD_READ_MULTIPLE:
