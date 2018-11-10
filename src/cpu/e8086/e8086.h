@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e8086/e8086.h                                        *
  * Created:     1996-04-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 1996-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 1996-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -104,6 +104,8 @@ typedef struct e8086_t {
 	unsigned short   sreg[4];
 	unsigned short   ip;
 	unsigned short   flg;
+
+	unsigned short   trap_flag;
 
 	void             *mem;
 	e86_get_uint8_f  mem_get_uint8;

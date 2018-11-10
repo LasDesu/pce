@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e8086/e8086.c                                        *
  * Created:     1996-04-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 1996-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 1996-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -381,6 +381,8 @@ void e86_trap (e8086_t *c, unsigned n)
 	e86_set_cs (c, e86_get_mem16 (c, 0, ofs + 2));
 	c->flg &= ~(E86_FLG_I | E86_FLG_T);
 
+	c->trap_flag = c->flg;
+
 	e86_pq_init (c);
 }
 
@@ -452,6 +454,8 @@ void e86_reset (e8086_t *c)
 	e86_set_ip (c, 0xfff0);
 	e86_set_flags (c, 0x0000);
 
+	c->trap_flag = 0;
+
 	c->pq_cnt = 0;
 
 	c->irq = 0;
@@ -463,9 +467,8 @@ void e86_reset (e8086_t *c)
 
 void e86_execute (e8086_t *c)
 {
-	unsigned       cnt;
-	unsigned short flg;
-	char           irq;
+	unsigned cnt;
+	char     irq;
 
 	if (c->state) {
 		if (c->state & E86_STATE_HALT) {
@@ -489,7 +492,8 @@ void e86_execute (e8086_t *c)
 		c->cur_ip = c->ip;
 	}
 
-	flg = c->flg;
+	c->trap_flag = c->flg;
+
 	irq = c->irq;
 
 	c->enable_int = 1;
@@ -517,7 +521,7 @@ void e86_execute (e8086_t *c)
 	c->opcnt += 1;
 
 	if (c->enable_int) {
-		if (flg & c->flg & E86_FLG_T) {
+		if (c->trap_flag & E86_FLG_T) {
 			c->state &= ~E86_STATE_HALT;
 			e86_trap (c, 1);
 		}
