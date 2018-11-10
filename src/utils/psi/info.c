@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/psi/info.c                                         *
  * Created:     2013-06-09 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2013-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -113,6 +113,10 @@ int psi_print_info (psi_img_t *img)
 			for (s = 0; s < trk->sct_cnt; s++) {
 				sct = trk->sct[s];
 
+				if (psi_check_duplicate (trk, s)) {
+					tflags |= PSI_TRK_DUP;
+				}
+
 				if (fs || (sct->n < ssize[0])) {
 					ssize[0] = sct->n;
 				}
@@ -179,6 +183,11 @@ int psi_print_info (psi_img_t *img)
 	printf ("flags:        ");
 
 	ff = 1;
+
+	if (tflags & PSI_TRK_DUP) {
+		printf (" DUP");
+		ff = 0;
+	}
 
 	if (tflags & PSI_TRK_BAD_ID) {
 		printf (" BAD-ID");

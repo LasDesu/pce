@@ -172,6 +172,27 @@ void print_version (void)
 }
 
 
+int psi_check_duplicate (const psi_trk_t *trk, unsigned idx)
+{
+	unsigned i;
+
+	if (idx >= trk->sct_cnt) {
+		return (0);
+	}
+
+	for (i = 0; i < trk->sct_cnt; i++) {
+		if (i == idx) {
+			continue;
+		}
+
+		if (trk->sct[i]->s == trk->sct[idx]->s) {
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
 static
 int psi_parse_range (const char *str, unsigned *v1, unsigned *v2, char *all)
 {
