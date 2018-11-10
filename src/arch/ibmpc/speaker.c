@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/speaker.c                                     *
  * Created:     2010-02-24 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2015 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -122,7 +122,7 @@ void pc_speaker_check (pc_speaker_t *spk)
 	uint16_t       val;
 
 	if (spk->speaker_msk == 0) {
-		val = spk->val_off;
+		val = 0x8000;
 	}
 	else {
 		val = spk->speaker_out ? spk->val_on : spk->val_off;
