@@ -762,7 +762,7 @@ int pri_encode_mfm_trk (pri_trk_t *dtrk, psi_trk_t *strk, pri_enc_mfm_t *par)
 
 	pri_trk_set_pos (dtrk, 0);
 
-	nopos = 0;
+	nopos = par->nopos;
 
 	gap3 = par->gap3;
 
@@ -897,6 +897,8 @@ void pri_encode_mfm_init (pri_enc_mfm_t *par, unsigned long clock, unsigned rpm)
 
 	par->enable_iam = 0;
 	par->auto_gap3 = 1;
+
+	par->nopos = 0;
 
 	par->gap4a = 96;
 	par->gap1 = 0;

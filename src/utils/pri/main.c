@@ -180,7 +180,7 @@ void print_help (void)
 		"\n"
 		"parameters are:\n"
 		"  mfm-auto-gap3, mfm-clock, mfm-iam, mfm-gap1, mfm-gap3, mfm-gap4a,\n"
-		"  mfm-min-size, mfm-track-size\n"
+		"  mfm-min-size, mfm-nopos, mfm-track-size\n"
 		"  fm-auto-gap3, fm-clock, fm-iam, fm-gap1, fm-gap3, fm-gap4a,\n"
 		"  fm-track-size\n"
 		"\n"
@@ -665,6 +665,9 @@ int pri_set_parameter (const char *name, const char *val)
 	}
 	else if (strcmp (name, "mfm-min-size") == 0) {
 		par_dec_mfm.min_sct_size = strtoul (val, NULL, 0);
+	}
+	else if (strcmp (name, "mfm-nopos") == 0) {
+		par_enc_mfm.nopos = (strtoul (val, NULL, 0) != 0);
 	}
 	else if (strcmp (name, "mfm-track-size") == 0) {
 		par_enc_mfm.track_size = strtoul (val, NULL, 0);

@@ -34,6 +34,7 @@ typedef struct {
 
 	char          enable_iam;
 	char          auto_gap3;
+	char          nopos;
 
 	unsigned      gap4a;
 	unsigned      gap1;
