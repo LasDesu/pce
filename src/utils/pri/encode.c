@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/encode.c                                       *
  * Created:     2013-12-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2014 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -146,31 +146,31 @@ int pri_encode (pri_img_t **img, const char *type, const char *fname)
 	if (strcmp (type, "auto") == 0) {
 		dimg = pri_encode_auto (simg);
 	}
-	else if (strcmp (type, "fm") == 0) {
+	else if (strcmp2 (type, "ibm-fm", "fm") == 0) {
 		dimg = pri_encode_fm (simg, &par_enc_fm);
 	}
-	else if (strcmp (type, "fm-sd-300") == 0) {
+	else if (strcmp2 (type, "ibm-fm-sd-300", "fm-sd-300") == 0) {
 		par_enc_fm.clock = 250000;
 		par_enc_fm.track_size = 250000 / 5;
 		dimg = pri_encode_fm (simg, &par_enc_fm);
 	}
-	else if (strcmp (type, "gcr") == 0) {
+	else if (strcmp2 (type, "mac-gcr", "gcr") == 0) {
 		dimg = pri_encode_gcr (simg);
 	}
-	else if (strcmp (type, "mfm") == 0) {
+	else if (strcmp2 (type, "ibm-mfm", "mfm") == 0) {
 		dimg = pri_encode_mfm (simg, &par_enc_mfm);
 	}
-	else if (strcmp (type, "mfm-dd-300") == 0) {
+	else if (strcmp2 (type, "ibm-mfm-dd-300", "mfm-dd-300") == 0) {
 		par_enc_mfm.clock = 500000;
 		par_enc_mfm.track_size = 500000 / 5;
 		dimg = pri_encode_mfm (simg, &par_enc_mfm);
 	}
-	else if (strcmp (type, "mfm-hd-300") == 0) {
+	else if (strcmp2 (type, "ibm-mfm-hd-300", "mfm-hd-300") == 0) {
 		par_enc_mfm.clock = 1000000;
 		par_enc_mfm.track_size = 1000000 / 5;
 		dimg = pri_encode_mfm (simg, &par_enc_mfm);
 	}
-	else if (strcmp (type, "mfm-hd-360") == 0) {
+	else if (strcmp2 (type, "ibm-mfm-hd-360", "mfm-hd-360") == 0) {
 		par_enc_mfm.clock = 1000000;
 		par_enc_mfm.track_size = 1000000 / 6;
 		dimg = pri_encode_mfm (simg, &par_enc_mfm);

@@ -185,12 +185,12 @@ void print_help (void)
 		"  fm-track-size\n"
 		"\n"
 		"decode types are:\n"
-		"  auto, fm, fm-raw, gcr, gcr-raw, mfm, mfm-raw, raw,\n"
-		"  text, text-fm, text-mfm, text-raw\n"
+		"  auto, ibm-fm, ibm-mfm, mac-gcr, text\n"
 		"\n"
 		"encode types are:\n"
-		"  auto, fm, fm-sd-300, gcr, mfm, mfm-dd-300, mfm-hd-300, mfm-hd-360,\n"
-		"  text\n"
+		"  auto, text, mac-gcr\n"
+		"  ibm-fm, ibm-fm-sd-300,\n"
+		"  ibm-mfm, ibm-mfm-dd-300, ibm-mfm-hd-300, ibm-mfm-hd-360\n"
 		"\n"
 		"file formats are:\n"
 		"  pri, tc\n"
@@ -216,6 +216,19 @@ void print_version (void)
 	fflush (stdout);
 }
 
+
+int strcmp2 (const char *str, const char *str1, const char *str2)
+{
+	if (strcmp (str, str1) == 0) {
+		return (0);
+	}
+
+	if (strcmp (str, str2) == 0) {
+		return (0);
+	}
+
+	return (1);
+}
 
 int pri_parse_range (const char *str, unsigned long *v1, unsigned long *v2, char *all)
 {

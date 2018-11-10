@@ -59,6 +59,8 @@ typedef int (*pri_trk_cb) (pri_img_t *img, pri_trk_t *trk,
 );
 
 
+int strcmp2 (const char *str, const char *str1, const char *str2);
+
 int pri_parse_range (const char *str, unsigned long *v1, unsigned long *v2, char *all);
 
 int pri_for_all_tracks (pri_img_t *img, pri_trk_cb fct, void *opaque);

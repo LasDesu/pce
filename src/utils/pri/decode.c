@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/decode.c                                       *
  * Created:     2013-12-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2014 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -359,16 +359,16 @@ int pri_decode_psi (pri_img_t *img, const char *type, const char *fname)
 
 	dec.mfm = par_dec_mfm;
 
-	if ((strcmp (type, "auto") == 0) || (strcmp (type, "mfm-fm") == 0)) {
+	if (strcmp2 (type, "auto", "mfm-fm") == 0) {
 		fct = pri_decode_psi_auto_cb;
 	}
-	else if (strcmp (type, "fm") == 0) {
+	else if (strcmp2 (type, "ibm-fm", "fm") == 0) {
 		fct = pri_decode_psi_fm_cb;
 	}
-	else if (strcmp (type, "gcr") == 0) {
+	else if (strcmp2 (type, "mac-gcr", "gcr") == 0) {
 		fct = pri_decode_psi_gcr_cb;
 	}
-	else if (strcmp (type, "mfm") == 0) {
+	else if (strcmp2 (type, "ibm-mfm", "mfm") == 0) {
 		fct = pri_decode_psi_mfm_cb;
 	}
 	else {
