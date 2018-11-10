@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/macplus.c                                   *
  * Created:     2007-04-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2014 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -1007,10 +1007,18 @@ void mac_setup_iwm (macplus_t *sim, ini_sct_t *ini)
 		ini_get_uint16 (sctdev, "drive", &drive, n);
 		ini_get_uint16 (sctdev, "disk", &disk, drive);
 		ini_get_string (sctdev, "file", &fname, NULL);
-		ini_get_bool (sctdev, "single_sided", &single, 0);
-		ini_get_bool (sctdev, "locked", &locked, 0);
-		ini_get_bool (sctdev, "inserted", &inserted, 0);
-		ini_get_bool (sctdev, "auto_rotate", &rotate, 0);
+
+		ini_get_bool (sct, "single_sided", &single, 0);
+		ini_get_bool (sctdev, "single_sided", &single, single);
+
+		ini_get_bool (sct, "locked", &locked, 0);
+		ini_get_bool (sctdev, "locked", &locked, locked);
+
+		ini_get_bool (sct, "inserted", &inserted, 0);
+		ini_get_bool (sctdev, "inserted", &inserted, inserted);
+
+		ini_get_bool (sct, "auto_rotate", &rotate, 0);
+		ini_get_bool (sctdev, "auto_rotate", &rotate, rotate);
 
 		pce_log_tag (MSG_INF,
 			"IWM:", "drive=%u size=%uK locked=%d rotate=%d disk=%u file=%s\n",
