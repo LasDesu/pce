@@ -17,13 +17,17 @@ PRI_BAS := \
 	merge \
 	new \
 	rotate \
+	text-ibm-fm \
+	text-ibm-mfm \
+	text-mac-gcr \
+	text-raw \
 	text \
 	weak \
 	main
 
 PRI_SRC := $(foreach f,$(PRI_BAS),$(rel)/$(f).c)
 PRI_OBJ := $(foreach f,$(PRI_BAS),$(rel)/$(f).o)
-PRI_HDR := $(rel)/main.h
+PRI_HDR := $(rel)/main.h $(rel)/text.h
 PRI_MAN1 := $(rel)/pri.1
 PRI_BIN := $(rel)/pri$(EXEEXT)
 
@@ -49,6 +53,10 @@ $(rel)/list.o:     $(rel)/list.c
 $(rel)/merge.o:    $(rel)/merge.c
 $(rel)/new.o:      $(rel)/new.c
 $(rel)/rotate.o:   $(rel)/rotate.c
+$(rel)/text-ibm-fm.o:  $(rel)/text-ibm-fm.c
+$(rel)/text-ibm-mfm.o: $(rel)/text-ibm-mfm.c
+$(rel)/text-mac-gcr.o: $(rel)/text-mac-gcr.c
+$(rel)/text-raw.o:     $(rel)/text-raw.c
 $(rel)/text.o:     $(rel)/text.c
 $(rel)/weak.o:     $(rel)/weak.c
 $(rel)/main.o:     $(rel)/main.c

@@ -413,6 +413,9 @@ int pri_decode (pri_img_t *img, const char *type, const char *fname)
 	else if (strcmp (type, "text-fm") == 0) {
 		return (pri_decode_text (img, fname, PRI_TEXT_FM));
 	}
+	else if (strcmp (type, "text-mac") == 0) {
+		return (pri_decode_text (img, fname, PRI_TEXT_MAC));
+	}
 	else if (strcmp (type, "text-mfm") == 0) {
 		return (pri_decode_text (img, fname, PRI_TEXT_MFM));
 	}

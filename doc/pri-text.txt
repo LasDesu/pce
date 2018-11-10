@@ -1,0 +1,94 @@
+PRI Text
+========
+
+PRI <version>
+TRACK <cylinder> <head>
+
+CLOCK <val>
+INDEX
+MODE <mode>
+RATE <clock-rate>
+RAW <bit>...
+WEAK <val>
+
+
+Mode RAW
+--------
+
+<val>
+BIT [0|1]*
+FILL <size> <val>
+REP <count> <val>
+
+
+Mode IBM-FM
+-----------
+
+<val>[/<clock>]
+
+AM <val> := <val>/F7
+
+BIT [0|1]*
+
+CHECK START
+CHECK END
+CHECK SUM
+CRC := CHECK SUM
+
+FILL <size> <val>[/<clock>]
+FILL TRACK <val>[/<clock>]
+
+REP <count> <val>[/<clock>]
+
+SECT <c> <h> <s> <n>
+
+SYNC := REP 6 00
+
+
+Mode IBM-MFM
+------------
+
+<val>[/<clock>]
+
+AM <val> := CHECK START A1/04 A1/04 A1/04 <val>
+
+BIT [0|1]*
+
+CHECK START
+CHECK END
+CHECK SUM
+CRC := CHECK SUM
+
+FILL <size> <val>[/<clock>]
+FILL TRACK <val>[/<clock>]
+
+REP <cnt> <val>[/<clock>]
+
+SECT <c> <h> <s> <n>
+
+SYNC := REP 12 00
+
+
+MODE MAC-GCR
+-----------
+
+<hex>
+
+BIT [0|1]*
+
+CHECK START
+CHECK END
+CHECK SUM
+
+FILL TRACK
+FILL <size> SYNC
+FILL <size> SYNC GROUP
+FILL <size> <val>
+
+REP <cnt> <val>
+
+SECT <c> <h> <s> <mode>
+SECT END
+
+SYNC <count>
+SYNC GROUP <count>

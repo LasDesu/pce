@@ -2853,11 +2853,41 @@ src/utils/pri/rotate.o: src/utils/pri/rotate.c \
 	src/drivers/psi/psi.h \
 	src/utils/pri/main.h
 
+src/utils/pri/text-ibm-fm.o: src/utils/pri/text-ibm-fm.c \
+	src/config.h \
+	src/drivers/pri/pri.h \
+	src/drivers/psi/psi.h \
+	src/utils/pri/main.h \
+	src/utils/pri/text.h
+
+src/utils/pri/text-ibm-mfm.o: src/utils/pri/text-ibm-mfm.c \
+	src/config.h \
+	src/drivers/pri/pri.h \
+	src/drivers/psi/psi.h \
+	src/utils/pri/main.h \
+	src/utils/pri/text.h
+
+src/utils/pri/text-mac-gcr.o: src/utils/pri/text-mac-gcr.c \
+	src/config.h \
+	src/drivers/pri/pri-enc-gcr.h \
+	src/drivers/pri/pri.h \
+	src/drivers/psi/psi.h \
+	src/utils/pri/main.h \
+	src/utils/pri/text.h
+
+src/utils/pri/text-raw.o: src/utils/pri/text-raw.c \
+	src/config.h \
+	src/drivers/pri/pri.h \
+	src/drivers/psi/psi.h \
+	src/utils/pri/main.h \
+	src/utils/pri/text.h
+
 src/utils/pri/text.o: src/utils/pri/text.c \
 	src/config.h \
 	src/drivers/pri/pri.h \
 	src/drivers/psi/psi.h \
-	src/utils/pri/main.h
+	src/utils/pri/main.h \
+	src/utils/pri/text.h
 
 src/utils/pri/weak.o: src/utils/pri/weak.c \
 	src/config.h \

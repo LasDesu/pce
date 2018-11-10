@@ -34,6 +34,7 @@
 #define PRI_TEXT_RAW  1
 #define PRI_TEXT_MFM  2
 #define PRI_TEXT_FM   3
+#define PRI_TEXT_MAC  4
 
 
 extern const char    *arg0;
