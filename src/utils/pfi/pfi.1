@@ -167,6 +167,32 @@ number 1.
 Set parameter \fIpar\fR to \fIval\fR.
 .RS
 .TP
+.BI "clock-tolerance " val
+Set the clock tolerance in tenth of a percent. The default is 40. If
+during decoding the data rate changes by more than the tolerance, a
+clock event is recorded in the PRI file.
+.TP
+.BI "fold-max " bits
+When folding tracks, compare at most \fIbits\fR bits. The default is
+16384.
+.TP
+.BI "fold-mode " mode
+Set the track fold mode to \fImode\fR. Valid modes are:
+.RS
+.TP
+.B none
+Fold the track at the index pulse.
+.TP
+.B maxrun
+Fold the track at the bit position that results in the longest run of
+identical bits at the beginning of the two revolutions. This is the
+default mode.
+.TP
+.B mindiff
+Fold the track at the bit position that results in the fewest differences
+between the two revolutions.
+.RE
+.TP
 .B pfi-clock
 Set the clock rate that is used to encode images. The default is
 24027428.

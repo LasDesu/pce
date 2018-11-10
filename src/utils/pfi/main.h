@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/main.h                                         *
  * Created:     2012-01-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -29,6 +29,11 @@
 #include <drivers/pfi/pfi.h>
 
 
+#define PFI_FOLD_NONE    0
+#define PFI_FOLD_MAXRUN  1
+#define PFI_FOLD_MINDIFF 2
+
+
 typedef int (*pfi_trk_cb) (pfi_img_t *img, pfi_trk_t *trk,
 	unsigned long c, unsigned long h, void *opaque
 );
@@ -50,6 +55,9 @@ extern unsigned long par_weak_i1;
 extern unsigned long par_weak_i2;
 
 extern unsigned long par_clock_tolerance;
+
+extern unsigned      par_fold_mode;
+extern unsigned long par_fold_max;
 
 
 int pfi_for_all_tracks (pfi_img_t *img, pfi_trk_cb fct, void *opaque);

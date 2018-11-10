@@ -52,6 +52,7 @@ struct decode_pri_s {
 	unsigned      rate_cnt;
 	unsigned long *rate;
 
+	unsigned      fold_mode;
 	unsigned long max_compare;
 };
 
@@ -241,7 +242,7 @@ unsigned long pfi_bit_diff (const unsigned char *p1, unsigned long i1, const uns
 }
 
 static
-int pfi_dec_fold (pfi_dec_t *bit, unsigned long max, unsigned c, unsigned h)
+int pfi_dec_fold_mindiff (pfi_dec_t *bit, unsigned long max, unsigned c, unsigned h)
 {
 	unsigned      i;
 	unsigned long val, pos, cnt;
@@ -293,6 +294,94 @@ int pfi_dec_fold (pfi_dec_t *bit, unsigned long max, unsigned c, unsigned h)
 	}
 
 	bit->cnt = min_pos;
+
+	return (0);
+}
+
+static
+unsigned long pfi_bit_run (const unsigned char *p1, unsigned long i1, const unsigned char *p2, unsigned long i2, unsigned long max)
+{
+	unsigned long i;
+	unsigned      j1, j2;
+
+	j1 = ~i1 & 7;
+	j2 = ~i2 & 7;
+
+	p1 += i1 / 8;
+	p2 += i2 / 8;
+
+	for (i = 0; i < max; i++) {
+		if (((*p1 >> j1) ^ (*p2 >> j2)) & 1) {
+			return (i);
+		}
+
+		if (j1 == 0) {
+			p1 += 1;
+			j1 = 7;
+		}
+		else {
+			j1 -= 1;
+		}
+
+		if (j2 == 0) {
+			p2 += 1;
+			j2 = 7;
+		}
+		else {
+			j2 -= 1;
+		}
+	}
+
+	return (max);
+}
+
+static
+int pfi_dec_fold_maxrun (pfi_dec_t *bit, unsigned long max, unsigned c, unsigned h)
+{
+	unsigned      i;
+	unsigned long val, pos, cnt;
+	unsigned long max_val, max_pos, dist;
+
+	if ((bit->index < 256) || ((bit->cnt - bit->index) < 256)) {
+		bit->cnt = bit->index;
+		return (0);
+	}
+
+	max_val = 0;
+	max_pos = bit->index;
+
+	for (i = 1; i < 32; i++) {
+		pos = (i & 1) ? (bit->index - i / 2) : (bit->index + i / 2);
+
+		cnt = bit->cnt - pos;
+
+		if (cnt > pos) {
+			cnt = pos;
+		}
+
+		if (cnt > max) {
+			cnt = max;
+		}
+
+		val = pfi_bit_run (bit->buf, 0, bit->buf, pos, cnt);
+
+		if ((val > max_val) || (i == 1)) {
+			max_val = val;
+			max_pos = pos;
+		}
+	}
+
+	dist = (max_pos < bit->index) ? (bit->index - max_pos) : (max_pos - bit->index);
+
+	if (par_verbose || (max_val < max)) {
+		fprintf (stderr, "track %2u/%u: %6lu at %6lu (%lu %c %lu)\n",
+			c, h,
+			max_val, max_pos,
+			bit->index, (max_pos < bit->index) ? '-' : '+', dist
+		);
+	}
+
+	bit->cnt = max_pos;
 
 	return (0);
 }
@@ -424,7 +513,19 @@ int pfi_decode_pri_trk_cb (pfi_img_t *img, pfi_trk_t *strk, unsigned long c, uns
 		return (1);
 	}
 
-	pfi_dec_fold (&bit, par->max_compare, c, h);
+	switch (par->fold_mode) {
+	case PFI_FOLD_MAXRUN:
+		pfi_dec_fold_maxrun (&bit, par->max_compare, c, h);
+		break;
+
+	case PFI_FOLD_MINDIFF:
+		pfi_dec_fold_mindiff (&bit, par->max_compare, c, h);
+		break;
+
+	default:
+		bit.cnt = bit.index;
+		break;
+	}
 
 	pri_trk_set_clock (dtrk, rate);
 	pri_trk_set_size (dtrk, bit.cnt);
@@ -478,7 +579,8 @@ pri_img_t *pfi_decode_pri (pfi_img_t *img, unsigned mode, unsigned long rate)
 		par.rate = NULL;
 	}
 
-	par.max_compare = 16384;
+	par.fold_mode = par_fold_mode;
+	par.max_compare = par_fold_max;
 
 	if (pfi_for_all_tracks (img, pfi_decode_pri_trk_cb, &par)) {
 		pri_img_del (par.img);

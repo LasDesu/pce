@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/main.c                                         *
  * Created:     2012-01-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -72,6 +72,9 @@ unsigned long par_weak_i2 = 0;
 
 unsigned long par_clock_tolerance = 40;
 
+unsigned      par_fold_mode = PFI_FOLD_MAXRUN;
+unsigned long par_fold_max = 16384;
+
 
 static pce_option_t opts[] = {
 	{ '?', 0, "help", NULL, "Print usage information" },
@@ -129,7 +132,7 @@ void print_help (void)
 		"  shift-index <offset>   Shift the index by offset clock cycles\n"
 		"\n"
 		"parameters are:\n"
-		"  clock-tolerance, pfi-clock, slack1, slack2, weak-bits\n"
+		"  clock-tolerance, fold-max, fold-mode, pfi-clock, slack1, slack2, weak-bits\n"
 		"\n"
 		"decode types are:\n"
 		"  pri, pri-mac, raw, gcr-raw, mfm-raw\n"
@@ -151,7 +154,7 @@ void print_version (void)
 	fputs (
 		"pfi version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2012-2017 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2012-2018 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -521,6 +524,23 @@ int pfi_set_parameter (const char *name, const char *val)
 {
 	if (strcmp (name, "clock-tolerance") == 0) {
 		par_clock_tolerance = strtoul (val, NULL, 0);
+	}
+	else if (strcmp (name, "fold-max") == 0) {
+		par_fold_max = strtoul (val, NULL, 0);
+	}
+	else if (strcmp (name, "fold-mode") == 0) {
+		if (strcmp (val, "none") == 0) {
+			par_fold_mode = PFI_FOLD_NONE;
+		}
+		else if (strcmp (val, "maxrun") == 0) {
+			par_fold_mode = PFI_FOLD_MAXRUN;
+		}
+		else if (strcmp (val, "mindiff") == 0) {
+			par_fold_mode = PFI_FOLD_MINDIFF;
+		}
+		else {
+			return (1);
+		}
 	}
 	else if (strcmp (name, "pfi-clock") == 0) {
 		par_pfi_clock = strtoul (val, NULL, 0);
