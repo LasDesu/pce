@@ -1,0 +1,36 @@
+#!/bin/bash
+
+export LC_ALL="C"
+
+if test -f "Makefile.dep" ; then
+	mv -f "Makefile.dep" "Makefile.dep.old"
+fi
+
+{
+	echo "#define PCE_ENABLE_TUN 1"
+} > "src/config.h"
+
+find src -type f -name "*.c" -print |\
+while read file ; do
+	echo "${file%.*}.o:"
+	makedepend -Y -f- -w0 -Isrc "$file" 2> /dev/null
+done |\
+grep "^src/.*:" |\
+sort -u |\
+{
+	printf '# Makefile.dep'
+
+	while read dst src ; do
+		if test -z "$src" ; then
+			printf '\n\n%s %s' "$dst" "${dst%.*}.c"
+		else
+			printf ' \\\n\t%s' "$src"
+		fi
+	done
+
+	echo
+} > "Makefile.dep"
+
+diff -Nu "Makefile.dep.old" "Makefile.dep" > "Makefile.dep.diff"
+
+rm -f "src/config.h"
