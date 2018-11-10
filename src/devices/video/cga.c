@@ -120,7 +120,7 @@ void cga_set_hue (cga_t *cga, int val)
 
 	cga->hue = val;
 
-	tmp = (-(112.5 - 33) + cga->hue) * (M_PI / 180.0);
+	tmp = (-50 + cga->hue) * (M_PI / 180.0);
 
 	for (i = 0; i < 8; i++) {
 		cga->sin_cos_tab[i + 0] = 2.0 * sin (tmp + i * (M_PI / 4.0));
@@ -191,12 +191,12 @@ void cga_line_composite (cga_t *cga, unsigned char *dst, const unsigned char *sr
 	for (x = 0; x < (2 * w); x++) {
 		if ((x & 1) == 0) {
 			rgbi = *(src++);
-			luma = (rgbi & 8) ? 0.33 : 0;
+			luma = (rgbi & 8) ? 0.333 : 0.000;
 		}
 
 		i = x & 7;
 
-		chroma = cga_color_burst[rgbi & 7][i] ? 0.66 : 0.0;
+		chroma = cga_color_burst[rgbi & 7][i] ? 0.666 : 0.000;
 		composite = luma + chroma;
 
 		Ys[i] = composite;
