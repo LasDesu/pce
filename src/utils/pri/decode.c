@@ -372,6 +372,7 @@ int pri_decode_psi (pri_img_t *img, const char *type, const char *fname)
 		fct = pri_decode_psi_mfm_cb;
 	}
 	else {
+		fprintf (stderr, "%s: unknown decode type (%s)\n", arg0, type);
 		return (1);
 	}
 

@@ -140,6 +140,7 @@ int pri_encode (pri_img_t **img, const char *type, const char *fname)
 	}
 
 	if ((simg = psi_load (fname, PSI_FORMAT_NONE)) == NULL) {
+		fprintf (stderr, "%s: loading failed (%s)\n", arg0, fname);
 		return (1);
 	}
 
@@ -176,6 +177,7 @@ int pri_encode (pri_img_t **img, const char *type, const char *fname)
 		dimg = pri_encode_mfm (simg, &par_enc_mfm);
 	}
 	else {
+		fprintf (stderr, "%s: unknown encode type (%s)\n", arg0, type);
 		dimg = NULL;
 	}
 
