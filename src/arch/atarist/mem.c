@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/atarist/mem.c                                       *
  * Created:     2011-03-17 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2011-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2011-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -34,10 +34,9 @@ unsigned char st_mem_get_uint8 (void *ext, unsigned long addr)
 {
 	atari_st_t *sim = ext;
 
+	addr &= 0x00ffffff;
+
 	if (addr < 0xf00000) {
-		if (addr >= sim->ram->size) {
-			e68_set_bus_error (sim->cpu, 1);
-		}
 		return (0);
 	}
 
@@ -115,10 +114,9 @@ unsigned short st_mem_get_uint16 (void *ext, unsigned long addr)
 {
 	atari_st_t *sim = ext;
 
+	addr &= 0x00ffffff;
+
 	if (addr < 0xf00000) {
-		if (addr >= sim->ram->size) {
-			e68_set_bus_error (sim->cpu, 1);
-		}
 		return (0);
 	}
 
@@ -188,10 +186,9 @@ void st_mem_set_uint8 (void *ext, unsigned long addr, unsigned char val)
 {
 	atari_st_t *sim = ext;
 
+	addr &= 0x00ffffff;
+
 	if (addr < 0xf00000) {
-		if (addr >= sim->ram->size) {
-			e68_set_bus_error (sim->cpu, 1);
-		}
 		return;
 	}
 
@@ -282,10 +279,9 @@ void st_mem_set_uint16 (void *ext, unsigned long addr, unsigned short val)
 {
 	atari_st_t *sim = ext;
 
+	addr &= 0x00ffffff;
+
 	if (addr < 0xf00000) {
-		if (addr >= sim->ram->size) {
-			e68_set_bus_error (sim->cpu, 1);
-		}
 		return;
 	}
 
