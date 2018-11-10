@@ -617,6 +617,38 @@ uint32_t pbi_get_block_bits (uint32_t min)
 	return (cnt);
 }
 
+/*
+ * Get the l1 bits, l2 bits and block bits for an image of size size and
+ * a minimum block size of minblk.
+ */
+static
+int pbi_get_bits (uint64_t size, uint32_t minblk, unsigned *l1bits, unsigned *l2bits, unsigned *blbits)
+{
+	uint64_t max_size;
+
+	*blbits = pbi_get_block_bits (minblk);
+	*l1bits = *blbits - 3;
+	*l2bits = *blbits - 3;
+
+	max_size = 1ULL << (*l1bits + *l2bits + *blbits);
+
+	while (max_size < size) {
+		if (*l1bits < 17) {
+			*l1bits += 1;
+		}
+		else if (*l2bits < 17) {
+			*l2bits += 1;
+		}
+		else {
+			*blbits += 1;
+		}
+
+		max_size = 1ULL << (*l1bits + *l2bits + *blbits);
+	}
+
+	return (0);
+}
+
 static
 int pbi_alloc_tables (disk_pbi_t *pbi)
 {
@@ -855,38 +887,132 @@ disk_t *dsk_pbi_cow_create (disk_t *dsk, const char *fname, uint32_t n, uint32_t
 	return (cow);
 }
 
+int dsk_pbi_create_flat_fp (FILE *fp, uint32_t n, uint32_t c, uint16_t h, uint16_t s, uint32_t minblk)
+{
+	unsigned long l1idx, l2idx;
+	unsigned long l1size, l2size, blsize;
+	unsigned      l1bits, l2bits, blbits, l1blk, l2blk;
+	uint64_t      blidx, blcnt;
+	uint64_t      l2ofs, blofs;
+	uint64_t      image_size;
+	unsigned char *buf, *l1, *l2;
+
+	image_size = 512 * (uint64_t) n;
+
+	if (pbi_get_bits (image_size, minblk, &l1bits, &l2bits, &blbits)) {
+		return (1);
+	}
+
+	blsize = 1UL << blbits;
+	blcnt = (image_size + blsize - 1) >> blbits;
+
+	l1blk = 1UL << (l1bits + 3 - blbits);
+	l1size = l1blk << blbits;
+
+	l2blk = 1UL << (l2bits + 3 - blbits);
+	l2size = l2blk << blbits;
+
+	if ((buf = malloc (l1size + l2size)) == NULL) {
+		return (1);
+	}
+
+	l1 = buf;
+	l2 = buf + l1size;
+
+	blofs = blsize;
+	l2ofs = (blcnt + 1) << blbits;
+	l1idx = 0;
+	l2idx = 0;
+
+	memset (l1, 0, l1size);
+
+	for (blidx = 0; blidx < blcnt; blidx++) {
+		if (l2idx == 0) {
+			memset (l2, 0, l2size);
+			dsk_set_uint64_be (l1, l1idx, l2ofs);
+			l1idx += 8;
+		}
+
+		dsk_set_uint64_be (l2, l2idx, blofs);
+
+		l2idx += 8;
+		blofs += blsize;
+
+		if ((l2idx >= blsize) || ((blidx + 1) == blcnt)) {
+			if (dsk_write (fp, l2, l2ofs, l2size)) {
+				free (buf);
+				return (1);
+			}
+
+			l2idx = 0;
+			l2ofs += l2size;
+		}
+	}
+
+	if (dsk_write (fp, l1, l2ofs, l1size)) {
+		free (buf);
+		return (1);
+	}
+
+	memset (buf, 0, blsize);
+
+	dsk_set_uint32_be (buf, 0, PBI_MAGIC_PBI);
+	dsk_set_uint32_be (buf, 4, 0);
+	dsk_set_uint32_be (buf, 8, 48);
+
+	buf[12] = l1bits;
+	buf[13] = l2bits;
+	buf[14] = blbits;
+
+	dsk_set_uint64_be (buf, 16, image_size);
+	dsk_set_uint64_be (buf, 24, l2ofs);
+	dsk_set_uint64_be (buf, 32, l2ofs + l1size);
+
+	dsk_set_uint32_be (buf, 40, c);
+	dsk_set_uint16_be (buf, 44, h);
+	dsk_set_uint16_be (buf, 46, s);
+
+	if (dsk_write (fp, buf, 0, blsize)) {
+		free (buf);
+		return (1);
+	}
+
+	free (buf);
+
+	return (0);
+}
+
+int dsk_pbi_create_flat (const char *fname, uint32_t n, uint32_t c, uint16_t h, uint16_t s, uint32_t minblk)
+{
+	int  r;
+	FILE *fp;
+
+	if ((fp = fopen (fname, "wb")) == NULL) {
+		return (1);
+	}
+
+	r = dsk_pbi_create_flat_fp (fp, n, c, h, s, minblk);
+
+	fclose (fp);
+
+	return (r);
+}
+
 int dsk_pbi_create_fp (FILE *fp, uint32_t n, uint32_t c, uint16_t h, uint16_t s, uint32_t minblk)
 {
 	unsigned long i;
 	unsigned long blsize;
 	unsigned      l1bits, l2bits, blbits, l1blk;
-	uint64_t      image_size, max_size;
+	uint64_t      image_size;
 	unsigned char *buf;
 
 	image_size = 512 * (uint64_t) n;
 
-	blbits = pbi_get_block_bits (minblk);
-	blsize = 1UL << blbits;
-
-	l1bits = blbits - 3;
-	l2bits = blbits - 3;
-
-	max_size = 1ULL << (l1bits + l2bits + blbits);
-
-	while (max_size < image_size) {
-		if (l1bits < 17) {
-			l1bits += 1;
-		}
-		else if (l2bits < 17) {
-			l2bits += 1;
-		}
-		else {
-			blbits += 1;
-		}
-
-		max_size = 1ULL << (l1bits + l2bits + blbits);
+	if (pbi_get_bits (image_size, minblk, &l1bits, &l2bits, &blbits)) {
+		return (1);
 	}
 
+	blsize = 1UL << blbits;
 	l1blk = 1UL << (l1bits + 3 - blbits);
 
 	if ((buf = malloc (blsize)) == NULL) {

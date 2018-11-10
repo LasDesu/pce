@@ -86,6 +86,9 @@ disk_t *dsk_pbi_open (const char *fname, int ro);
 disk_t *dsk_pbi_cow_open (disk_t *dsk, const char *fname);
 disk_t *dsk_pbi_cow_create (disk_t *dsk, const char *fname, uint32_t n, uint32_t c, uint32_t h, uint32_t s, uint32_t minblk);
 
+int dsk_pbi_create_flat_fp (FILE *fp, uint32_t n, uint32_t c, uint16_t h, uint16_t s, uint32_t minblk);
+int dsk_pbi_create_flat (const char *fname, uint32_t n, uint32_t c, uint16_t h, uint16_t s, uint32_t minblk);
+
 int dsk_pbi_create_fp (FILE *fp, uint32_t n, uint32_t c, uint16_t h, uint16_t s, uint32_t minblk);
 int dsk_pbi_create (const char *fname, uint32_t n, uint32_t c, uint16_t h, uint16_t s, uint32_t minblk);
 

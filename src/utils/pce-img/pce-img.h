@@ -56,6 +56,7 @@ int pce_set_s (const char *str);
 int pce_set_geo (const char *c, const char *h, const char *s);
 int pce_set_ofs (const char *str);
 int pce_set_min_cluster_size (const char *str);
+void pce_set_flat (int val);
 
 int pce_set_type_inp (const char *str);
 int pce_set_type_out (const char *str);

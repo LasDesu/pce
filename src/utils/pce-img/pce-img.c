@@ -51,6 +51,8 @@ static unsigned           par_type_inp = DSK_NONE;
 static unsigned           par_type_out = DSK_NONE;
 static unsigned           par_type_cow = DSK_NONE;
 
+static char               par_flat = 0;
+
 static unsigned long      par_c = 0;
 static unsigned long      par_h = 0;
 static unsigned long      par_s = 0;
@@ -387,6 +389,11 @@ int pce_set_min_cluster_size (const char *str)
 	return (0);
 }
 
+void pce_set_flat (int val)
+{
+	par_flat = (val != 0);
+}
+
 int pce_set_type_inp (const char *str)
 {
 	par_type_inp = pce_get_type (str);
@@ -528,7 +535,12 @@ int dsk_create (const char *name, unsigned type)
 		break;
 
 	case DSK_PBI:
-		r = dsk_pbi_create (name, par_n, par_c, par_h, par_s, par_min_cluster_size);
+		if (par_flat) {
+			r = dsk_pbi_create_flat (name, par_n, par_c, par_h, par_s, par_min_cluster_size);
+		}
+		else {
+			r = dsk_pbi_create (name, par_n, par_c, par_h, par_s, par_min_cluster_size);
+		}
 		break;
 
 	case DSK_QED:

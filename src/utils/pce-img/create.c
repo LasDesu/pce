@@ -37,6 +37,7 @@ static pce_option_t opts_create[] = {
 	{ 'c', 1, "cylinders", "int", "Set the number of cylinders [0]" },
 	{ 'C', 1, "min-cluster-size", "int", "Set the minimum cluster size for QED [0]" },
 	{ 'f', 1, "offset", "int", "Set the data offset [0]" },
+	{ 'F', 0, "flat", NULL, "Create a flat pbi file [no]" },
 	{ 'g', 3, "geometry", "3*int", "Set the disk geometry (c h s)" },
 	{ 'h', 1, "heads", "int", "Set the number of heads [0]" },
 	{ 'n', 1, "size", "int", "Set the disk size in 512 byte blocks [0]" },
@@ -105,6 +106,10 @@ int main_create (int argc, char **argv)
 			if (pce_set_ofs (optarg[0])) {
 				return (1);
 			}
+			break;
+
+		case 'F':
+			pce_set_flat (1);
 			break;
 
 		case 'g':
