@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/ppc405/internal.h                                    *
  * Created:     2003-11-07 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2009 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2018 Hampa Hug <hampa@hampa.ch>                     *
  * Copyright:   (C) 2003-2006 Lukas Ruf <ruf@lpr.ch>                         *
  *****************************************************************************/
 
@@ -123,6 +123,12 @@ int p405_dstore32 (p405_t *c, uint32_t addr, uint32_t val);
 #define p405_get_uimm16(ir) ((ir) & 0xffff)
 
 #define p405_set_clk(c, dpc, clk) do { (c)->pc += (dpc); (c)->delay += (clk); } while (0)
+
+
+typedef struct {
+	unsigned      op;
+	p405_opcode_f fct;
+} p405_opcode_list_t;
 
 
 uint64_t p405_mul (uint32_t s1, uint32_t s2);
