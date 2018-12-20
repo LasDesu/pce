@@ -437,6 +437,13 @@ int pfi_operation (pfi_img_t **img, const char *op, int argc, char **argv)
 
 		r = pfi_shift_index (*img, ofs);
 	}
+	else if (strcmp (op, "slack") == 0) {
+		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {
+			return (1);
+		}
+
+		r = pfi_slack (*img, optarg1[0]);
+	}
 	else {
 		fprintf (stderr, "%s: unknown operation (%s)\n", arg0, op);
 		return (1);

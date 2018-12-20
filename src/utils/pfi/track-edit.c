@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/track-edit.c                                   *
  * Created:     2013-12-27 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -112,6 +112,19 @@ int pfi_revolutions (pfi_img_t *img, const char *str)
 
 	revs[0] = r1;
 	revs[1] = r2;
+
+	return (pfi_for_all_tracks (img, pfi_revolutions_cb, revs));
+}
+
+int pfi_slack (pfi_img_t *img, const char *str)
+{
+	unsigned revs[2];
+
+	par_slack1 = strtoul (str, NULL, 0) % 100;
+	par_slack2 = par_slack1;
+
+	revs[0] = 0;
+	revs[1] = -1;
 
 	return (pfi_for_all_tracks (img, pfi_revolutions_cb, revs));
 }
