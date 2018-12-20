@@ -667,7 +667,14 @@ void p405_execute (p405_t *c)
 
 	op = (c->ir >> 26) & 0x3f;
 
-	c->opcodes.op[op] (c);
+	if (op == 0x1f) {
+		op = (c->ir >> 1) & 0x3ff;
+
+		c->opcodes.op1f[op] (c);
+	}
+	else {
+		c->opcodes.op[op] (c);
+	}
 
 	c->opcnt += 1;
 
