@@ -516,6 +516,10 @@ int dsk_guess_geometry_pte (const unsigned char *p, unsigned *h, unsigned *s)
 
 	*s = v1 / v2;
 
+	if ((*s == 0) || (*s > 255)) {
+		return (1);
+	}
+
 	v1 = (long long) (l2 - s2) - (long long) h2 * *s;
 	v2 = (long long) c2 * *s;
 
@@ -525,7 +529,7 @@ int dsk_guess_geometry_pte (const unsigned char *p, unsigned *h, unsigned *s)
 
 	*h = v1 / v2;
 
-	if ((*h == 0) || (*s == 0)) {
+	if ((*h == 0) || (*h > 256)) {
 		return (1);
 	}
 
