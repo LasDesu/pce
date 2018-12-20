@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/sim405/sim405.c                                     *
  * Created:     2004-06-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2015 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2018 Hampa Hug <hampa@hampa.ch>                     *
  * Copyright:   (C) 2004-2006 Lukas Ruf <ruf@lpr.ch>                         *
  *****************************************************************************/
 
@@ -124,7 +124,7 @@ void s405_setup_serport (sim405_t *sim, ini_sct_t *ini)
 	unsigned      i;
 	unsigned long addr;
 	unsigned      irq;
-	unsigned      multichar;
+	unsigned      multichar, clock_mul;
 	const char    *driver;
 	const char    *chip;
 	ini_sct_t     *sct;
@@ -147,11 +147,12 @@ void s405_setup_serport (sim405_t *sim, ini_sct_t *ini)
 		ini_get_uint16 (sct, "irq", &irq, defirq[i]);
 		ini_get_string (sct, "uart", &chip, "8250");
 		ini_get_uint16 (sct, "multichar", &multichar, 1);
+		ini_get_uint16 (sct, "clock_mul", &clock_mul, 1);
 		ini_get_string (sct, "driver", &driver, NULL);
 
 		pce_log_tag (MSG_INF, "UART:",
-			"n=%u addr=0x%08lx irq=%u uart=%s multi=%u driver=%s\n",
-			i, addr, irq, chip, multichar,
+			"n=%u addr=0x%08lx irq=%u uart=%s multi=%u clock_mul=%u driver=%s\n",
+			i, addr, irq, chip, multichar, clock_mul,
 			(driver == NULL) ? "<none>" : driver
 		);
 
@@ -176,6 +177,7 @@ void s405_setup_serport (sim405_t *sim, ini_sct_t *ini)
 
 			e8250_set_buf_size (uart, 256, 256);
 			e8250_set_multichar (uart, multichar, multichar);
+			e8250_set_clock_mul (uart, clock_mul);
 			e8250_set_bit_clk_div (uart, S405_CLOCK / sim->serial_clock / 16);
 
 			if (e8250_set_chip_str (uart, chip)) {
