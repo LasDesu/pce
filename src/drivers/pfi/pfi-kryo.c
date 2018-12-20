@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pfi/pfi-kryo.c                                   *
  * Created:     2012-01-20 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -33,19 +33,96 @@
 #define KRYOFLUX_SCLK (KRYOFLUX_MCLK / 2)
 #define KRYOFLUX_ICLK (KRYOFLUX_MCLK / 16)
 
+#define KRYO_BUF_MAX 256
+
+
+typedef struct {
+	FILE          *fp;
+	pfi_img_t     *img;
+
+	unsigned      buf_idx;
+	unsigned      buf_cnt;
+	unsigned char buf[KRYO_BUF_MAX];
+
+	unsigned      idx_cnt;
+	unsigned long *idx;
+} kryo_load_t;
+
 
 static
-int kryo_load_uint8 (FILE *fp, unsigned char *val)
+void kryo_load_init (kryo_load_t *kry, FILE *fp, pfi_img_t *img)
 {
-	return (pfi_read (fp, val, 1));
+	kry->fp = fp;
+	kry->img = img;
+
+	kry->buf_idx = 0;
+	kry->buf_cnt = 0;
+
+	kry->idx_cnt = 0;
+	kry->idx = NULL;
 }
 
 static
-int kryo_load_uint16_le (FILE *fp, unsigned *val)
+void kryo_load_free (kryo_load_t *kry)
+{
+	if (kry->idx != NULL) {
+		free (kry->idx);
+	}
+}
+
+static
+void kryo_load_rewind (kryo_load_t *kry)
+{
+	rewind (kry->fp);
+
+	kry->buf_idx = 0;
+	kry->buf_cnt = 0;
+}
+
+static
+int kryo_load_read (kryo_load_t *kry, void *buf, unsigned cnt)
+{
+	unsigned char *ptr = buf;
+
+	while (cnt > 0) {
+		if (kry->buf_idx >= kry->buf_cnt) {
+			kry->buf_idx = 0;
+			kry->buf_cnt = fread (kry->buf, 1, KRYO_BUF_MAX, kry->fp);
+
+			if (kry->buf_cnt == 0) {
+				return (1);
+			}
+		}
+
+		*(ptr++) = kry->buf[kry->buf_idx++];
+
+		cnt -= 1;
+	}
+
+	return (0);
+}
+
+static
+int kryo_load_uint8 (kryo_load_t *kry, unsigned char *val)
+{
+	if (kry->buf_idx < kry->buf_cnt) {
+		*val = kry->buf[kry->buf_idx++];
+		return (0);
+	}
+
+	if (kryo_load_read (kry, val, 1)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
+int kryo_load_uint16_le (kryo_load_t *kry, unsigned *val)
 {
 	unsigned char buf[2];
 
-	if (pfi_read (fp, buf, 2)) {
+	if (kryo_load_read (kry, buf, 2)) {
 		return (1);
 	}
 
@@ -55,11 +132,11 @@ int kryo_load_uint16_le (FILE *fp, unsigned *val)
 }
 
 static
-int kryo_load_uint32_le (FILE *fp, unsigned long *val)
+int kryo_load_uint32_le (kryo_load_t *kry, unsigned long *val)
 {
 	unsigned char buf[4];
 
-	if (pfi_read (fp, buf, 4)) {
+	if (kryo_load_read (kry, buf, 4)) {
 		return (1);
 	}
 
@@ -72,7 +149,122 @@ int kryo_load_uint32_le (FILE *fp, unsigned long *val)
 }
 
 static
-int kryo_load_oob_start (FILE *fp, unsigned cnt, unsigned long *sofs)
+int kryo_load_skip (kryo_load_t *kry, unsigned cnt)
+{
+	unsigned      n;
+	unsigned char buf[16];
+
+	while (cnt > 0) {
+		n = (cnt < 16) ? cnt : 16;
+
+		if (kryo_load_read (kry, buf, n)) {
+			return (1);
+		}
+
+		cnt -= n;
+	}
+
+	return (0);
+}
+
+static
+int kryo_load_index_add (kryo_load_t *kry, unsigned long pos, unsigned long ofs)
+{
+	unsigned      i;
+	unsigned long *tmp;
+
+	tmp = realloc (kry->idx, (2 * kry->idx_cnt + 2) * sizeof (unsigned long));
+
+	if (tmp == NULL) {
+		return (1);
+	}
+
+	i = 2 * kry->idx_cnt;
+
+	while ((i > 1) && (pos < tmp[i - 2])) {
+		tmp[i + 0] = tmp[i - 2];
+		tmp[i + 1] = tmp[i - 1];
+		i -= 2;
+	}
+
+	tmp[i + 0] = pos;
+	tmp[i + 1] = ofs;
+
+	kry->idx_cnt += 1;
+	kry->idx = tmp;
+
+	return (0);
+}
+
+static
+int kryo_load_index (kryo_load_t *kry)
+{
+	unsigned char type, v;
+	unsigned      cnt;
+	unsigned long pos, ofs, icnt;
+
+	while (1) {
+		if (kryo_load_uint8 (kry, &v)) {
+			return (0);
+		}
+
+		if ((v < 8) || (v == 9)) {
+			if (kryo_load_skip (kry, 1)) {
+				return (1);
+			}
+		}
+		else if ((v == 10) || (v == 12)) {
+			if (kryo_load_skip (kry, 2)) {
+				return (1);
+			}
+		}
+		else if (v == 13) {
+			if (kryo_load_uint8 (kry, &type)) {
+				return (1);
+			}
+
+			if (kryo_load_uint16_le (kry, &cnt)) {
+				return (1);
+			}
+
+			if (type == 2) {
+				if (cnt != 12) {
+					return (1);
+				}
+
+				if (kryo_load_uint32_le (kry, &pos)) {
+					return (1);
+				}
+
+				if (kryo_load_uint32_le (kry, &ofs)) {
+					return (1);
+				}
+
+				if (kryo_load_uint32_le (kry, &icnt)) {
+					return (1);
+				}
+
+				if (kryo_load_index_add (kry, pos, ofs)) {
+					return (1);
+				}
+			}
+			else {
+				if (kryo_load_skip (kry, cnt)) {
+					return (1);
+				}
+			}
+
+			if ((type == 3) || (type == 13)) {
+				return (0);
+			}
+		}
+	}
+
+	return (0);
+}
+
+static
+int kryo_load_oob_start (kryo_load_t *kry, unsigned cnt, unsigned long *sofs)
 {
 	unsigned long pos, time;
 
@@ -80,11 +272,11 @@ int kryo_load_oob_start (FILE *fp, unsigned cnt, unsigned long *sofs)
 		return (1);
 	}
 
-	if (kryo_load_uint32_le (fp, &pos)) {
+	if (kryo_load_uint32_le (kry, &pos)) {
 		return (1);
 	}
 
-	if (kryo_load_uint32_le (fp, &time)) {
+	if (kryo_load_uint32_le (kry, &time)) {
 		return (1);
 	}
 
@@ -97,36 +289,12 @@ int kryo_load_oob_start (FILE *fp, unsigned cnt, unsigned long *sofs)
 }
 
 static
-int kryo_load_oob_index (FILE *fp, unsigned cnt, unsigned long spos, unsigned long *pos, unsigned long *ofs)
-{
-	unsigned long icnt;
-
-	if (cnt != 12) {
-		return (1);
-	}
-
-	if (kryo_load_uint32_le (fp, pos)) {
-		return (1);
-	}
-
-	if (kryo_load_uint32_le (fp, ofs)) {
-		return (1);
-	}
-
-	if (kryo_load_uint32_le (fp, &icnt)) {
-		return (1);
-	}
-
-	return (0);
-}
-
-static
-int kryo_load_oob_comment (FILE *fp, pfi_img_t *img, unsigned cnt)
+int kryo_load_oob_comment (kryo_load_t *kry, unsigned cnt)
 {
 	unsigned char c;
 
 	while (cnt > 0) {
-		if (kryo_load_uint8 (fp, &c)) {
+		if (kryo_load_uint8 (kry, &c)) {
 			return (1);
 		}
 
@@ -134,7 +302,7 @@ int kryo_load_oob_comment (FILE *fp, pfi_img_t *img, unsigned cnt)
 			c = 0x0a;
 		}
 
-		if (pfi_img_add_comment (img, &c, 1)) {
+		if (pfi_img_add_comment (kry->img, &c, 1)) {
 			return (1);
 		}
 
@@ -145,77 +313,90 @@ int kryo_load_oob_comment (FILE *fp, pfi_img_t *img, unsigned cnt)
 }
 
 static
-int kryo_load_oob (FILE *fp, pfi_img_t *img, unsigned long *spos, unsigned long *ipos, unsigned long *iofs, int *eos)
+int kryo_load_oob (kryo_load_t *kry, unsigned long *spos, int *eos)
 {
 	unsigned      cnt;
 	unsigned char type;
 
-	if (kryo_load_uint8 (fp, &type)) {
+	if (kryo_load_uint8 (kry, &type)) {
 		return (1);
 	}
 
-	if (kryo_load_uint16_le (fp, &cnt)) {
+	if (kryo_load_uint16_le (kry, &cnt)) {
 		return (1);
 	}
 
 	if (type == 1) {
-		return (kryo_load_oob_start (fp, cnt, spos));
+		return (kryo_load_oob_start (kry, cnt, spos));
 	}
 	else if (type == 2) {
-		return (kryo_load_oob_index (fp, cnt, *spos, ipos, iofs));
+		; /* index */
 	}
 	else if (type == 3) {
 		*eos = 1;
 	}
 	else if (type == 4) {
-		return (kryo_load_oob_comment (fp, img, cnt));
+		return (kryo_load_oob_comment (kry, cnt));
 	}
-	else if (type == 0x0d) {
+	else if (type == 13) {
 		*eos = 1;
 	}
 	else {
 		fprintf (stderr, "%08lX: oob type=%u cnt=%u\n", *spos, type, cnt);
 	}
 
-	if (pfi_skip (fp, cnt)) {
+	if (kryo_load_skip (kry, cnt)) {
 		return (1);
 	}
 
 	return (0);
 }
 
-int kryo_load_track (FILE *fp, pfi_img_t *img, pfi_trk_t *trk)
+static
+int kryo_load_track (kryo_load_t *kry, pfi_trk_t *trk)
 {
 	int           eos;
+	unsigned      idx;
 	unsigned char v1, v2, v3;
-	unsigned long spos, ipos, iofs;
+	unsigned long spos;
 	unsigned long pulse, oflow, clk;
+
+	if (kryo_load_index (kry)) {
+		return (1);
+	}
+
+	kryo_load_rewind (kry);
 
 	pfi_trk_set_clock (trk, KRYOFLUX_SCLK);
 
 	eos = 0;
-
+	idx = 0;
 	spos = 0;
-	ipos = -1;
-	iofs = 0;
-
 	pulse = 0;
 	oflow = 0;
 	clk = 0;
 
 	while (eos == 0) {
-		if (spos == ipos) {
-			if (pfi_trk_add_index (trk, clk + iofs)) {
-				return (1);
+		while ((idx < kry->idx_cnt) && (kry->idx[2 * idx] < spos)) {
+			idx += 1;
+		}
+
+		if (idx < kry->idx_cnt) {
+			if (spos == kry->idx[2 * idx]) {
+				if (pfi_trk_add_index (trk, clk + kry->idx[2 * idx + 1])) {
+					return (1);
+				}
+
+				idx += 1;
 			}
 		}
 
-		if (kryo_load_uint8 (fp, &v1)) {
+		if (kryo_load_uint8 (kry, &v1)) {
 			return (0);
 		}
 
 		if (v1 < 8) {
-			if (kryo_load_uint8 (fp, &v2)) {
+			if (kryo_load_uint8 (kry, &v2)) {
 				return (1);
 			}
 
@@ -226,14 +407,14 @@ int kryo_load_track (FILE *fp, pfi_img_t *img, pfi_trk_t *trk)
 			spos += 1;
 		}
 		else if (v1 == 9) {
-			if (pfi_skip (fp, 1)) {
+			if (kryo_load_skip (kry, 1)) {
 				return (1);
 			}
 
 			spos += 2;
 		}
 		else if (v1 == 10) {
-			if (pfi_skip (fp, 2)) {
+			if (kryo_load_skip (kry, 2)) {
 				return (1);
 			}
 
@@ -244,11 +425,11 @@ int kryo_load_track (FILE *fp, pfi_img_t *img, pfi_trk_t *trk)
 			spos += 1;
 		}
 		else if (v1 == 12) {
-			if (kryo_load_uint8 (fp, &v2)) {
+			if (kryo_load_uint8 (kry, &v2)) {
 				return (1);
 			}
 
-			if (kryo_load_uint8 (fp, &v3)) {
+			if (kryo_load_uint8 (kry, &v3)) {
 				return (1);
 			}
 
@@ -256,7 +437,7 @@ int kryo_load_track (FILE *fp, pfi_img_t *img, pfi_trk_t *trk)
 			spos += 3;
 		}
 		else if (v1 == 13) {
-			if (kryo_load_oob (fp, img, &spos, &ipos, &iofs, &eos)) {
+			if (kryo_load_oob (kry, &spos, &eos)) {
 				return (1);
 			}
 		}
@@ -283,28 +464,28 @@ int kryo_load_track (FILE *fp, pfi_img_t *img, pfi_trk_t *trk)
 static
 int kryo_load_track_ch (FILE *fp, pfi_img_t *img, unsigned long c, unsigned long h)
 {
-	pfi_trk_t *trk;
+	int         r;
+	pfi_trk_t   *trk;
+	kryo_load_t kry;
 
-	trk = pfi_img_get_track (img, c, h, 1);
-
-	if (trk == NULL) {
+	if ((trk = pfi_img_get_track (img, c, h, 1)) == NULL) {
 		return (1);
 	}
 
-	if (kryo_load_track (fp, img, trk)) {
-		return (1);
-	}
+	kryo_load_init (&kry, fp, img);
 
-	return (0);
+	r = kryo_load_track (&kry, trk);
+
+	kryo_load_free (&kry);
+
+	return (r);
 }
 
 pfi_img_t *pfi_load_kryo (FILE *fp)
 {
 	pfi_img_t *img;
 
-	img = pfi_img_new();
-
-	if (img == NULL) {
+	if ((img = pfi_img_new()) == NULL) {
 		return (NULL);
 	}
 
@@ -366,7 +547,7 @@ int kryo_load_set (pfi_img_t *img, char *name)
 	FILE          *fp;
 
 	for (c = 0; c < 100; c++) {
-		for (h = 0; h < 8; h++) {
+		for (h = 0; h < 4; h++) {
 			if (kryo_set_name (name, c, h)) {
 				return (1);
 			}
@@ -393,17 +574,13 @@ pfi_img_t *pfi_load_kryo_set (const char *fname)
 	char        *name;
 	pfi_img_t *img;
 
-	img = pfi_img_new();
-
-	if (img == NULL) {
+	if ((img = pfi_img_new()) == NULL) {
 		return (NULL);
 	}
 
 	n = strlen (fname);
 
-	name = malloc (n + 1);
-
-	if (name == NULL) {
+	if ((name = malloc (n + 1)) == NULL) {
 		pfi_img_del (img);
 		return (NULL);
 	}
