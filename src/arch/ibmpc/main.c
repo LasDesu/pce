@@ -51,7 +51,8 @@ ibmpc_t              *par_pc = NULL;
 
 ini_sct_t            *par_cfg = NULL;
 
-static ini_strings_t par_ini_str;
+static ini_strings_t par_ini_str1;
+static ini_strings_t par_ini_str2;
 
 
 static pce_option_t opts[] = {
@@ -251,7 +252,8 @@ int main (int argc, char *argv[])
 		return (1);
 	}
 
-	ini_str_init (&par_ini_str);
+	ini_str_init (&par_ini_str1);
+	ini_str_init (&par_ini_str2);
 
 	while (1) {
 		r = pce_getopt (argc, argv, &optarg, opts);
@@ -274,7 +276,7 @@ int main (int argc, char *argv[])
 			return (0);
 
 		case 'b':
-			ini_str_add (&par_ini_str, "system.boot = ", optarg[0], "\n");
+			ini_str_add (&par_ini_str2, "system.boot = ", optarg[0], "\n");
 			break;
 
 		case 'c':
@@ -287,20 +289,15 @@ int main (int argc, char *argv[])
 
 		case 'g':
 			par_video = optarg[0];
+			ini_str_add (&par_ini_str1, "cfg.video = \"", optarg[0], "\"\n");
 			break;
 
 		case 'i':
-			if (ini_read_str (par_cfg, optarg[0])) {
-				fprintf (stderr,
-					"%s: error parsing ini string (%s)\n",
-					argv[0], optarg[0]
-				);
-				return (1);
-			}
+			ini_str_add (&par_ini_str1, optarg[0], "\n", NULL);
 			break;
 
 		case 'I':
-			ini_str_add (&par_ini_str, optarg[0], "\n", NULL);
+			ini_str_add (&par_ini_str2, optarg[0], "\n", NULL);
 			break;
 
 		case 'l':
@@ -308,7 +305,7 @@ int main (int argc, char *argv[])
 			break;
 
 		case 'p':
-			ini_str_add (&par_ini_str, "cpu.model = \"",
+			ini_str_add (&par_ini_str2, "cpu.model = \"",
 				optarg[0], "\"\n"
 			);
 			break;
@@ -327,10 +324,11 @@ int main (int argc, char *argv[])
 
 		case 't':
 			par_terminal = optarg[0];
+			ini_str_add (&par_ini_str1, "cfg.terminal = \"", optarg[0], "\"\n");
 			break;
 
 		case 's':
-			ini_str_add (&par_ini_str, "cpu.speed = ",
+			ini_str_add (&par_ini_str2, "cpu.speed = ",
 				optarg[0], "\n"
 			);
 			break;
@@ -352,6 +350,10 @@ int main (int argc, char *argv[])
 
 	pc_log_banner();
 
+	if (ini_str_eval (&par_ini_str1, par_cfg, 1)) {
+		return (1);
+	}
+
 	if (pce_load_config (par_cfg, cfg)) {
 		return (1);
 	}
@@ -362,7 +364,7 @@ int main (int argc, char *argv[])
 		sct = par_cfg;
 	}
 
-	if (ini_str_eval (&par_ini_str, sct, 1)) {
+	if (ini_str_eval (&par_ini_str2, sct, 1)) {
 		return (1);
 	}
 
