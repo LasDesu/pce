@@ -127,6 +127,8 @@ void e8272_init (e8272_t *fdc)
 		e8272_drive_init (&fdc->drv[i], i);
 	}
 
+	fdc->drvmsk = 0x0f;
+
 	fdc->curdrv = &fdc->drv[0];
 
 	fdc->cmd_i = 0;
@@ -235,6 +237,11 @@ void e8272_set_accuracy (e8272_t *fdc, int accurate)
 void e8272_set_ignore_eot (e8272_t *fdc, int ignore_eot)
 {
 	fdc->ignore_eot = (ignore_eot != 0);
+}
+
+void e8272_set_drive_mask (e8272_t *fdc, unsigned mask)
+{
+	fdc->drvmsk = mask & 0x0f;
 }
 
 /*
@@ -1630,6 +1637,17 @@ void cmd_format (e8272_t *fdc)
  *****************************************************************************/
 
 static
+void cmd_recalibrate_error (e8272_t *fdc)
+{
+	/* abnormal termination */
+	fdc->st[0] = (fdc->cmd[1] & 0x07) | E8272_ST0_SE | 0x40;
+
+	e8272_set_irq (fdc, 1);
+
+	cmd_done (fdc);
+}
+
+static
 void cmd_recalibrate_clock (e8272_t *fdc, unsigned long cnt)
 {
 	unsigned drv;
@@ -1662,6 +1680,11 @@ void cmd_recalibrate (e8272_t *fdc)
 	);
 #endif
 
+	if (~fdc->drvmsk & (1 << pd)) {
+		cmd_recalibrate_error (fdc);
+		return;
+	}
+
 	steps = fdc->drv[pd].c;
 
 	e8272_select_cylinder (fdc, pd, 0);
@@ -1682,6 +1705,18 @@ void cmd_recalibrate (e8272_t *fdc)
 /*****************************************************************************
  * seek
  *****************************************************************************/
+
+static
+void cmd_seek_error (e8272_t *fdc)
+{
+	/* abnormal termination */
+	fdc->st[0] = (fdc->cmd[1] & 0x07) | E8272_ST0_SE | 0x40;
+
+	e8272_set_irq (fdc, 1);
+
+	cmd_done (fdc);
+}
+
 static
 void cmd_seek_clock (e8272_t *fdc, unsigned long cnt)
 {
@@ -1715,6 +1750,11 @@ void cmd_seek (e8272_t *fdc)
 		fdc->cmd[0], pd, pc
 	);
 #endif
+
+	if (~fdc->drvmsk & (1 << pd)) {
+		cmd_seek_error (fdc);
+		return;
+	}
 
 	if (fdc->drv[pd].c < pc) {
 		steps = pc - fdc->drv[pd].c;

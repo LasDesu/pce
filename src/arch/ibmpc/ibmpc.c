@@ -1228,6 +1228,7 @@ void pc_setup_fdc (ibmpc_t *pc, ini_sct_t *ini)
 	e8272_set_input_clock (&pc->fdc->e8272, PCE_IBMPC_CLK2);
 	e8272_set_accuracy (&pc->fdc->e8272, accurate != 0);
 	e8272_set_ignore_eot (&pc->fdc->e8272, ignore_eot != 0);
+	e8272_set_drive_mask (&pc->fdc->e8272, (1 << pc->fd_cnt) - 1);
 	e8272_set_irq_fct (&pc->fdc->e8272, &pc->pic, e8259_get_irq_fct (&pc->pic, irq));
 	e8272_set_dreq_fct (&pc->fdc->e8272, &pc->dma, e8237_set_dreq2);
 
