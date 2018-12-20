@@ -414,7 +414,7 @@ typedef struct p405_s {
 
 	unsigned long      delay;
 
-	unsigned long long oprcnt;
+	unsigned long      opcnt;
 	unsigned long long clkcnt;
 
 	p405_opcode_map_t  opcodes;
@@ -521,7 +521,7 @@ void p405_set_hook_fct (p405_t *c, void *ext, void *fct);
 /*!***************************************************************************
  * @short Get the number of executed instructions
  *****************************************************************************/
-unsigned long long p405_get_opcnt (p405_t *c);
+unsigned long p405_get_opcnt (p405_t *c);
 
 /*!***************************************************************************
  * @short Get the number of executed clock cycles

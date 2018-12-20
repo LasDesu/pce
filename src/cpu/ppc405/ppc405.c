@@ -131,9 +131,9 @@ void p405_set_hook_fct (p405_t *c, void *ext, void *fct)
 }
 
 
-unsigned long long p405_get_opcnt (p405_t *c)
+unsigned long p405_get_opcnt (p405_t *c)
 {
-	return (c->oprcnt);
+	return (c->opcnt);
 }
 
 unsigned long long p405_get_clkcnt (p405_t *c)
@@ -643,7 +643,7 @@ void p405_reset (p405_t *c)
 
 	c->delay = 1;
 
-	c->oprcnt = 0;
+	c->opcnt = 0;
 	c->clkcnt = 0;
 
 	c->timer_extra_clock = 0;
@@ -669,7 +669,7 @@ void p405_execute (p405_t *c)
 
 	c->opcodes.op[op] (c);
 
-	c->oprcnt += 1;
+	c->opcnt += 1;
 
 	if (p405_get_msr (c) & P405_MSR_EE) {
 		if (c->interrupt) {
