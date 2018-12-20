@@ -2335,7 +2335,7 @@ void op_1f_3b2 (p405_t *c)
 		p405_set_rt (c, c->ir, p405_get_tlb_entry_lo (c, ra));
 	}
 	else if (ws == 0) {
-		p405_set_rt (c, c->ir, p405_get_tlb_entry_hi (c, ra));
+		p405_set_rt (c, c->ir, p405_get_tlb_entry_hi (c, ra) & 0xfffffff0);
 		p405_set_pid (c, p405_get_tlb_entry_tid (c, ra));
 	}
 	else {
