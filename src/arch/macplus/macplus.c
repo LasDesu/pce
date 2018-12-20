@@ -872,7 +872,7 @@ void mac_setup_rtc (macplus_t *sim, ini_sct_t *ini)
 		mac_rtc_set_time_str (&sim->rtc, start);
 	}
 	else {
-		mac_rtc_set_time (&sim->rtc, 0, 1);
+		mac_rtc_set_time_now (&sim->rtc);
 	}
 }
 

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/rtc.c                                       *
  * Created:     2007-11-16 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2012 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -151,7 +151,7 @@ void mac_rtc_init (mac_rtc_t *rtc)
 	rtc->reg_test = 0;
 
 	rtc->clock = 0;
-	rtc->bias = 0;
+	rtc->rtime = 0;
 
 	mac_rtc_set_defaults (rtc);
 }
@@ -268,16 +268,21 @@ unsigned long mac_rtc_get_timezone (mac_rtc_t *rtc)
 	return (tz);
 }
 
-void mac_rtc_set_time (mac_rtc_t *rtc, unsigned long time, int rel)
+void mac_rtc_set_time (mac_rtc_t *rtc, unsigned long time, int utc)
 {
-	rtc->clock = mac_rtc_get_current_time (rtc);
+	rtc->rtime = mac_rtc_get_current_time (rtc);
+	rtc->clock = time;
 
-	if (rel) {
-		rtc->bias = time;
+	if (utc) {
+		rtc->clock += mac_rtc_get_timezone (rtc);
 	}
-	else {
-		rtc->bias = time - rtc->clock - mac_rtc_get_timezone (rtc);
-	}
+}
+
+void mac_rtc_set_time_now (mac_rtc_t *rtc)
+{
+	rtc->rtime = mac_rtc_get_current_time (rtc);
+	rtc->clock = rtc->rtime;
+	rtc->clock += mac_rtc_get_timezone (rtc);
 }
 
 void mac_rtc_set_time_str (mac_rtc_t *rtc, const char *str)
@@ -285,7 +290,7 @@ void mac_rtc_set_time_str (mac_rtc_t *rtc, const char *str)
 	unsigned long time;
 
 	if (str == NULL) {
-		mac_rtc_set_time (rtc, 0, 1);
+		mac_rtc_set_time_now (rtc);
 	}
 	else {
 		time = mac_rtc_time_from_string (str);
@@ -523,14 +528,14 @@ void mac_rtc_set_uint8 (mac_rtc_t *rtc, unsigned char val)
 
 void mac_rtc_clock (mac_rtc_t *rtc, unsigned long n)
 {
-	unsigned long old;
+	unsigned long clock, rtime;
 
-	old = rtc->clock;
+	clock = rtc->clock;
 
 	if (rtc->realtime) {
-		rtc->clock = mac_rtc_get_current_time (rtc);
-		rtc->clock += mac_rtc_get_timezone (rtc);
-		rtc->clock += rtc->bias;
+		rtime = rtc->rtime;
+		rtc->rtime = mac_rtc_get_current_time (rtc);
+		rtc->clock += rtc->rtime - rtime;
 	}
 	else {
 		rtc->clkcnt += n;
@@ -539,18 +544,14 @@ void mac_rtc_clock (mac_rtc_t *rtc, unsigned long n)
 			rtc->clkcnt -= MAC_CPU_CLOCK;
 			rtc->clock += 1;
 		}
-
-		rtc->clock += rtc->bias;
-		rtc->bias = 0;
 	}
 
 	rtc->clock &= 0xffffffff;
 
-	if (rtc->clock != old) {
+	if (rtc->clock != clock) {
 #ifdef DEBUG_RTC
 			mac_log_deb ("rtc: osi (%lu)\n", rtc->clkcnt);
 #endif
-
 			mac_rtc_set_osi (rtc, 1);
 			mac_rtc_set_osi (rtc, 0);
 	}
