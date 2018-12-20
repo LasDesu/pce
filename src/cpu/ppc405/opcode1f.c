@@ -1160,6 +1160,10 @@ void op_1f_153 (p405_t *c)
 		rt = p405_get_tbu (c);
 		break;
 
+	case P405_SPRN_TCR:
+		rt = p405_get_tcr (c);
+		break;
+
 	case P405_SPRN_XER:
 		rt = p405_get_xer (c);
 		break;
