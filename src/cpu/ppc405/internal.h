@@ -92,10 +92,6 @@ int p405_dstore32 (p405_t *c, uint32_t addr, uint32_t val);
 
 #define p405_uext(x, n) ((x) & ((1 << (n)) - 1))
 
-#define p405_br16(x) ((((x) & 0xff) << 8) | (((x) >> 8) & 0xff))
-#define p405_br32(x) ((((x) & 0xff) << 24) | ((((x) >> 8) & 0xff) << 16) \
- | ((((x) >> 16) & 0xff) << 8) | (((x) >> 24) & 0xff))
-
 #define p405_bits(val, i, n) (((val) >> (32 - (i) - (n))) & ((1UL << (n)) - 1))
 
 #define p405_get_ir_rc(ir) (((ir) & P405_IR_RC) != 0)
@@ -132,6 +128,8 @@ typedef struct {
 
 
 uint64_t p405_mul (uint32_t s1, uint32_t s2);
+uint16_t p405_br16 (uint16_t x);
+uint32_t p405_br32 (uint32_t x);
 
 void p405_op_branch (p405_t *c, uint32_t dst, unsigned bo, unsigned bi, int aa, int lk);
 void p405_op_crop (p405_t *c, unsigned bt, unsigned ba, unsigned bb, unsigned booltab);

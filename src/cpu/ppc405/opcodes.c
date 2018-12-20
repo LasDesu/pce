@@ -71,8 +71,21 @@ uint64_t p405_mul (uint32_t s1, uint32_t s2)
 	return (ret);
 }
 
+/*
+ * Byte reverse a 16 bit value
+ */
+uint16_t p405_br16 (uint16_t x)
+{
+	return (((x & 0xff) << 8) | ((x >> 8) & 0xff));
+}
 
-/*****************************************************************************/
+/*
+ * Byte reverse a 32 bit value
+ */
+uint32_t p405_br32 (uint32_t x)
+{
+	return (((x & 0xff) << 24) | ((x & 0xff00) << 8) | ((x >> 8) & 0xff00) | ((x >> 24) & 0xff));
+}
 
 void p405_op_branch (p405_t *c, uint32_t dst, unsigned bo, unsigned bi, int aa, int lk)
 {
