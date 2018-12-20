@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/ppc405/ppc405.h                                      *
  * Created:     2003-11-07 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2015 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2018 Hampa Hug <hampa@hampa.ch>                     *
  * Copyright:   (C) 2003-2006 Lukas Ruf <ruf@lpr.ch>                         *
  *****************************************************************************/
 
@@ -603,16 +603,13 @@ typedef struct {
 
 	unsigned argn;
 
-	char     op[64];
-	char     arg1[64];
-	char     arg2[64];
-	char     arg3[64];
-	char     arg4[64];
-	char     arg5[64];
+	char     op[16];
+	char     arg1[16];
+	char     arg2[16];
+	char     arg3[16];
+	char     arg4[16];
+	char     arg5[16];
 } p405_disasm_t;
-
-
-typedef void (*p405_disasm_f) (p405_disasm_t *dis);
 
 
 void p405_disasm (p405_disasm_t *dis, uint32_t pc, uint32_t ir);
