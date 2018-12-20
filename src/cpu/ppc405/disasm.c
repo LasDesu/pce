@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/ppc405/disasm.c                                      *
  * Created:     2003-11-08 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2009 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2018 Hampa Hug <hampa@hampa.ch>                     *
  * Copyright:   (C) 2003-2006 Lukas Ruf <ruf@lpr.ch>                         *
  *****************************************************************************/
 
@@ -73,157 +73,157 @@ static
 const char *disasm_get_spr (unsigned sprn)
 {
 	switch (sprn) {
-		case P405_SPRN_CCR0:
-			return ("ccr0");
+	case P405_SPRN_CCR0:
+		return ("ccr0");
 
-		case P405_SPRN_CTR:
-			return ("ctr");
+	case P405_SPRN_CTR:
+		return ("ctr");
 
-		case P405_SPRN_DAC1:
-			return ("dac1");
+	case P405_SPRN_DAC1:
+		return ("dac1");
 
-		case P405_SPRN_DAC2:
-			return ("dac2");
+	case P405_SPRN_DAC2:
+		return ("dac2");
 
-		case P405_SPRN_DBCR0:
-			return ("dbcr0");
+	case P405_SPRN_DBCR0:
+		return ("dbcr0");
 
-		case P405_SPRN_DBCR1:
-			return ("dbcr1");
+	case P405_SPRN_DBCR1:
+		return ("dbcr1");
 
-		case P405_SPRN_DBSR:
-			return ("dbsr");
+	case P405_SPRN_DBSR:
+		return ("dbsr");
 
-		case P405_SPRN_DCCR:
-			return ("dccr");
+	case P405_SPRN_DCCR:
+		return ("dccr");
 
-		case P405_SPRN_DCWR:
-			return ("dcwr");
+	case P405_SPRN_DCWR:
+		return ("dcwr");
 
-		case P405_SPRN_DVC1:
-			return ("dvc1");
+	case P405_SPRN_DVC1:
+		return ("dvc1");
 
-		case P405_SPRN_DVC2:
-			return ("dvc2");
+	case P405_SPRN_DVC2:
+		return ("dvc2");
 
-		case P405_SPRN_DEAR:
-			return ("dear");
+	case P405_SPRN_DEAR:
+		return ("dear");
 
-		case P405_SPRN_ESR:
-			return ("esr");
+	case P405_SPRN_ESR:
+		return ("esr");
 
-		case P405_SPRN_EVPR:
-			return ("evpr");
+	case P405_SPRN_EVPR:
+		return ("evpr");
 
-		case P405_SPRN_IAC1:
-			return ("iac1");
+	case P405_SPRN_IAC1:
+		return ("iac1");
 
-		case P405_SPRN_IAC2:
-			return ("iac2");
+	case P405_SPRN_IAC2:
+		return ("iac2");
 
-		case P405_SPRN_IAC3:
-			return ("iac3");
+	case P405_SPRN_IAC3:
+		return ("iac3");
 
-		case P405_SPRN_IAC4:
-			return ("iac4");
+	case P405_SPRN_IAC4:
+		return ("iac4");
 
-		case P405_SPRN_ICCR:
-			return ("iccr");
+	case P405_SPRN_ICCR:
+		return ("iccr");
 
-		case P405_SPRN_ICDBDR:
-			return ("icdbdr");
+	case P405_SPRN_ICDBDR:
+		return ("icdbdr");
 
-		case P405_SPRN_LR:
-			return ("lr");
+	case P405_SPRN_LR:
+		return ("lr");
 
-		case P405_SPRN_PID:
-			return ("pid");
+	case P405_SPRN_PID:
+		return ("pid");
 
-		case P405_SPRN_PIT:
-			return ("pit");
+	case P405_SPRN_PIT:
+		return ("pit");
 
-		case P405_SPRN_PVR:
-			return ("pvr");
+	case P405_SPRN_PVR:
+		return ("pvr");
 
-		case P405_SPRN_SGR:
-			return ("sgr");
+	case P405_SPRN_SGR:
+		return ("sgr");
 
-		case P405_SPRN_SLER:
-			return ("sler");
+	case P405_SPRN_SLER:
+		return ("sler");
 
-		case P405_SPRN_SPRG0:
-			return ("sprg0");
+	case P405_SPRN_SPRG0:
+		return ("sprg0");
 
-		case P405_SPRN_SPRG1:
-			return ("sprg1");
+	case P405_SPRN_SPRG1:
+		return ("sprg1");
 
-		case P405_SPRN_SPRG2:
-			return ("sprg2");
+	case P405_SPRN_SPRG2:
+		return ("sprg2");
 
-		case P405_SPRN_SPRG3:
-			return ("sprg3");
+	case P405_SPRN_SPRG3:
+		return ("sprg3");
 
-		case P405_SPRN_SPRG4:
-			return ("sprg4");
+	case P405_SPRN_SPRG4:
+		return ("sprg4");
 
-		case P405_SPRN_SPRG5:
-			return ("sprg5");
+	case P405_SPRN_SPRG5:
+		return ("sprg5");
 
-		case P405_SPRN_SPRG6:
-			return ("sprg6");
+	case P405_SPRN_SPRG6:
+		return ("sprg6");
 
-		case P405_SPRN_SPRG7:
-			return ("sprg7");
+	case P405_SPRN_SPRG7:
+		return ("sprg7");
 
-		case P405_SPRN_SPRG4R:
-			return ("sprg4r");
+	case P405_SPRN_SPRG4R:
+		return ("sprg4r");
 
-		case P405_SPRN_SPRG5R:
-			return ("sprg5r");
+	case P405_SPRN_SPRG5R:
+		return ("sprg5r");
 
-		case P405_SPRN_SPRG6R:
-			return ("sprg6r");
+	case P405_SPRN_SPRG6R:
+		return ("sprg6r");
 
-		case P405_SPRN_SPRG7R:
-			return ("sprg7r");
+	case P405_SPRN_SPRG7R:
+		return ("sprg7r");
 
-		case P405_SPRN_SRR0:
-			return ("srr0");
+	case P405_SPRN_SRR0:
+		return ("srr0");
 
-		case P405_SPRN_SRR1:
-			return ("srr1");
+	case P405_SPRN_SRR1:
+		return ("srr1");
 
-		case P405_SPRN_SRR2:
-			return ("srr2");
+	case P405_SPRN_SRR2:
+		return ("srr2");
 
-		case P405_SPRN_SRR3:
-			return ("srr3");
+	case P405_SPRN_SRR3:
+		return ("srr3");
 
-		case P405_SPRN_SU0R:
-			return ("su0r");
+	case P405_SPRN_SU0R:
+		return ("su0r");
 
-		case P405_SPRN_TBL:
-		case P405_SPRN_TBLU:
-			return ("tbl");
+	case P405_SPRN_TBL:
+	case P405_SPRN_TBLU:
+		return ("tbl");
 
-		case P405_SPRN_TBU:
-		case P405_SPRN_TBUU:
-			return ("tbu");
+	case P405_SPRN_TBU:
+	case P405_SPRN_TBUU:
+		return ("tbu");
 
-		case P405_SPRN_TCR:
-			return ("tcr");
+	case P405_SPRN_TCR:
+		return ("tcr");
 
-		case P405_SPRN_TSR:
-			return ("tsr");
+	case P405_SPRN_TSR:
+		return ("tsr");
 
-		case P405_SPRN_USPRG0:
-			return ("usprg0");
+	case P405_SPRN_USPRG0:
+		return ("usprg0");
 
-		case P405_SPRN_XER:
-			return ("XER");
+	case P405_SPRN_XER:
+		return ("xer");
 
-		case P405_SPRN_ZPR:
-			return ("ZPR");
+	case P405_SPRN_ZPR:
+		return ("zpr");
 	}
 
 	return (NULL);
@@ -241,85 +241,85 @@ static
 void disasm_arg (char *dst, uint32_t ir, unsigned arg, uint32_t par)
 {
 	switch (arg) {
-		case ARG_NONE:
-			dst[0] = 0;
-			break;
+	case ARG_NONE:
+		dst[0] = 0;
+		break;
 
-		case ARG_RA:
+	case ARG_RA:
+		sprintf (dst, "r%d", p405_get_ir_ra (ir));
+		break;
+
+	case ARG_RB:
+		sprintf (dst, "r%d", p405_get_ir_rb (ir));
+		break;
+
+	case ARG_RS:
+		sprintf (dst, "r%d", p405_get_ir_rs (ir));
+		break;
+
+	case ARG_RT:
+		sprintf (dst, "r%d", p405_get_ir_rt (ir));
+		break;
+
+	case ARG_RA0:
+		if (p405_get_ir_ra (ir) == 0) {
+			strcpy (dst, "0");
+		}
+		else {
 			sprintf (dst, "r%d", p405_get_ir_ra (ir));
-			break;
+		}
+		break;
 
-		case ARG_RB:
-			sprintf (dst, "r%d", p405_get_ir_rb (ir));
-			break;
+	case ARG_SIMM16:
+		sprintf (dst, "%08lx", (unsigned long) p405_sext (ir, 16));
+		break;
 
-		case ARG_RS:
-			sprintf (dst, "r%d", p405_get_ir_rs (ir));
-			break;
+	case ARG_UIMM16:
+		sprintf (dst, "%08lx", (unsigned long) p405_uext (ir, 16));
+		break;
 
-		case ARG_RT:
-			sprintf (dst, "r%d", p405_get_ir_rt (ir));
-			break;
+	case ARG_IMM16S:
+		sprintf (dst, "%08lx", (unsigned long) ((ir & 0xffffUL) << 16));
+		break;
 
-		case ARG_RA0:
-			if (p405_get_ir_ra (ir) == 0) {
-				strcpy (dst, "0");
+	case ARG_UINT3:
+		sprintf (dst, "%x", (unsigned) (par & 0x07));
+		break;
+
+	case ARG_UINT5:
+		sprintf (dst, "%02x", (unsigned) (par & 0x1f));
+		break;
+
+	case ARG_UINT8:
+		sprintf (dst, "%02x", (unsigned) (par & 0xff));
+		break;
+
+	case ARG_UINT16:
+		sprintf (dst, "%04x", (unsigned) (par & 0xffffU));
+		break;
+
+	case ARG_UINT32:
+		sprintf (dst, "%08lx", (unsigned long) (par & 0xffffffffUL));
+		break;
+
+	case ARG_CRBIT:
+		sprintf (dst, "%s[%u]", p405_cr_name[0][par & 0x03], (unsigned) par / 4);
+		break;
+
+	case ARG_SPRN: {
+			const char *spr = disasm_get_spr (par);
+			if (spr != NULL) {
+				strcpy (dst, spr);
 			}
 			else {
-				sprintf (dst, "r%d", p405_get_ir_ra (ir));
+				sprintf (dst, "%03x", par);
 			}
-			break;
+		}
+		break;
 
-		case ARG_SIMM16:
-			sprintf (dst, "%08lx", (unsigned long) p405_sext (ir, 16));
-			break;
-
-		case ARG_UIMM16:
-			sprintf (dst, "%08lx", (unsigned long) p405_uext (ir, 16));
-			break;
-
-		case ARG_IMM16S:
-			sprintf (dst, "%08lx", (unsigned long) ((ir & 0xffffUL) << 16));
-			break;
-
-		case ARG_UINT3:
-			sprintf (dst, "%x", (unsigned) (par & 0x07));
-			break;
-
-		case ARG_UINT5:
-			sprintf (dst, "%02x", (unsigned) (par & 0x1f));
-			break;
-
-		case ARG_UINT8:
-			sprintf (dst, "%02x", (unsigned) (par & 0xff));
-			break;
-
-		case ARG_UINT16:
-			sprintf (dst, "%04x", (unsigned) (par & 0xffffU));
-			break;
-
-		case ARG_UINT32:
-			sprintf (dst, "%08lx", (unsigned long) (par & 0xffffffffUL));
-			break;
-
-		case ARG_CRBIT:
-			sprintf (dst, "%s[%u]", p405_cr_name[0][par & 0x03], (unsigned) par / 4);
-			break;
-
-		case ARG_SPRN: {
-				const char *spr = disasm_get_spr (par);
-				if (spr != NULL) {
-					strcpy (dst, spr);
-				}
-				else {
-					sprintf (dst, "%03x", par);
-				}
-			}
-			break;
-
-		case ARG_DCRN:
-			sprintf (dst, "%03x", par);
-			break;
+	case ARG_DCRN:
+		sprintf (dst, "%03x", par);
+		break;
 	}
 }
 
@@ -1274,17 +1274,17 @@ void opd_1f_173 (p405_disasm_t *dis)
 	tbrn = ((tbrf & 0x1f) << 5) | ((tbrf >> 5) & 0x1f);
 
 	switch (tbrn) {
-		case P405_TBRN_TBL:
-			disasm_op1 (dis, "mftb", 0, 0x01, ARG_RT, 0);
-			break;
+	case P405_TBRN_TBL:
+		disasm_op1 (dis, "mftb", 0, 0x01, ARG_RT, 0);
+		break;
 
-		case P405_TBRN_TBU:
-			disasm_op1 (dis, "mftbu", 0, 0x01, ARG_RT, 0);
-			break;
+	case P405_TBRN_TBU:
+		disasm_op1 (dis, "mftbu", 0, 0x01, ARG_RT, 0);
+		break;
 
-		default:
-			disasm_op2 (dis, "mftb", 0, 0x01, ARG_RT, ARG_UINT16, 0, tbrn);
-			break;
+	default:
+		disasm_op2 (dis, "mftb", 0, 0x01, ARG_RT, ARG_UINT16, 0, tbrn);
+		break;
 	}
 }
 
@@ -1532,17 +1532,17 @@ static
 void opd_1f_3b2 (p405_disasm_t *dis)
 {
 	switch (p405_get_ir_rb (dis->ir)) {
-		case 0:
-			disasm_op2 (dis, "tlbrehi", 0, 0x01, ARG_RT, ARG_RA, 0, 0);
-			break;
+	case 0:
+		disasm_op2 (dis, "tlbrehi", 0, 0x01, ARG_RT, ARG_RA, 0, 0);
+		break;
 
-		case 1:
-			disasm_op2 (dis, "tlbrelo", 0, 0x01, ARG_RT, ARG_RA, 0, 0);
-			break;
+	case 1:
+		disasm_op2 (dis, "tlbrelo", 0, 0x01, ARG_RT, ARG_RA, 0, 0);
+		break;
 
-		default:
-			disasm_undefined (dis);
-			break;
+	default:
+		disasm_undefined (dis);
+		break;
 	}
 }
 
@@ -1565,17 +1565,17 @@ static
 void opd_1f_3d2 (p405_disasm_t *dis)
 {
 	switch (p405_get_ir_rb (dis->ir)) {
-		case 0:
-			disasm_op2 (dis, "tlbwehi", 0, 0x01, ARG_RS, ARG_RA, 0, 0);
-			break;
+	case 0:
+		disasm_op2 (dis, "tlbwehi", 0, 0x01, ARG_RS, ARG_RA, 0, 0);
+		break;
 
-		case 1:
-			disasm_op2 (dis, "tlbwelo", 0, 0x01, ARG_RS, ARG_RA, 0, 0);
-			break;
+	case 1:
+		disasm_op2 (dis, "tlbwelo", 0, 0x01, ARG_RS, ARG_RA, 0, 0);
+		break;
 
-		default:
-			disasm_undefined (dis);
-			break;
+	default:
+		disasm_undefined (dis);
+		break;
 	}
 }
 

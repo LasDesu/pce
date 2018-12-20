@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/ppc405/opcode1f.c                                    *
  * Created:     2003-11-08 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2009 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2018 Hampa Hug <hampa@hampa.ch>                     *
  * Copyright:   (C) 2003-2006 Lukas Ruf <ruf@lpr.ch>                         *
  *****************************************************************************/
 
@@ -1221,13 +1221,13 @@ void op_1f_173 (p405_t *c)
 	tbrn = ((tbrf & 0x1f) << 5) | ((tbrf >> 5) & 0x1f);
 
 	switch (tbrn) {
-		case P405_TBRN_TBL:
-			p405_set_rt (c, c->ir, p405_get_tbl (c));
-			break;
+	case P405_TBRN_TBL:
+		p405_set_rt (c, c->ir, p405_get_tbl (c));
+		break;
 
-		case P405_TBRN_TBU:
-			p405_set_rt (c, c->ir, p405_get_tbu (c));
-			break;
+	case P405_TBRN_TBU:
+		p405_set_rt (c, c->ir, p405_get_tbu (c));
+		break;
 	}
 
 	p405_set_clk (c, 4, 1);

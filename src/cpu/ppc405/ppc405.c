@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/ppc405/ppc405.c                                      *
  * Created:     2003-11-07 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2015 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2018 Hampa Hug <hampa@hampa.ch>                     *
  * Copyright:   (C) 2003-2006 Lukas Ruf <ruf@lpr.ch>                         *
  *****************************************************************************/
 
@@ -74,8 +74,7 @@ p405_t *p405_new (void)
 {
 	p405_t *c;
 
-	c = malloc (sizeof (p405_t));
-	if (c == NULL) {
+	if ((c = malloc (sizeof (p405_t))) == NULL) {
 		return (NULL);
 	}
 
