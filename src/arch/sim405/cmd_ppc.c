@@ -109,15 +109,17 @@ static
 void prt_tlb_entry (p405_tlbe_t *ent, unsigned idx)
 {
 	pce_printf (
-		"%02x: %08lx -> %08lx %06lx V%c R%c W%c X%c  TID=%02x  %08lx",
+		"%02x: %08lx -> %08lx %06lx V%c E%c R%c W%c X%c  Z=%X TID=%02x  %08lx",
 		idx,
 		(unsigned long) p405_get_tlbe_epn (ent),
 		(unsigned long) p405_get_tlbe_rpn (ent),
 		(unsigned long) p405_get_tlbe_sizeb (ent),
 		p405_get_tlbe_v (ent) ? '+' : '-',
+		p405_get_tlbe_e (ent) ? '+' : '-',
 		p405_get_tlbe_v (ent) ? '+' : '-',
 		p405_get_tlbe_wr (ent) ? '+' : '-',
 		p405_get_tlbe_ex (ent) ? '+' : '-',
+		(unsigned) p405_get_tlbe_zsel (ent),
 		(unsigned) p405_get_tlbe_tid (ent),
 		(unsigned long) ent->mask
 	);
