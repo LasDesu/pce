@@ -98,6 +98,31 @@ int s405_msg_emu_ser_clock (sim405_t *sim, const char *msg, const char *val)
 	return (0);
 }
 
+static
+int s405_msg_emu_ser_multichar (sim405_t *sim, const char *msg, const char *val)
+{
+	unsigned p, v;
+
+	if (msg_get_prefix_uint (&val, &p, ":", " \t")) {
+		return (1);
+	}
+
+	if (msg_get_uint (val, &v)) {
+		return (1);
+	}
+
+	if (p > 1) {
+		pce_log (MSG_ERR, "*** bad serial port (%u)\n", p);
+		return (1);
+	}
+
+	pce_log (MSG_INF, "setting serial port %u multichar to %u\n", p, v);
+
+	e8250_set_multichar (&sim->serport[p]->uart, v, v);
+
+	return (0);
+}
+
 int s405_set_msg (sim405_t *sim, const char *msg, const char *val)
 {
 	/* a hack, for debugging only */
@@ -122,6 +147,9 @@ int s405_set_msg (sim405_t *sim, const char *msg, const char *val)
 	}
 	else if (msg_is_message ("emu.ser.clock", msg)) {
 		return (s405_msg_emu_ser_clock (sim, msg, val));
+	}
+	else if (msg_is_message ("emu.ser.multichar", msg)) {
+		return (s405_msg_emu_ser_multichar (sim, msg, val));
 	}
 	else if (msg_is_message ("emu.stop", msg)) {
 		sim->brk = PCE_BRK_STOP;
