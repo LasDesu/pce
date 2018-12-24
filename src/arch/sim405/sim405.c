@@ -30,6 +30,7 @@
 
 #include <stdlib.h>
 
+#include "msg.h"
 #include "pci.h"
 #include "sercons.h"
 #include "sim405.h"
@@ -51,7 +52,6 @@
 #include <lib/inidsk.h>
 #include <lib/iniram.h>
 #include <lib/load.h>
-#include <lib/msg.h>
 #include <lib/sysdep.h>
 
 #include <libini/libini.h>
@@ -716,74 +716,4 @@ void s405_clock (sim405_t *sim, unsigned n)
 
 	sim->sync_clock_sim += n;
 	sim->serial_clock_count += n;
-}
-
-int s405_set_msg (sim405_t *sim, const char *msg, const char *val)
-{
-	/* a hack, for debugging only */
-	if (sim == NULL) {
-		sim = par_sim;
-	}
-
-	if (msg == NULL) {
-		msg = "";
-	}
-
-	if (val == NULL) {
-		val = "";
-	}
-
-	if (msg_is_prefix ("term", msg)) {
-		return (1);
-	}
-
-	if (msg_is_message ("emu.break", msg)) {
-		if (strcmp (val, "stop") == 0) {
-			sim->brk = PCE_BRK_STOP;
-			return (0);
-		}
-		else if (strcmp (val, "abort") == 0) {
-			sim->brk = PCE_BRK_ABORT;
-			return (0);
-		}
-		else if (strcmp (val, "") == 0) {
-			sim->brk = PCE_BRK_ABORT;
-			return (0);
-		}
-	}
-	else if (msg_is_message ("emu.stop", msg)) {
-		sim->brk = PCE_BRK_STOP;
-		return (0);
-	}
-	else if (msg_is_message ("emu.exit", msg)) {
-		sim->brk = PCE_BRK_ABORT;
-		return (0);
-	}
-
-	pce_log (MSG_DEB, "msg (\"%s\", \"%s\")\n", msg, val);
-
-	if (msg_is_message ("disk.commit", msg)) {
-		if (strcmp (val, "") == 0) {
-			if (dsks_commit (sim->dsks)) {
-				pce_log (MSG_ERR, "commit failed for at least one disk\n");
-				return (1);
-			}
-		}
-		else {
-			unsigned d;
-
-			d = strtoul (val, NULL, 0);
-
-			if (dsks_set_msg (sim->dsks, d, "commit", NULL)) {
-				pce_log (MSG_ERR, "commit failed (%s)\n", val);
-				return (1);
-			}
-		}
-
-		return (0);
-	}
-
-	pce_log (MSG_INF, "unhandled message (\"%s\", \"%s\")\n", msg, val);
-
-	return (1);
 }

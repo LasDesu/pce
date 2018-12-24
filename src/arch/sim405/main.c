@@ -34,6 +34,7 @@
 #include <signal.h>
 
 #include "cmd_ppc.h"
+#include "msg.h"
 #include "sim405.h"
 
 #include <lib/cmd.h>

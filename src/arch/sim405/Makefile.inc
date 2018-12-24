@@ -21,7 +21,14 @@ $(rel)/%.o: $(rel)/%.c
 
 # ----------------------------------------------------------------------
 
-PCE_SIM405_BAS := cmd_ppc main pci sim405 sercons
+PCE_SIM405_BAS := \
+	cmd_ppc \
+	main \
+	msg \
+	pci \
+	sim405 \
+	sercons
+
 PCE_SIM405_SRC := $(foreach f,$(PCE_SIM405_BAS),$(rel)/$(f).c)
 PCE_SIM405_OBJ := $(foreach f,$(PCE_SIM405_BAS),$(rel)/$(f).o)
 PCE_SIM405_HDR := $(foreach f,$(PCE_SIM405_BAS),$(rel)/$(f).h)

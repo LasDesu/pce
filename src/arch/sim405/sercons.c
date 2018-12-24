@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/sim405/sercons.c                                    *
  * Created:     2004-06-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2015 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2018 Hampa Hug <hampa@hampa.ch>                     *
  * Copyright:   (C) 2004-2006 Lukas Ruf <ruf@lpr.ch>                         *
  *****************************************************************************/
 
@@ -36,6 +36,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 
+#include "msg.h"
 #include "sim405.h"
 
 #include <lib/sysdep.h>
