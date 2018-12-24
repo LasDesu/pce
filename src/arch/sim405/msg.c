@@ -73,6 +73,31 @@ int s405_msg_emu_disk_commit (sim405_t *sim, const char *msg, const char *val)
 	return (r);
 }
 
+static
+int s405_msg_emu_ser_clock (sim405_t *sim, const char *msg, const char *val)
+{
+	unsigned p, v;
+
+	if (msg_get_prefix_uint (&val, &p, ":", " \t")) {
+		return (1);
+	}
+
+	if (msg_get_uint (val, &v)) {
+		return (1);
+	}
+
+	if (p > 1) {
+		pce_log (MSG_ERR, "*** bad serial port (%u)\n", p);
+		return (1);
+	}
+
+	pce_log (MSG_INF, "setting serial port %u clock multiplier to %u\n", p, v);
+
+	e8250_set_clock_mul (&sim->serport[p]->uart, v);
+
+	return (0);
+}
+
 int s405_set_msg (sim405_t *sim, const char *msg, const char *val)
 {
 	/* a hack, for debugging only */
@@ -94,6 +119,9 @@ int s405_set_msg (sim405_t *sim, const char *msg, const char *val)
 
 	if (msg_is_message ("emu.disk.commit", msg)) {
 		return (s405_msg_emu_disk_commit (sim, msg, val));
+	}
+	else if (msg_is_message ("emu.ser.clock", msg)) {
+		return (s405_msg_emu_ser_clock (sim, msg, val));
 	}
 	else if (msg_is_message ("emu.stop", msg)) {
 		sim->brk = PCE_BRK_STOP;
