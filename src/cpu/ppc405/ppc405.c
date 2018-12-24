@@ -53,14 +53,16 @@ void p405_init (p405_t *c)
 	c->get_dcr = NULL;
 	c->set_dcr = NULL;
 
+	c->hook_ext = NULL;
+	c->hook = NULL;
+
+	c->trap_ext = NULL;
+	c->trap = NULL;
+
 	c->log_ext = NULL;
 	c->log_opcode = NULL;
 	c->log_undef = NULL;
-	c->log_exception = NULL;
 	c->log_mem = NULL;
-
-	c->hook_ext = NULL;
-	c->hook = NULL;
 
 	p405_set_opcodes (c);
 	p405_tlb_init (&c->tlb);
@@ -128,6 +130,12 @@ void p405_set_hook_fct (p405_t *c, void *ext, void *fct)
 {
 	c->hook_ext = ext;
 	c->hook = fct;
+}
+
+void p405_set_trap_fct (p405_t *c, void *ext, void *fct)
+{
+	c->trap_ext = ext;
+	c->trap = fct;
 }
 
 
@@ -470,8 +478,10 @@ void p405_undefined (p405_t *c)
 static
 int p405_exception (p405_t *c, uint32_t ofs, uint32_t pcofs)
 {
-	if (c->log_exception != NULL) {
-		c->log_exception (c->log_ext, ofs);
+	if (c->trap != NULL) {
+		if (c->trap (c->trap_ext, ofs)) {
+			return (1);
+		}
 	}
 
 	p405_tbuf_clear (c);
@@ -544,6 +554,7 @@ void p405_exception_program_fpu (p405_t *c)
 void p405_exception_syscall (p405_t *c)
 {
 	if (p405_exception (c, 0xc00, 4)) {
+		p405_set_pc (c, (p405_get_pc (c) + 4));
 		return;
 	}
 }

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/sim405/cmd_ppc.c                                    *
  * Created:     2004-06-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2015 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2018 Hampa Hug <hampa@hampa.ch>                     *
  * Copyright:   (C) 2004-2006 Lukas Ruf <ruf@lpr.ch>                         *
  *****************************************************************************/
 
@@ -550,6 +550,67 @@ void ppc_run (sim405_t *sim)
 
 
 static
+int s405_trap (sim405_t *sim, unsigned ofs)
+{
+	int  log;
+	char *name;
+
+	log = 0;
+
+	switch (ofs) {
+	case 0x0300:
+		name = "data store";
+		break;
+
+	case 0x0400:
+		name = "instruction store";
+		break;
+
+	case 0x0500:
+		name = "external interrupt";
+		break;
+
+	case 0x0700:
+		name = "program";
+		break;
+
+	case 0x0800:
+		name = "fpu unavailable";
+		log = 1;
+		break;
+
+	case 0x0c00:
+		name = "system call";
+		break;
+
+	case 0x1000:
+		name = "PIT";
+		break;
+
+	case 0x1100:
+		name = "TLB miss data";
+		break;
+
+	case 0x1200:
+		name = "TLB miss instruction";
+		break;
+
+	default:
+		name = "unknown";
+		log = 1;
+		break;
+	}
+
+	if (log) {
+		pce_log (MSG_DEB, "%08lX: exception %x (%s)\n",
+			(unsigned long) p405_get_pc (sim->ppc), ofs, name
+		);
+	}
+
+	return (0);
+}
+
+static
 void ppc_hook (sim405_t *sim, unsigned long ir)
 {
 #if 0
@@ -592,62 +653,6 @@ void ppc_log_undef (void *ext, unsigned long ir)
 	);
 
 	/* s405_break (sim, PCE_BRK_STOP); */
-}
-
-static
-void ppc_log_exception (void *ext, unsigned long ofs)
-{
-	sim405_t *sim;
-	char     *name;
-
-	sim = (sim405_t *) ext;
-
-	switch (ofs) {
-	case 0x0300:
-		name = "data store";
-		return;
-
-	case 0x0400:
-		name = "instruction store";
-		return;
-
-	case 0x0500:
-		name = "external interrupt";
-		return;
-
-	case 0x0700:
-		name = "program";
-		return;
-
-	case 0x0800:
-		name = "fpu unavailable";
-		break;
-
-	case 0x0c00:
-		name = "system call";
-		return;
-
-	case 0x1000:
-		name = "PIT";
-		return;
-
-	case 0x1100:
-		name = "TLB miss data";
-		return;
-		break;
-
-	case 0x1200:
-		name = "TLB miss instruction";
-		return;
-
-	default:
-		name = "unknown";
-		break;
-	}
-
-	pce_log (MSG_DEB, "%08lX: exception %x (%s)\n",
-		(unsigned long) p405_get_pc (sim->ppc), ofs, name
-	);
 }
 
 #if 0
@@ -1126,8 +1131,8 @@ void ppc_cmd_init (sim405_t *sim, monitor_t *mon)
 	sim->ppc->log_ext = sim;
 	sim->ppc->log_opcode = NULL;
 	sim->ppc->log_undef = &ppc_log_undef;
-	sim->ppc->log_exception = &ppc_log_exception;
 	sim->ppc->log_mem = NULL;
 
 	p405_set_hook_fct (sim->ppc, sim, ppc_hook);
+	p405_set_trap_fct (sim->ppc, sim, s405_trap);
 }

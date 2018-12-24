@@ -364,15 +364,17 @@ typedef struct p405_s {
 	p405_get_uint32_f  get_dcr;
 	p405_set_uint32_f  set_dcr;
 
+	void               *hook_ext;
+	void               (*hook) (void *ext, unsigned long ir);
+
+	void               *trap_ext;
+	int                (*trap) (void *ext, unsigned ofs);
+
 	void *log_ext;
 	void (*log_opcode) (void *ext, unsigned long ir);
 	void (*log_undef) (void *ext, unsigned long ir);
-	void (*log_exception) (void *ext, unsigned long offs);
 	void (*log_mem) (void *ext, unsigned mode,
 		unsigned long raddr, unsigned long vaddr, unsigned long val);
-
-	void               *hook_ext;
-	void               (*hook) (void *ext, unsigned long ir);
 
 	uint32_t           pc;
 	uint32_t           gpr[32];
@@ -512,10 +514,16 @@ void p405_set_ram (p405_t *c, unsigned char *ram, unsigned long cnt);
 void p405_set_dcr_fct (p405_t *c, void *ext, void *get, void *set);
 
 /*!***************************************************************************
- * @short Set the hook function
+ * @short Set the hook callback function
  * @param c The cpu context
  *****************************************************************************/
 void p405_set_hook_fct (p405_t *c, void *ext, void *fct);
+
+/*!***************************************************************************
+ * @short Set the trap callback function
+ * @param c The cpu context
+ *****************************************************************************/
+void p405_set_trap_fct (p405_t *c, void *ext, void *fct);
 
 
 /*!***************************************************************************
