@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/char/char.c                                      *
  * Created:     2009-03-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2009-2016 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2009-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -235,6 +235,21 @@ void chr_log_ctl (char_drv_t *cdrv, unsigned old, unsigned new)
 	chr_log_signal (cdrv, "RI", PCE_CHAR_RI, old, new);
 }
 
+static
+void chr_cap_data (char_drv_t *cdrv, const unsigned char *buf, unsigned cnt)
+{
+	if (cdrv->cap_fp == NULL) {
+		return;
+	}
+
+	if (cnt == 0) {
+		return;
+	}
+
+	fwrite (buf, 1, cnt, cdrv->cap_fp);
+	fflush (cdrv->cap_fp);
+}
+
 void chr_init (char_drv_t *cdrv, void *ext)
 {
 	cdrv->ext = ext;
@@ -250,6 +265,8 @@ void chr_init (char_drv_t *cdrv, void *ext)
 	cdrv->log_cnt = 0;
 	cdrv->log_out = 0;
 	cdrv->log_fp = NULL;
+
+	cdrv->cap_fp = NULL;
 
 	cdrv->close = NULL;
 
@@ -299,6 +316,13 @@ char_drv_t *chr_open_cdrv (char_drv_t *cdrv, const char *name)
 		free (str);
 	}
 
+	str = drv_get_option (name, "cap");
+
+	if (str != NULL) {
+		chr_set_cap (cdrv, str);
+		free (str);
+	}
+
 	return (cdrv);
 }
 
@@ -331,6 +355,10 @@ void chr_close (char_drv_t *cdrv)
 {
 	if (cdrv == NULL) {
 		return;
+	}
+
+	if (cdrv->cap_fp != NULL) {
+		fclose (cdrv->cap_fp);
 	}
 
 	if (cdrv->log_fp != NULL) {
@@ -442,6 +470,10 @@ unsigned chr_write (char_drv_t *cdrv, const void *buf, unsigned cnt)
 	}
 
 	ret = cdrv->write (cdrv, buf, cnt);
+
+	if (cdrv->cap_fp != NULL) {
+		chr_cap_data (cdrv, buf, ret);
+	}
 
 	chr_log_data (cdrv, 1, buf, ret);
 
@@ -555,6 +587,21 @@ int chr_set_log (char_drv_t *cdrv, const char *fname)
 	cdrv->log_fp = fopen (fname, "w");
 
 	if (cdrv->log_fp == NULL) {
+		return (1);
+	}
+
+	return (0);
+}
+
+int chr_set_cap (char_drv_t *cdrv, const char *fname)
+{
+	if (cdrv->cap_fp != NULL) {
+		fclose (cdrv->cap_fp);
+	}
+
+	cdrv->cap_fp = fopen (fname, "wb");
+
+	if (cdrv->cap_fp == NULL) {
 		return (1);
 	}
 

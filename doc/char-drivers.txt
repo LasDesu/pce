@@ -38,12 +38,18 @@ mouse:
 		Set the log file name.
 
 null:
+	cap=<filename>
+		Set the capture file name.
+
 	log=<filename>
 		Set the log file name.
 
 posix:
 	The "read" and "write" options are used only if "file" is not
 	set.
+
+	cap=<filename>
+		Set the capture file name.
 
 	file=<filename>
 		Set the input and output file name.
@@ -85,8 +91,14 @@ ppp:
 	guest-ip=<ip-addr>
 		Set the guest side IP address.
 
+	log=<filename>
+		Set the log file name.
+
 
 pty:
+	cap=<filename>
+		Set the capture file name.
+
 	symlink=<filename>
 		Create a symlink pointing to the new pseudo terminal device.
 
@@ -104,6 +116,9 @@ slip:
 stdio:
 	Output is written to a file. No input is ever provided.
 
+	cap=<filename>
+		Set the capture file name.
+
 	file=<filename>
 		Set the output file name.
 
@@ -118,6 +133,9 @@ stdio:
 
 
 tcp:
+	cap=<filename>
+		Set the capture file name.
+
 	connect=[0|1]
 		If true, initiate a connection to the host and port
 		specified in the host and port options. Otherwise
@@ -126,6 +144,9 @@ tcp:
 
 	host=<hostname>
 		Set the host name to connect to if connect is true.
+
+	log=<filename>
+		Set the log file name.
 
 	port=<port>
 		Set the TCP port number.
@@ -152,6 +173,9 @@ tcp:
 		connection is closed manually. Defaults to true.
 
 tios:
+	cap=<filename>
+		Set the capture file name.
+
 	file=<filename>
 		The character device to connect to
 
@@ -161,6 +185,12 @@ tios:
 wincom:
 	Windows COM port support. This driver is only available under
 	Windows.
+
+	cap=<filename>
+		Set the capture file name.
+
+	log=<filename>
+		Set the log file name.
 
 	port=<port>
 		Set the windows COM port to use, for example "COM1" or

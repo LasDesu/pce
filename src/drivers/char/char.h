@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/char/char.h                                      *
  * Created:     2009-03-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2009-2016 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2009-2018 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -55,6 +55,8 @@ typedef struct char_drv_t {
 	int           log_out;
 	FILE          *log_fp;
 
+	FILE          *cap_fp;
+
 	void (*close) (struct char_drv_t *cdrv);
 
 	unsigned (*read) (struct char_drv_t *cdrv, void *buf, unsigned cnt);
@@ -89,6 +91,7 @@ int chr_set_ctl (char_drv_t *cdrv, unsigned ctl);
 int chr_set_params (char_drv_t *cdrv, unsigned long bps, unsigned bpc, unsigned parity, unsigned stop);
 
 int chr_set_log (char_drv_t *cdrv, const char *fname);
+int chr_set_cap (char_drv_t *cdrv, const char *fname);
 
 void chr_mouse_set (int dx, int dy, unsigned button);
 
