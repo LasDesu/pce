@@ -574,6 +574,12 @@ int s405_trap (sim405_t *sim, unsigned ofs)
 
 	case 0x0700:
 		name = "program";
+		if (sim->ppc->exception_esr & P405_ESR_PIL) {
+			log = 0;
+		}
+		else if (sim->ppc->exception_esr & P405_ESR_PTR) {
+			log = 1;
+		}
 		break;
 
 	case 0x0800:
@@ -608,8 +614,12 @@ int s405_trap (sim405_t *sim, unsigned ofs)
 	}
 
 	if (log) {
-		pce_log (MSG_DEB, "%08lX: exception %x (%s)\n",
-			(unsigned long) p405_get_pc (sim->ppc), ofs, name
+		pce_log (MSG_DEB, "%08lX: ESR=%08lX DEAR=%08lX IR=%0lX OFS=%04X %s\n",
+			(unsigned long) p405_get_pc (sim->ppc),
+			(unsigned long) sim->ppc->exception_esr,
+			(unsigned long) sim->ppc->exception_dear,
+			(unsigned long) sim->ppc->ir,
+			ofs, name
 		);
 	}
 
