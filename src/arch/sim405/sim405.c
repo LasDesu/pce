@@ -182,7 +182,7 @@ void s405_setup_serport (sim405_t *sim, ini_sct_t *ini)
 			e8250_set_buf_size (uart, 256, 256);
 			e8250_set_multichar (uart, multichar, multichar);
 			e8250_set_clock_mul (uart, clock_mul);
-			e8250_set_bit_clk_div (uart, S405_CLOCK / sim->serial_clock / 16);
+			e8250_set_bit_clk_div (uart, (S405_CLOCK / 16) / sim->serial_clock);
 
 			if (e8250_set_chip_str (uart, chip)) {
 				pce_log (MSG_ERR, "*** unknown UART chip (%s)\n", chip);
@@ -661,14 +661,12 @@ void s405_sync (sim405_t *sim)
 
 	if (vclk < rclk) {
 		p405_add_timer_clock (sim->ppc, rclk - vclk);
-
-		sim->serial_clock_count += rclk - vclk;
 	}
 }
 
 void s405_clock (sim405_t *sim, unsigned n)
 {
-	unsigned long clk;
+	unsigned long clk, ser;
 
 	if (sim->clk_div[0] >= 256) {
 		clk = sim->clk_div[0] & ~255UL;
@@ -704,16 +702,18 @@ void s405_clock (sim405_t *sim, unsigned n)
 		}
 	}
 
-	if (sim->serial_clock_count >= 16) {
+	ser = sim->serial_clock_count >> 10;
+
+	if (ser > 0) {
 		if (sim->serport[0] != NULL) {
-			e8250_clock (&sim->serport[0]->uart, 1);
+			e8250_clock (&sim->serport[0]->uart, ser);
 		}
 
 		if (sim->serport[1] != NULL) {
-			e8250_clock (&sim->serport[1]->uart, 1);
+			e8250_clock (&sim->serport[1]->uart, ser);
 		}
 
-		sim->serial_clock_count -= 16;
+		sim->serial_clock_count -= (ser << 4);
 	}
 
 	p405_clock (sim->ppc, n);
