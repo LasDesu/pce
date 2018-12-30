@@ -403,11 +403,39 @@ int p405_set_reg (p405_t *c, const char *reg, unsigned long val)
 	return (1);
 }
 
+static
+void p405_update_interrupt (p405_t *c)
+{
+	unsigned char val;
+
+	val = 0;
+
+	if ((c->tcr & P405_TCR_PIE) && (c->tsr & P405_TSR_PIS)) {
+		val |= P405_INT_PIT;
+	}
+
+	if ((c->tcr & P405_TCR_FIE) && (c->tsr & P405_TSR_FIS)) {
+		val |= P405_INT_FIT;
+	}
+
+	c->interrupt &= ~(P405_INT_PIT | P405_INT_FIT);
+	c->interrupt |= val;
+}
+
 void p405_set_tcr (p405_t *c, uint32_t val)
 {
 	c->tcr = val;
 
 	c->fit_mask = 0x100UL << ((val >> 22) & 0x0c);
+
+	p405_update_interrupt (c);
+}
+
+void p405_set_tsr (p405_t *c, uint32_t val)
+{
+	c->tsr = val;
+
+	p405_update_interrupt (c);
 }
 
 uint8_t p405_get_mem8 (p405_t *c, uint32_t addr)
@@ -599,7 +627,12 @@ void p405_exception_tlb_miss_instr (p405_t *c)
 
 void p405_interrupt (p405_t *c, unsigned char val)
 {
-	c->interrupt = (val != 0);
+	if (val) {
+		c->interrupt |= P405_INT_EXT;
+	}
+	else {
+		c->interrupt &= ~P405_INT_EXT;
+	}
 }
 
 void p405_add_timer_clock (p405_t *c, unsigned long cnt)
@@ -691,21 +724,15 @@ void p405_execute (p405_t *c)
 
 	c->opcnt += 1;
 
-	if (p405_get_msr (c) & P405_MSR_EE) {
-		if (c->interrupt) {
+	if (c->interrupt && (p405_get_msr (c) & P405_MSR_EE)) {
+		if (c->interrupt & P405_INT_EXT) {
 			p405_exception_external (c);
 		}
-		else if (c->tsr & (P405_TSR_PIS | P405_TSR_FIS)) {
-			if (c->tsr & P405_TSR_PIS) {
-				if (c->tcr & P405_TCR_PIE) {
-					p405_exception_pit (c);
-				}
-			}
-			else if (c->tsr & P405_TSR_FIS) {
-				if (c->tcr & P405_TCR_FIE) {
-					p405_exception_fit (c);
-				}
-			}
+		else if (c->interrupt & P405_INT_PIT) {
+			p405_exception_pit (c);
+		}
+		else if (c->interrupt & P405_INT_FIT) {
+			p405_exception_fit (c);
 		}
 	}
 }
@@ -733,7 +760,7 @@ void p405_clock_tb (p405_t *c, unsigned long n)
 				c->pit[0] = 0;
 			}
 
-			c->tsr |= P405_TSR_PIS;
+			p405_set_tsr (c, p405_get_tsr (c) | P405_TSR_PIS);
 		}
 		else {
 			c->pit[0] -= n;
@@ -741,7 +768,7 @@ void p405_clock_tb (p405_t *c, unsigned long n)
 	}
 
 	if (~old & c->tbl & c->fit_mask) {
-		c->tsr |= P405_TSR_FIS;
+		p405_set_tsr (c, p405_get_tsr (c) | P405_TSR_FIS);
 	}
 }
 

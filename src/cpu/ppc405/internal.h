@@ -81,6 +81,10 @@ int p405_dstore32 (p405_t *c, uint32_t addr, uint32_t val);
 #define P405_IR_LK 0x0001
 #define P405_IR_AA 0x0002
 
+#define P405_INT_EXT 1
+#define P405_INT_PIT 2
+#define P405_INT_FIT 4
+
 #define P405_EXCPT_MSR (P405_MSR_AP | P405_MSR_APE | P405_MSR_WE | P405_MSR_EE |\
 	P405_MSR_PR | P405_MSR_FP | P405_MSR_FE0 | P405_MSR_DWE | P405_MSR_FE1 |\
 	P405_MSR_IR | P405_MSR_DR)

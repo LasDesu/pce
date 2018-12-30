@@ -318,7 +318,6 @@ typedef struct {
 #define p405_set_srr(c, n, v) do { (c)->srr[(n) & 0x03] = (v); } while (0)
 #define p405_set_tbl(c, v) do { (c)->tbl = (v); } while (0)
 #define p405_set_tbu(c, v) do { (c)->tbu = (v); } while (0)
-#define p405_set_tsr(c, v) do { (c)->tsr = (v); } while (0)
 #define p405_set_xer(c, v) do { (c)->xer = (v); } while (0)
 #define p405_set_xer_bits(c, bits, v) p405_set_bits ((c)->xer, bits, v)
 #define p405_set_xer_so(c, v) p405_set_xer_bits (c, P405_XER_SO, v)
@@ -548,6 +547,7 @@ int p405_set_reg (p405_t *c, const char *reg, unsigned long val);
 
 
 void p405_set_tcr (p405_t *c, uint32_t val);
+void p405_set_tsr (p405_t *c, uint32_t val);
 
 /*!***************************************************************************
  * @short Get a byte from a physical address
