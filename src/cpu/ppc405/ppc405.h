@@ -167,7 +167,7 @@ typedef struct {
 #define P405_TSR_WIS 0x40000000UL
 #define P405_TSR_WRS 0x30000000UL
 #define P405_TSR_PIS 0x08000000UL
-#define P405_TSR_FIT 0x04000000UL
+#define P405_TSR_FIS 0x04000000UL
 
 /* Timer Control Register fields */
 #define P405_TCR_WP  0xc0000000UL
@@ -318,7 +318,6 @@ typedef struct {
 #define p405_set_srr(c, n, v) do { (c)->srr[(n) & 0x03] = (v); } while (0)
 #define p405_set_tbl(c, v) do { (c)->tbl = (v); } while (0)
 #define p405_set_tbu(c, v) do { (c)->tbu = (v); } while (0)
-#define p405_set_tcr(c, v) do { (c)->tcr = (v); } while (0)
 #define p405_set_tsr(c, v) do { (c)->tsr = (v); } while (0)
 #define p405_set_xer(c, v) do { (c)->xer = (v); } while (0)
 #define p405_set_xer_bits(c, bits, v) p405_set_bits ((c)->xer, bits, v)
@@ -405,6 +404,8 @@ typedef struct p405_s {
 	uint32_t           zpr;
 
 	uint32_t           ir;
+
+	uint32_t           fit_mask;
 
 	char               reserve;
 
@@ -545,6 +546,8 @@ unsigned long p405_get_delay (p405_t *c);
 int p405_get_reg (p405_t *c, const char *reg, unsigned long *val);
 int p405_set_reg (p405_t *c, const char *reg, unsigned long val);
 
+
+void p405_set_tcr (p405_t *c, uint32_t val);
 
 /*!***************************************************************************
  * @short Get a byte from a physical address

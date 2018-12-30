@@ -589,6 +589,10 @@ int s405_trap (sim405_t *sim, unsigned ofs)
 		name = "PIT";
 		break;
 
+	case 0x1010:
+		name = "FIT";
+		break;
+
 	case 0x1100:
 		name = "TLB miss data";
 		break;

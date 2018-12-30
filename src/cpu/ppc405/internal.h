@@ -144,6 +144,7 @@ void p405_exception_program (p405_t *c, uint32_t esr);
 void p405_exception_program_fpu (p405_t *c);
 void p405_exception_syscall (p405_t *c);
 void p405_exception_pit (p405_t *c);
+void p405_exception_fit (p405_t *c);
 void p405_exception_tlb_miss_data (p405_t *c, uint32_t ea, int store);
 void p405_exception_tlb_miss_instr (p405_t *c);
 

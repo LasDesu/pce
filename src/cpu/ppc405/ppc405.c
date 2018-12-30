@@ -403,6 +403,12 @@ int p405_set_reg (p405_t *c, const char *reg, unsigned long val)
 	return (1);
 }
 
+void p405_set_tcr (p405_t *c, uint32_t val)
+{
+	c->tcr = val;
+
+	c->fit_mask = 0x100UL << ((val >> 22) & 0x0c);
+}
 
 uint8_t p405_get_mem8 (p405_t *c, uint32_t addr)
 {
@@ -566,6 +572,13 @@ void p405_exception_pit (p405_t *c)
 	}
 }
 
+void p405_exception_fit (p405_t *c)
+{
+	if (p405_exception (c, 0x1010, 0)) {
+		return;
+	}
+}
+
 void p405_exception_tlb_miss_data (p405_t *c, uint32_t ea, int store)
 {
 	if (p405_exception (c, 0x1100, 0)) {
@@ -635,6 +648,8 @@ void p405_reset (p405_t *c)
 
 	c->ir = 0;
 
+	c->fit_mask = 0x100;
+
 	c->reserve = 0;
 
 	c->interrupt = 0;
@@ -680,9 +695,16 @@ void p405_execute (p405_t *c)
 		if (c->interrupt) {
 			p405_exception_external (c);
 		}
-		else if (c->tsr & P405_TSR_PIS) {
-			if (c->tcr & P405_TCR_PIE) {
-				p405_exception_pit (c);
+		else if (c->tsr & (P405_TSR_PIS | P405_TSR_FIS)) {
+			if (c->tsr & P405_TSR_PIS) {
+				if (c->tcr & P405_TCR_PIE) {
+					p405_exception_pit (c);
+				}
+			}
+			else if (c->tsr & P405_TSR_FIS) {
+				if (c->tcr & P405_TCR_FIE) {
+					p405_exception_fit (c);
+				}
 			}
 		}
 	}
@@ -690,6 +712,10 @@ void p405_execute (p405_t *c)
 
 void p405_clock_tb (p405_t *c, unsigned long n)
 {
+	uint32_t old;
+
+	old = c->tbl;
+
 	c->tbl = (c->tbl + n) & 0xffffffff;
 
 	if (c->tbl < n) {
@@ -710,6 +736,10 @@ void p405_clock_tb (p405_t *c, unsigned long n)
 		else {
 			c->pit[0] -= n;
 		}
+	}
+
+	if (~old & c->tbl & c->fit_mask) {
+		c->tsr |= P405_TSR_FIS;
 	}
 }
 
