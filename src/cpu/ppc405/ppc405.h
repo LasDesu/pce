@@ -404,6 +404,9 @@ typedef struct p405_s {
 
 	uint32_t           ir;
 
+	uint32_t           exception_esr;
+	uint32_t           exception_dear;
+
 	uint32_t           fit_mask;
 
 	char               reserve;

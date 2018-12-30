@@ -523,6 +523,9 @@ int p405_exception (p405_t *c, uint32_t ofs, uint32_t pcofs)
 	p405_set_srr (c, 0, p405_get_pc (c) + pcofs);
 	p405_set_srr (c, 1, p405_get_msr (c));
 
+	p405_set_esr (c, c->exception_esr);
+	p405_set_dear (c, c->exception_dear);
+
 	c->msr &= ~P405_EXCPT_MSR;
 
 	p405_set_pc (c, (p405_get_evpr (c) & 0xffff0000) | ofs);
@@ -534,38 +537,43 @@ int p405_exception (p405_t *c, uint32_t ofs, uint32_t pcofs)
 
 void p405_exception_data_store (p405_t *c, uint32_t ea, int store, int zone)
 {
-	if (p405_exception (c, 0x300, 0)) {
-		return;
-	}
-
-	p405_set_dear (c, ea);
-
-	c->esr &= P405_ESR_MCI;
+	c->exception_esr = p405_get_esr (c) & P405_ESR_MCI;
 
 	if (store) {
-		c->esr |= P405_ESR_DST;
+		c->exception_esr |= P405_ESR_DST;
 	}
 
 	if (zone) {
-		c->esr |= P405_ESR_DIZ;
+		c->exception_esr |= P405_ESR_DIZ;
+	}
+
+	c->exception_dear = ea;
+
+	if (p405_exception (c, 0x300, 0)) {
+		return;
 	}
 }
 
 void p405_exception_instr_store (p405_t *c, int zone)
 {
-	if (p405_exception (c, 0x400, 0)) {
-		return;
-	}
-
-	c->esr &= P405_ESR_MCI;
+	c->exception_esr = p405_get_esr (c) & P405_ESR_MCI;
 
 	if (zone) {
-		c->esr |= P405_ESR_DIZ;
+		c->exception_esr |= P405_ESR_DIZ;
+	}
+
+	c->exception_dear = p405_get_dear (c);
+
+	if (p405_exception (c, 0x400, 0)) {
+		return;
 	}
 }
 
 void p405_exception_external (p405_t *c)
 {
+	c->exception_esr = p405_get_esr (c);
+	c->exception_dear = p405_get_dear (c);
+
 	if (p405_exception (c, 0x500, 0)) {
 		return;
 	}
@@ -573,11 +581,12 @@ void p405_exception_external (p405_t *c)
 
 void p405_exception_program (p405_t *c, uint32_t esr)
 {
+	c->exception_esr = (p405_get_esr (c) & P405_ESR_MCI) | (esr & ~P405_ESR_MCI);
+	c->exception_dear = p405_get_dear (c);
+
 	if (p405_exception (c, 0x700, 0)) {
 		return;
 	}
-
-	p405_set_esr (c, (c->esr & P405_ESR_MCI) | (esr & ~P405_ESR_MCI));
 }
 
 void p405_exception_program_fpu (p405_t *c)
@@ -587,6 +596,9 @@ void p405_exception_program_fpu (p405_t *c)
 
 void p405_exception_syscall (p405_t *c)
 {
+	c->exception_esr = p405_get_esr (c);
+	c->exception_dear = p405_get_dear (c);
+
 	if (p405_exception (c, 0xc00, 4)) {
 		p405_set_pc (c, (p405_get_pc (c) + 4));
 		return;
@@ -595,6 +607,9 @@ void p405_exception_syscall (p405_t *c)
 
 void p405_exception_pit (p405_t *c)
 {
+	c->exception_esr = p405_get_esr (c);
+	c->exception_dear = p405_get_dear (c);
+
 	if (p405_exception (c, 0x1000, 0)) {
 		return;
 	}
@@ -602,6 +617,9 @@ void p405_exception_pit (p405_t *c)
 
 void p405_exception_fit (p405_t *c)
 {
+	c->exception_esr = p405_get_esr (c);
+	c->exception_dear = p405_get_dear (c);
+
 	if (p405_exception (c, 0x1010, 0)) {
 		return;
 	}
@@ -609,17 +627,24 @@ void p405_exception_fit (p405_t *c)
 
 void p405_exception_tlb_miss_data (p405_t *c, uint32_t ea, int store)
 {
+	c->exception_esr = p405_get_esr (c) & P405_ESR_MCI;
+
+	if (store) {
+		c->exception_esr |= P405_ESR_DST;
+	}
+
+	c->exception_dear = ea;
+
 	if (p405_exception (c, 0x1100, 0)) {
 		return;
 	}
-
-	p405_set_dear (c, ea);
-
-	c->esr = (c->esr & P405_ESR_MCI) | ((store) ? P405_ESR_DST : 0);
 }
 
 void p405_exception_tlb_miss_instr (p405_t *c)
 {
+	c->exception_esr = p405_get_esr (c);
+	c->exception_dear = p405_get_dear (c);
+
 	if (p405_exception (c, 0x1200, 0)) {
 		return;
 	}
@@ -680,6 +705,9 @@ void p405_reset (p405_t *c)
 	c->zpr = 0;
 
 	c->ir = 0;
+
+	c->exception_esr = 0;
+	c->exception_dear = 0;
 
 	c->fit_mask = 0x100;
 
