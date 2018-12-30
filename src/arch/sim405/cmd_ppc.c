@@ -198,7 +198,7 @@ void s405_prt_state_ppc (sim405_t *sim)
 		);
 	}
 
-	p405_disasm_mem (c, &op, p405_get_pc (c), par_xlat);
+	p405_disasm_mem (c, &op, p405_get_pc (c), par_xlat | P405_XLAT_EXEC);
 	ppc_disasm_str (str, &op);
 
 	pce_printf ("%08lX  %s\n", (unsigned long) p405_get_pc (c), str);
@@ -842,7 +842,7 @@ void do_p (cmd_t *cmd, sim405_t *sim)
 	s405_clock_discontinuity (sim);
 
 	while (cnt > 0) {
-		p405_disasm_mem (sim->ppc, &dis, p405_get_pc (sim->ppc), P405_XLAT_CPU);
+		p405_disasm_mem (sim->ppc, &dis, p405_get_pc (sim->ppc), P405_XLAT_CPU | P405_XLAT_EXEC);
 
 		if (dis.flags & P405_DFLAG_CALL) {
 			if (ppc_exec_to (sim, p405_get_pc (sim->ppc) + 4)) {
@@ -892,7 +892,7 @@ void do_rfi (cmd_t *cmd, sim405_t *sim)
 
 	while (1) {
 		p405_disasm_mem (sim->ppc, &dis, p405_get_pc (sim->ppc),
-			P405_XLAT_CPU
+			P405_XLAT_CPU | P405_XLAT_EXEC
 		);
 
 		if (ppc_exec_off (sim, p405_get_pc (sim->ppc))) {
@@ -1098,7 +1098,7 @@ void do_u (cmd_t *cmd, sim405_t *sim)
 	}
 
 	for (i = 0; i < cnt; i++) {
-		p405_disasm_mem (sim->ppc, &op, addr, par_xlat);
+		p405_disasm_mem (sim->ppc, &op, addr, par_xlat | P405_XLAT_EXEC);
 		ppc_disasm_str (str, &op);
 
 		pce_printf ("%08lX  %s\n", addr, str);

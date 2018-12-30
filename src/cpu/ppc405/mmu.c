@@ -208,20 +208,30 @@ void p405_tlb_invalidate_all (p405_t *c)
 
 int p405_translate (p405_t *c, uint32_t *ea, int *e, unsigned xlat)
 {
+	uint32_t    msk;
 	p405_tlbe_t *ent;
 
-	if ((xlat == P405_XLAT_VIRTUAL) || ((xlat == P405_XLAT_CPU) && p405_get_msr_dr (c))) {
-		ent = p405_get_tlb_entry_ea (c, *ea);
-		if (ent == NULL) {
-			return (1);
-		}
-
-		*ea = (*ea & ~ent->mask) | (ent->tlblo & ent->mask);
-		*e = ent->endian;
-	}
-	else {
+	if (xlat & P405_XLAT_REAL) {
 		*e = 0;
+		return (0);
 	}
+
+	if (xlat & P405_XLAT_CPU) {
+		msk = (xlat & P405_XLAT_EXEC) ? P405_MSR_IR : P405_MSR_DR;
+
+		if ((p405_get_msr (c) & msk) == 0) {
+			*e = 0;
+			return (0);
+		}
+	}
+
+
+	if ((ent = p405_get_tlb_entry_ea (c, *ea)) == NULL) {
+		return (1);
+	}
+
+	*ea = (*ea & ~ent->mask) | (ent->tlblo & ent->mask);
+	*e = ent->endian;
 
 	return (0);
 }

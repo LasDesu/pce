@@ -47,9 +47,10 @@ struct p405_s;
 
 #define P405_TLB_ENTRIES 64
 
-#define P405_XLAT_CPU     0
-#define P405_XLAT_REAL    1
-#define P405_XLAT_VIRTUAL 2
+#define P405_XLAT_CPU     1
+#define P405_XLAT_REAL    2
+#define P405_XLAT_VIRTUAL 4
+#define P405_XLAT_EXEC    8
 
 #define P405_MMU_MODE_X 0x0000
 #define P405_MMU_MODE_R 0x0100
