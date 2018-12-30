@@ -263,6 +263,8 @@ void disasm_arg_reg (p405_disasm_t *dis, char *dst, unsigned r)
 	*(dst++) = '0' + (r % 10);
 
 	*dst = 0;
+
+	dis->reg |= 1UL << r;
 }
 
 static
@@ -1777,6 +1779,7 @@ void p405_disasm (p405_disasm_t *dis, uint32_t pc, uint32_t ir)
 	}
 
 	dis->flags = 0;
+	dis->reg = 0;
 
 	dis->pc = pc;
 	dis->ir = ir;
@@ -1795,6 +1798,7 @@ void p405_disasm_mem (p405_t *c, p405_disasm_t *dis, uint32_t pc, unsigned xlat)
 	}
 
 	dis->flags = 0;
+	dis->reg = 0;
 
 	if (p405_get_xlat32 (c, pc, xlat, &ir)) {
 		dis->pc = pc;
