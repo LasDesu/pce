@@ -14,6 +14,9 @@ sim405 {
 
 		# The UART input clock
 		serial_clock = 115200
+
+		# Sync the PowerPC time base with real time
+		sync_time_base = 1
 	}
 
 	# Multiple "ram" sections may be present

@@ -73,6 +73,7 @@ void s405_setup_system (sim405_t *sim, ini_sct_t *ini)
 	const char    *model;
 	unsigned long uicinv;
 	unsigned long serial_clock;
+	int           sync_time_base;
 
 	sct = ini_next_sct (ini, NULL, "system");
 
@@ -83,12 +84,15 @@ void s405_setup_system (sim405_t *sim, ini_sct_t *ini)
 	ini_get_string (sct, "model", &model, "ppc405");
 	ini_get_uint32 (sct, "uic_invert", &uicinv, 0x0000007f);
 	ini_get_uint32 (sct, "serial_clock", &serial_clock, 115200);
+	ini_get_bool (sct, "sync_time_base", &sync_time_base, 1);
 
-	pce_log_tag (MSG_INF, "CPU:", "model=%s uic-inv=%08lX\n",
-		model, uicinv
+	pce_log_tag (MSG_INF, "CPU:", "model=%s uic-inv=%08lX sync_time_base=%d\n",
+		model, uicinv, sync_time_base
 	);
 
 	sim->ppc = p405_new ();
+
+	sim->sync_time_base = (sync_time_base != 0);
 
 	p405_set_mem_fct (sim->ppc, sim->mem,
 		&mem_get_uint8,
@@ -690,7 +694,10 @@ void s405_clock (sim405_t *sim, unsigned n)
 
 			if (sim->clk_div[2] >= 65536) {
 				scon_check (sim);
-				s405_sync (sim);
+
+				if (sim->sync_time_base) {
+					s405_sync (sim);
+				}
 
 				sim->clk_div[2] &= 65535;
 			}

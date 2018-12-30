@@ -138,6 +138,8 @@ typedef struct sim405_s {
 
 	clock_t            real_clk;
 
+	char               sync_time_base;
+
 	unsigned long      sync_clock_sim;
 	unsigned long      sync_clock_real;
 	unsigned long      sync_interval;
