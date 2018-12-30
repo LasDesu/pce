@@ -1555,6 +1555,7 @@ void op_1f_1d3 (p405_t *c)
 
 	case P405_SPRN_ZPR:
 		p405_set_zpr (c, rs);
+		p405_tbuf_clear (c);
 		break;
 
 	default:
