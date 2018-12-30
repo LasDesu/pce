@@ -724,6 +724,8 @@ void p405_clock_tb (p405_t *c, unsigned long n)
 
 	if (c->pit[0] > 0) {
 		if (n >= c->pit[0]) {
+			n -= c->pit[0];
+
 			if (c->tcr & P405_TCR_ARE) {
 				c->pit[0] = c->pit[1] - (n % c->pit[1]);
 			}
@@ -761,7 +763,7 @@ void p405_clock (p405_t *c, unsigned long n)
 
 		c->clkcnt += c->delay;
 
-		tbclk = c->timer_extra_clock >> 4;
+		tbclk = c->timer_extra_clock >> 16;
 		c->timer_extra_clock -= tbclk;
 
 		p405_clock_tb (c, c->delay + tbclk);
