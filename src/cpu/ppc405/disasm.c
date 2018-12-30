@@ -250,7 +250,46 @@ void disasm_dw (p405_disasm_t *dis, uint32_t val)
 }
 
 static
-void disasm_arg (char *dst, uint32_t ir, unsigned arg, uint32_t par)
+void disasm_arg_reg (p405_disasm_t *dis, char *dst, unsigned r)
+{
+	r &= 0x1f;
+
+	*(dst++) = 'r';
+
+	if (r > 9) {
+		*(dst++) = '0' + (r / 10);
+	}
+
+	*(dst++) = '0' + (r % 10);
+
+	*dst = 0;
+}
+
+static
+void disasm_arg_imm32 (char *dst, unsigned long val)
+{
+	unsigned i, tmp;
+
+	dst += 8;
+	*dst = 0;
+
+	for (i = 0; i < 8; i++) {
+		tmp = val & 0x0f;
+		val = val >> 4;
+
+		if (tmp < 10) {
+			tmp += '0';
+		}
+		else {
+			tmp = tmp - 10 + 'a';
+		}
+
+		*(--dst) = tmp;
+	}
+}
+
+static
+void disasm_arg (p405_disasm_t *dis, char *dst, uint32_t ir, unsigned arg, uint32_t par)
 {
 	switch (arg) {
 	case ARG_NONE:
@@ -258,40 +297,41 @@ void disasm_arg (char *dst, uint32_t ir, unsigned arg, uint32_t par)
 		break;
 
 	case ARG_RA:
-		sprintf (dst, "r%d", p405_get_ir_ra (ir));
+		disasm_arg_reg (dis, dst, p405_get_ir_ra (ir));
 		break;
 
 	case ARG_RB:
-		sprintf (dst, "r%d", p405_get_ir_rb (ir));
+		disasm_arg_reg (dis, dst, p405_get_ir_rb (ir));
 		break;
 
 	case ARG_RS:
-		sprintf (dst, "r%d", p405_get_ir_rs (ir));
+		disasm_arg_reg (dis, dst, p405_get_ir_rs (ir));
 		break;
 
 	case ARG_RT:
-		sprintf (dst, "r%d", p405_get_ir_rt (ir));
+		disasm_arg_reg (dis, dst, p405_get_ir_rt (ir));
 		break;
 
 	case ARG_RA0:
 		if (p405_get_ir_ra (ir) == 0) {
-			strcpy (dst, "0");
+			dst[0] = '0';
+			dst[1] = 0;
 		}
 		else {
-			sprintf (dst, "r%d", p405_get_ir_ra (ir));
+			disasm_arg_reg (dis, dst, p405_get_ir_ra (ir));
 		}
 		break;
 
 	case ARG_SIMM16:
-		sprintf (dst, "%08lx", (unsigned long) p405_sext (ir, 16));
+		disasm_arg_imm32 (dst, p405_sext (ir, 16));
 		break;
 
 	case ARG_UIMM16:
-		sprintf (dst, "%08lx", (unsigned long) p405_uext (ir, 16));
+		disasm_arg_imm32 (dst, p405_uext (ir, 16));
 		break;
 
 	case ARG_IMM16S:
-		sprintf (dst, "%08lx", (unsigned long) ((ir & 0xffffUL) << 16));
+		disasm_arg_imm32 (dst, (ir & 0xffff) << 16);
 		break;
 
 	case ARG_UINT3:
@@ -311,7 +351,7 @@ void disasm_arg (char *dst, uint32_t ir, unsigned arg, uint32_t par)
 		break;
 
 	case ARG_UINT32:
-		sprintf (dst, "%08lx", (unsigned long) (par & 0xffffffffUL));
+		disasm_arg_imm32 (dst, par & 0xffffffff);
 		break;
 
 	case ARG_CRBIT:
@@ -371,7 +411,7 @@ int disasm_op1 (p405_disasm_t *dis, const char *op, uint32_t opf, uint32_t res,
 	}
 
 	dis->argn = 1;
-	disasm_arg (dis->arg1, dis->ir, arg1, par1);
+	disasm_arg (dis, dis->arg1, dis->ir, arg1, par1);
 
 	return (0);
 }
@@ -385,7 +425,7 @@ int disasm_op2 (p405_disasm_t *dis, const char *op, uint32_t opf, uint32_t res,
 	}
 
 	dis->argn = 2;
-	disasm_arg (dis->arg2, dis->ir, arg2, par2);
+	disasm_arg (dis, dis->arg2, dis->ir, arg2, par2);
 
 	return (0);
 }
@@ -400,7 +440,7 @@ int disasm_op3 (p405_disasm_t *dis, const char *op, uint32_t opf, uint32_t res,
 	}
 
 	dis->argn = 3;
-	disasm_arg (dis->arg3, dis->ir, arg3, par3);
+	disasm_arg (dis, dis->arg3, dis->ir, arg3, par3);
 
 	return (0);
 }
@@ -415,7 +455,7 @@ int disasm_op4 (p405_disasm_t *dis, const char *op, uint32_t opf, uint32_t res,
 	}
 
 	dis->argn = 4;
-	disasm_arg (dis->arg4, dis->ir, arg4, par4);
+	disasm_arg (dis, dis->arg4, dis->ir, arg4, par4);
 
 	return (0);
 }
@@ -430,7 +470,7 @@ int disasm_op5 (p405_disasm_t *dis, const char *op, uint32_t opf, uint32_t res,
 	}
 
 	dis->argn = 5;
-	disasm_arg (dis->arg5, dis->ir, arg5, par5);
+	disasm_arg (dis, dis->arg5, dis->ir, arg5, par5);
 
 	return (0);
 }
