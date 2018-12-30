@@ -549,7 +549,7 @@ void p405_exception_program (p405_t *c, uint32_t esr)
 		return;
 	}
 
-	p405_set_esr (c, esr);
+	p405_set_esr (c, (c->esr & P405_ESR_MCI) | (esr & ~P405_ESR_MCI));
 }
 
 void p405_exception_program_fpu (p405_t *c)
