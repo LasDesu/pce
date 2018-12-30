@@ -50,7 +50,7 @@ static mon_cmd_t par_cmd[] = {
 	{ "p", "[cnt]", "execute cnt instructions, skip calls [1]" },
 	{ "rfi", "", "execute to next rfi or rfci" },
 	{ "r", "reg [val]", "get or set a register" },
-	{ "s", "[what]", "print status (mem|ppc|spr|uart0|uart1)" },
+	{ "s", "[what]", "print status (mem|ppc|spr|time|uart0|uart1|uic)" },
 	{ "tlb", "l [first [count]]", "list TLB entries" },
 	{ "tlb", "s addr", "search the TLB" },
 	{ "t", "[cnt]", "execute cnt instructions [1]" },
@@ -424,6 +424,61 @@ void s405_print_state_uart (e8250_t *uart, unsigned long base)
 	);
 }
 
+static
+void s405_print_state_time (sim405_t *sim)
+{
+	p405_t        *c;
+	unsigned long tcr, tsr, tbl, msk, rem;
+
+	c = sim->ppc;
+
+	tcr = p405_get_tcr (c);
+	tsr = p405_get_tsr (c);
+	tbl = p405_get_tbl (c);
+
+	msk = 0x100UL << ((tcr >> 22) & 0x0c);
+	rem = msk - (tbl & (msk - 1)) + ((tbl & msk) ? msk : 0);
+
+	pce_prt_sep ("TIME");
+
+	pce_printf ("TBU=%08lX TBL=%08lX\n",
+		(unsigned long) p405_get_tbu (c),
+		tbl
+	);
+
+	pce_printf ("TCR=%08lX [PIE=%d ARE=%d FIE=%d FP=%X WIE=%d]\n",
+		tcr,
+		(tcr & P405_TCR_PIE) != 0,
+		(tcr & P405_TCR_ARE) != 0,
+		(tcr & P405_TCR_FIE) != 0,
+		(unsigned) ((tcr >> 24) & 3),
+		(tcr & P405_TCR_WIE) != 0
+	);
+
+	pce_printf ("TSR=%08lX [PIS=%d FIS=%d WIS=%d]\n",
+		tsr,
+		(tsr & P405_TSR_PIS) != 0,
+		(tsr & P405_TSR_FIS) != 0,
+		(tsr & P405_TSR_WIS) != 0
+	);
+
+	pce_printf ("PIT VAL=%08lX REL=%08lX ARE=%d      PIE=%d PIS=%d\n",
+		(unsigned long) (p405_get_pit (c, 0)),
+		(unsigned long) (p405_get_pit (c, 1)),
+		(tcr & P405_TCR_ARE) != 0,
+		(tcr & P405_TCR_PIE) != 0,
+		(tsr & P405_TSR_PIS) != 0
+	);
+
+	pce_printf ("FIT REM=%08lX TBL=%08lx MSK=%06lX FIE=%d FIS=%d\n",
+		rem,
+		tbl,
+		msk,
+		(tcr & P405_TCR_FIE) != 0,
+		(tsr & P405_TSR_FIS) != 0
+	);
+}
+
 void s405_prt_state_mem (sim405_t *sim)
 {
 	FILE *fp;
@@ -467,6 +522,9 @@ void prt_state (sim405_t *sim, const char *str)
 			if (sim->serport[1] != NULL) {
 				s405_print_state_uart (&sim->serport[1]->uart, sim->serport[1]->io);
 			}
+		}
+		else if (cmd_match (&cmd, "time")) {
+			s405_print_state_time (sim);
 		}
 		else if (cmd_match (&cmd, "mem")) {
 			s405_prt_state_mem (sim);
