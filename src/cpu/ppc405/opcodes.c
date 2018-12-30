@@ -160,7 +160,7 @@ void p405_op_lsw (p405_t *c, unsigned rt, unsigned ra, unsigned rb, uint32_t ea,
 	uint8_t  val;
 	uint32_t msk;
 
-	rfinal = (rt + (cnt + 3) / 4) & 0x1f;
+	rfinal = (rt + (cnt + 3) / 4 - 1) & 0x1f;
 
 	msk = 0;
 	shl = 24;
