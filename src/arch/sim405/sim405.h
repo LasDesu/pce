@@ -175,6 +175,8 @@ unsigned long long s405_get_clkcnt (sim405_t *sim);
  *****************************************************************************/
 void s405_reset (sim405_t *sim);
 
+void s405_clock_discontinuity (sim405_t *sim);
+
 /*****************************************************************************
  * @short Clock the simulator
  * @param n The number of clock cycles. Must not be 0.

@@ -538,6 +538,7 @@ int ppc_exec_off (sim405_t *sim, unsigned long addr)
 void ppc_run (sim405_t *sim)
 {
 	pce_start (&sim->brk);
+	s405_clock_discontinuity (sim);
 
 	while (1) {
 		s405_clock (sim, 64);
@@ -723,6 +724,7 @@ void do_g_b (cmd_t *cmd, sim405_t *sim)
 	}
 
 	pce_start (&sim->brk);
+	s405_clock_discontinuity (sim);
 
 	while (1) {
 		ppc_exec (sim);
@@ -779,6 +781,7 @@ void do_p (cmd_t *cmd, sim405_t *sim)
 	}
 
 	pce_start (&sim->brk);
+	s405_clock_discontinuity (sim);
 
 	while (cnt > 0) {
 		p405_disasm_mem (sim->ppc, &dis, p405_get_pc (sim->ppc), P405_XLAT_CPU);
@@ -827,6 +830,7 @@ void do_rfi (cmd_t *cmd, sim405_t *sim)
 	}
 
 	pce_start (&sim->brk);
+	s405_clock_discontinuity (sim);
 
 	while (1) {
 		p405_disasm_mem (sim->ppc, &dis, p405_get_pc (sim->ppc),
@@ -988,6 +992,7 @@ void do_t (cmd_t *cmd, sim405_t *sim)
 	}
 
 	pce_start (&sim->brk);
+	s405_clock_discontinuity (sim);
 
 	for (i = 0; i < n; i++) {
 		ppc_exec (sim);
