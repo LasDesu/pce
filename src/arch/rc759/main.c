@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/main.c                                        *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -34,6 +34,7 @@
 #include <SDL.h>
 #endif
 
+#include <lib/cfg.h>
 #include <lib/console.h>
 #include <lib/getopt.h>
 #include <lib/log.h>
@@ -91,7 +92,7 @@ void print_version (void)
 	fputs (
 		"pce-rc759 version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2012-2018 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2012-2019 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -103,7 +104,7 @@ void rc759_log_banner (void)
 {
 	pce_log (MSG_MSG,
 		"pce-rc759 version " PCE_VERSION_STR "\n"
-		"Copyright (C) 2012-2018 Hampa Hug <hampa@hampa.ch>\n"
+		"Copyright (C) 2012-2019 Hampa Hug <hampa@hampa.ch>\n"
 	);
 }
 
@@ -204,23 +205,6 @@ void sim_log_deb (const char *msg, ...)
 	va_start (va, msg);
 	pce_log_va (MSG_DEB, msg, va);
 	va_end (va);
-}
-
-static
-int pce_load_config (ini_sct_t *ini, const char *fname)
-{
-	if (fname == NULL) {
-		return (0);
-	}
-
-	pce_log_tag (MSG_INF, "CONFIG:", "file=\"%s\"\n", fname);
-
-	if (ini_read (par_cfg, fname)) {
-		pce_log (MSG_ERR, "*** loading config file failed\n");
-		return (1);
-	}
-
-	return (0);
 }
 
 int main (int argc, char *argv[])

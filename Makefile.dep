@@ -144,6 +144,7 @@ src/arch/atarist/main.o: src/arch/atarist/main.c \
 	src/drivers/video/keys.h \
 	src/drivers/video/terminal.h \
 	src/lib/brkpt.h \
+	src/lib/cfg.h \
 	src/lib/cmd.h \
 	src/lib/console.h \
 	src/lib/getopt.h \
@@ -322,6 +323,7 @@ src/arch/cpm80/main.o: src/arch/cpm80/main.c \
 	src/drivers/block/block.h \
 	src/drivers/char/char.h \
 	src/lib/brkpt.h \
+	src/lib/cfg.h \
 	src/lib/cmd.h \
 	src/lib/console.h \
 	src/lib/getopt.h \
@@ -715,6 +717,7 @@ src/arch/ibmpc/main.o: src/arch/ibmpc/main.c \
 	src/drivers/video/keys.h \
 	src/drivers/video/terminal.h \
 	src/lib/brkpt.h \
+	src/lib/cfg.h \
 	src/lib/cmd.h \
 	src/lib/console.h \
 	src/lib/getopt.h \
@@ -1005,6 +1008,7 @@ src/arch/macplus/main.o: src/arch/macplus/main.c \
 	src/drivers/video/keys.h \
 	src/drivers/video/terminal.h \
 	src/lib/brkpt.h \
+	src/lib/cfg.h \
 	src/lib/cmd.h \
 	src/lib/console.h \
 	src/lib/getopt.h \
@@ -1224,6 +1228,7 @@ src/arch/rc759/main.o: src/arch/rc759/main.c \
 	src/drivers/video/keys.h \
 	src/drivers/video/terminal.h \
 	src/lib/brkpt.h \
+	src/lib/cfg.h \
 	src/lib/cmd.h \
 	src/lib/console.h \
 	src/lib/getopt.h \
@@ -1426,6 +1431,7 @@ src/arch/sim405/main.o: src/arch/sim405/main.c \
 	src/drivers/block/block.h \
 	src/drivers/char/char.h \
 	src/lib/brkpt.h \
+	src/lib/cfg.h \
 	src/lib/cmd.h \
 	src/lib/console.h \
 	src/lib/getopt.h \
@@ -1562,6 +1568,7 @@ src/arch/sim6502/main.o: src/arch/sim6502/main.c \
 	src/cpu/e6502/e6502.h \
 	src/devices/memory.h \
 	src/lib/brkpt.h \
+	src/lib/cfg.h \
 	src/lib/cmd.h \
 	src/lib/console.h \
 	src/lib/ihex.h \
@@ -1642,6 +1649,7 @@ src/arch/simarm/main.o: src/arch/simarm/main.c \
 	src/drivers/block/block.h \
 	src/drivers/char/char.h \
 	src/lib/brkpt.h \
+	src/lib/cfg.h \
 	src/lib/cmd.h \
 	src/lib/console.h \
 	src/lib/log.h \
@@ -1751,6 +1759,7 @@ src/arch/sims32/main.o: src/arch/sims32/main.c \
 	src/devices/serport.h \
 	src/drivers/char/char.h \
 	src/lib/brkpt.h \
+	src/lib/cfg.h \
 	src/lib/cmd.h \
 	src/lib/console.h \
 	src/lib/iniram.h \
@@ -2599,6 +2608,11 @@ src/drivers/video/x11.o: src/drivers/video/x11.c \
 src/lib/brkpt.o: src/lib/brkpt.c \
 	src/lib/brkpt.h \
 	src/lib/cmd.h
+
+src/lib/cfg.o: src/lib/cfg.c \
+	src/lib/cfg.h \
+	src/lib/log.h \
+	src/libini/libini.h
 
 src/lib/cmd.o: src/lib/cmd.c \
 	src/lib/cmd.h \

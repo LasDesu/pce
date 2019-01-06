@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/atarist/main.c                                      *
  * Created:     2011-03-17 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2011-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2011-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include <lib/cfg.h>
 #include <lib/console.h>
 #include <lib/getopt.h>
 #include <lib/log.h>
@@ -94,7 +95,7 @@ void print_version (void)
 	fputs (
 		"pce-atarist version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2011-2018 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2011-2019 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -106,7 +107,7 @@ void st_log_banner (void)
 {
 	pce_log (MSG_INF,
 		"pce-atarist version " PCE_VERSION_STR "\n"
-		"Copyright (C) 2011-2018 Hampa Hug <hampa@hampa.ch>\n"
+		"Copyright (C) 2011-2019 Hampa Hug <hampa@hampa.ch>\n"
 	);
 }
 
@@ -202,23 +203,6 @@ void st_log_deb (const char *msg, ...)
 	va_start (va, msg);
 	pce_log_va (MSG_DEB, msg, va);
 	va_end (va);
-}
-
-static
-int pce_load_config (ini_sct_t *ini, const char *fname)
-{
-	if (fname == NULL) {
-		return (0);
-	}
-
-	pce_log_tag (MSG_INF, "CONFIG:", "file=\"%s\"\n", fname);
-
-	if (ini_read (par_cfg, fname)) {
-		pce_log (MSG_ERR, "*** loading config file failed\n");
-		return (1);
-	}
-
-	return (0);
 }
 
 int main (int argc, char *argv[])

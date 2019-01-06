@@ -37,6 +37,7 @@ PCE_CPM80_OBJ_EXT := \
 	src/devices/memory.o \
 	src/drivers/options.o \
 	src/lib/brkpt.o \
+	src/lib/cfg.o \
 	src/lib/cmd.o \
 	src/lib/console.o \
 	src/lib/getopt.o \

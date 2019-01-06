@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/simarm/main.c                                       *
  * Created:     2004-11-04 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2019 Hampa Hug <hampa@hampa.ch>                     *
  * Copyright:   (C) 2004-2006 Lukas Ruf <ruf@lpr.ch>                         *
  *****************************************************************************/
 
@@ -37,6 +37,7 @@
 
 #include <signal.h>
 
+#include <lib/cfg.h>
 #include <lib/console.h>
 #include <lib/log.h>
 #include <lib/monitor.h>
@@ -79,7 +80,7 @@ void prt_version (void)
 	fputs (
 		"pce-simarm version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 1995-2018 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 1995-2019 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -148,23 +149,6 @@ void sarm_set_mem8 (simarm_t *sim, unsigned long addr, unsigned char val)
 	if (arm_set_mem8 (sim->cpu, addr, par_xlat, val)) {
 		; /* TLB miss */
 	}
-}
-
-static
-int pce_load_config (ini_sct_t *ini, const char *fname)
-{
-	if (fname == NULL) {
-		return (0);
-	}
-
-	pce_log_tag (MSG_INF, "CONFIG:", "file=\"%s\"\n", fname);
-
-	if (ini_read (par_cfg, fname)) {
-		pce_log (MSG_ERR, "*** loading config file failed\n");
-		return (1);
-	}
-
-	return (0);
 }
 
 int str_isarg1 (const char *str, const char *arg)

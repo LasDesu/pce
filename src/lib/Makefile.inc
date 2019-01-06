@@ -7,6 +7,7 @@ DIST += $(rel)/Makefile.inc $(rel)/stdint/stdint.h
 
 LIBPCE_BAS := \
 	brkpt \
+	cfg \
 	cmd \
 	console \
 	getopt \
@@ -39,6 +40,7 @@ CLN  += $(LIBPCE_OBJ)
 DIST += $(LIBPCE_SRC) $(LIBPCE_HDR)
 
 $(rel)/brkpt.o:		$(rel)/brkpt.c
+$(rel)/cfg.o:		$(rel)/cfg.c
 $(rel)/cmd.o:		$(rel)/cmd.c
 $(rel)/console.o:	$(rel)/console.c
 $(rel)/getopt.o:	$(rel)/getopt.c

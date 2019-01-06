@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/sim405/main.c                                       *
  * Created:     2004-06-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2019 Hampa Hug <hampa@hampa.ch>                     *
  * Copyright:   (C) 2004-2006 Lukas Ruf <ruf@lpr.ch>                         *
  *****************************************************************************/
 
@@ -37,6 +37,7 @@
 #include "msg.h"
 #include "sim405.h"
 
+#include <lib/cfg.h>
 #include <lib/cmd.h>
 #include <lib/console.h>
 #include <lib/getopt.h>
@@ -95,7 +96,7 @@ void print_version (void)
 	fputs (
 		"pce-sim405 version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2004-2018 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2004-2019 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -107,7 +108,7 @@ void s405_log_banner (void)
 {
 	pce_log (MSG_MSG,
 		"pce-sim405 version " PCE_VERSION_STR "\n"
-		"Copyright (C) 2004-2018 Hampa Hug <hampa@hampa.ch>\n"
+		"Copyright (C) 2004-2019 Hampa Hug <hampa@hampa.ch>\n"
 	);
 }
 
@@ -175,23 +176,6 @@ void s405_set_mem8 (sim405_t *sim, unsigned long addr, unsigned char val)
 	if (p405_set_xlat8 (sim->ppc, addr, par_xlat, val)) {
 		; /* TLB miss */
 	}
-}
-
-static
-int pce_load_config (ini_sct_t *ini, const char *fname)
-{
-	if (fname == NULL) {
-		return (0);
-	}
-
-	pce_log_tag (MSG_INF, "CONFIG:", "file=\"%s\"\n", fname);
-
-	if (ini_read (par_cfg, fname)) {
-		pce_log (MSG_ERR, "*** loading config file failed\n");
-		return (1);
-	}
-
-	return (0);
 }
 
 int main (int argc, char *argv[])
