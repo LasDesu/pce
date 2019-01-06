@@ -11,6 +11,7 @@ fi
 } > "src/config.h"
 
 find src -type f -name "*.c" -print |\
+grep -v "^src/arch/sim405/pceutils/" |\
 while read file ; do
 	echo "${file%.*}.o:"
 	makedepend -Y -f- -w0 -Isrc "$file" 2> /dev/null

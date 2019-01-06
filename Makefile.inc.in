@@ -162,6 +162,7 @@ include $(srcdir)/src/arch/macplus/Makefile.inc
 include $(srcdir)/src/arch/macplus/pcex/Makefile.inc
 include $(srcdir)/src/arch/rc759/Makefile.inc
 include $(srcdir)/src/arch/sim405/Makefile.inc
+include $(srcdir)/src/arch/sim405/pceutils/Makefile.inc
 include $(srcdir)/src/arch/sim6502/Makefile.inc
 include $(srcdir)/src/arch/simarm/Makefile.inc
 include $(srcdir)/src/arch/sims32/Makefile.inc
