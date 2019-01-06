@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/e8530.c                                          *
  * Created:     2007-11-11 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2009 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -88,6 +88,27 @@ void e8530_init (e8530_t *scc)
 
 void e8530_free (e8530_t *scc)
 {
+}
+
+e8530_t *e8530_new (void)
+{
+	e8530_t *scc;
+
+	if ((scc = malloc (sizeof (e8530_t))) == NULL) {
+		return (NULL);
+	}
+
+	e8530_init (scc);
+
+	return (scc);
+}
+
+void e8530_del (e8530_t *scc)
+{
+	if (scc != NULL) {
+		e8530_free (scc);
+		free (scc);
+	}
 }
 
 void e8530_set_irq_fct (e8530_t *scc, void *ext, void *fct)
