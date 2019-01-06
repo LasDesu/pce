@@ -1758,6 +1758,9 @@ src/chipset/82xx/e8272.o: src/chipset/82xx/e8272.c \
 src/chipset/clock/ds1743.o: src/chipset/clock/ds1743.c \
 	src/chipset/clock/ds1743.h
 
+src/chipset/clock/mc146818a.o: src/chipset/clock/mc146818a.c \
+	src/chipset/clock/mc146818a.h
+
 src/chipset/e6522.o: src/chipset/e6522.c \
 	src/chipset/e6522.h
 
