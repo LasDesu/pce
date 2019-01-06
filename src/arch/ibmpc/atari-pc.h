@@ -3,9 +3,9 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * File name:   src/arch/ibmpc/main.h                                        *
- * Created:     2001-05-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2001-2016 Hampa Hug <hampa@hampa.ch>                     *
+ * File name:   src/arch/ibmpc/atari-pc.h                                    *
+ * Created:     2018-09-01 by Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2018 Hampa Hug <hampa@hampa.ch>                          *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,30 +20,18 @@
  *****************************************************************************/
 
 
-#ifndef PCE_IBMPC_MAIN_H
-#define PCE_IBMPC_MAIN_H 1
+#ifndef PCE_IBMPC_ATARI_PC_H
+#define PCE_IBMPC_ATARI_PC_H 1
 
 
-#include <config.h>
+#include "ibmpc.h"
 
 
-#define PCE_IBMPC_CLK0 14318184
-#define PCE_IBMPC_CLK1 (PCE_IBMPC_CLK0 / 3)
-#define PCE_IBMPC_CLK2 (PCE_IBMPC_CLK0 / 12)
+int atari_pc_get_port8 (ibmpc_t *pc, unsigned long addr, unsigned char *val);
+int atari_pc_set_port8 (ibmpc_t *pc, unsigned long addr, unsigned char val);
 
-#define PCE_IBMPC_5150  1
-#define PCE_IBMPC_5160  2
-#define PCE_IBMPC_M24   4
-#define PCE_IBMPC_ATARI 8
-
-
-extern const char *par_terminal;
-extern const char *par_video;
-
-
-void sim_stop (void);
-
-void pc_log_deb (const char *msg, ...);
+void pc_setup_atari_pc (ibmpc_t *pc, ini_sct_t *ini);
+void atari_pc_del (ibmpc_t *pc);
 
 
 #endif

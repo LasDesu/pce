@@ -414,6 +414,43 @@ src/arch/dos/path.o: src/arch/dos/path.c \
 	src/config.h \
 	src/cpu/e8086/e8086.h
 
+src/arch/ibmpc/atari-pc.o: src/arch/ibmpc/atari-pc.c \
+	src/arch/ibmpc/atari-pc.h \
+	src/arch/ibmpc/cassette.h \
+	src/arch/ibmpc/ems.h \
+	src/arch/ibmpc/ibmpc.h \
+	src/arch/ibmpc/keyboard.h \
+	src/arch/ibmpc/main.h \
+	src/arch/ibmpc/speaker.h \
+	src/arch/ibmpc/xms.h \
+	src/chipset/82xx/e8237.h \
+	src/chipset/82xx/e8250.h \
+	src/chipset/82xx/e8253.h \
+	src/chipset/82xx/e8255.h \
+	src/chipset/82xx/e8259.h \
+	src/chipset/82xx/e8272.h \
+	src/chipset/clock/mc146818a.h \
+	src/config.h \
+	src/cpu/e8086/e8086.h \
+	src/devices/device.h \
+	src/devices/fdc.h \
+	src/devices/hdc.h \
+	src/devices/memory.h \
+	src/devices/nvram.h \
+	src/devices/parport.h \
+	src/devices/serport.h \
+	src/devices/video/video.h \
+	src/drivers/block/block.h \
+	src/drivers/char/char.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/brkpt.h \
+	src/lib/cmd.h \
+	src/lib/log.h \
+	src/libini/libini.h
+
 src/arch/ibmpc/cassette.o: src/arch/ibmpc/cassette.c \
 	src/arch/ibmpc/cassette.h \
 	src/arch/ibmpc/main.h \
@@ -434,6 +471,7 @@ src/arch/ibmpc/cmd.o: src/arch/ibmpc/cmd.c \
 	src/chipset/82xx/e8255.h \
 	src/chipset/82xx/e8259.h \
 	src/chipset/82xx/e8272.h \
+	src/chipset/clock/mc146818a.h \
 	src/config.h \
 	src/cpu/e8086/e8086.h \
 	src/devices/device.h \
@@ -485,6 +523,7 @@ src/arch/ibmpc/hook.o: src/arch/ibmpc/hook.c \
 	src/chipset/82xx/e8255.h \
 	src/chipset/82xx/e8259.h \
 	src/chipset/82xx/e8272.h \
+	src/chipset/clock/mc146818a.h \
 	src/config.h \
 	src/cpu/e8086/e8086.h \
 	src/devices/device.h \
@@ -507,6 +546,7 @@ src/arch/ibmpc/hook.o: src/arch/ibmpc/hook.c \
 	src/libini/libini.h
 
 src/arch/ibmpc/ibmpc.o: src/arch/ibmpc/ibmpc.c \
+	src/arch/ibmpc/atari-pc.h \
 	src/arch/ibmpc/cassette.h \
 	src/arch/ibmpc/ems.h \
 	src/arch/ibmpc/hook.h \
@@ -523,6 +563,7 @@ src/arch/ibmpc/ibmpc.o: src/arch/ibmpc/ibmpc.c \
 	src/chipset/82xx/e8255.h \
 	src/chipset/82xx/e8259.h \
 	src/chipset/82xx/e8272.h \
+	src/chipset/clock/mc146818a.h \
 	src/chipset/e6845.h \
 	src/config.h \
 	src/cpu/e8086/e8086.h \
@@ -574,6 +615,7 @@ src/arch/ibmpc/int13.o: src/arch/ibmpc/int13.c \
 	src/chipset/82xx/e8255.h \
 	src/chipset/82xx/e8259.h \
 	src/chipset/82xx/e8272.h \
+	src/chipset/clock/mc146818a.h \
 	src/config.h \
 	src/cpu/e8086/e8086.h \
 	src/devices/device.h \
@@ -617,6 +659,7 @@ src/arch/ibmpc/m24.o: src/arch/ibmpc/m24.c \
 	src/chipset/82xx/e8255.h \
 	src/chipset/82xx/e8259.h \
 	src/chipset/82xx/e8272.h \
+	src/chipset/clock/mc146818a.h \
 	src/config.h \
 	src/cpu/e8086/e8086.h \
 	src/devices/device.h \
@@ -654,6 +697,7 @@ src/arch/ibmpc/main.o: src/arch/ibmpc/main.c \
 	src/chipset/82xx/e8255.h \
 	src/chipset/82xx/e8259.h \
 	src/chipset/82xx/e8272.h \
+	src/chipset/clock/mc146818a.h \
 	src/config.h \
 	src/cpu/e8086/e8086.h \
 	src/devices/device.h \
@@ -694,6 +738,7 @@ src/arch/ibmpc/msg.o: src/arch/ibmpc/msg.c \
 	src/chipset/82xx/e8255.h \
 	src/chipset/82xx/e8259.h \
 	src/chipset/82xx/e8272.h \
+	src/chipset/clock/mc146818a.h \
 	src/config.h \
 	src/cpu/e8086/e8086.h \
 	src/devices/device.h \

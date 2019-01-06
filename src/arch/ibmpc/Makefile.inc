@@ -36,6 +36,7 @@ $(rel)/%.o: $(rel)/%.c
 # ----------------------------------------------------------------------
 
 PCE_IBMPC_BAS  := \
+	atari-pc \
 	cassette \
 	cmd \
 	ems \
@@ -57,6 +58,7 @@ PCE_IBMPC_ETC  := $(rel)/pce-ibmpc.cfg
 PCE_IBMPC_BIN  := $(rel)/pce-ibmpc$(EXEEXT)
 
 PCE_IBMPC_OBJ_EXT := \
+	src/chipset/clock/mc146818a.o \
 	src/chipset/82xx/e8237.o \
 	src/chipset/82xx/e8250.o \
 	src/chipset/82xx/e8253.o \

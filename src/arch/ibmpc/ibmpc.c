@@ -23,6 +23,7 @@
 #include "main.h"
 #include "hook.h"
 #include "ibmpc.h"
+#include "atari-pc.h"
 #include "m24.h"
 #include "msg.h"
 
@@ -41,6 +42,8 @@
 #include <lib/log.h>
 #include <lib/string.h>
 #include <lib/sysdep.h>
+
+#include <chipset/clock/mc146818a.h>
 
 #include <chipset/82xx/e8237.h>
 #include <chipset/82xx/e8250.h>
@@ -85,6 +88,10 @@ unsigned char pc_get_port8 (ibmpc_t *pc, unsigned long addr)
 	unsigned char val;
 
 	if (m24_get_port8 (pc, addr, &val) == 0) {
+		return (val);
+	}
+
+	if (atari_pc_get_port8 (pc, addr, &val) == 0) {
 		return (val);
 	}
 
@@ -133,6 +140,10 @@ void pc_set_port8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 #endif
 
 	if (m24_set_port8 (pc, addr, val) == 0) {
+		return;
+	}
+
+	if (atari_pc_set_port8 (pc, addr, val) == 0) {
 		return;
 	}
 
@@ -472,6 +483,9 @@ void pc_setup_system (ibmpc_t *pc, ini_sct_t *ini)
 	}
 	else if (strcmp (model, "m24") == 0) {
 		pc->model = PCE_IBMPC_5160 | PCE_IBMPC_M24;
+	}
+	else if (strcmp (model, "atari-pc") == 0) {
+		pc->model = PCE_IBMPC_5150 | PCE_IBMPC_ATARI;
 	}
 	else {
 		pce_log (MSG_ERR, "*** unknown model (%s)\n", model);
@@ -1528,6 +1542,7 @@ ibmpc_t *pc_new (ini_sct_t *ini)
 
 	pc_setup_system (pc, ini);
 	pc_setup_m24 (pc, ini);
+	pc_setup_atari_pc (pc, ini);
 
 	pc_setup_mem (pc, ini);
 	pc_setup_ports (pc, ini);
@@ -1609,6 +1624,8 @@ void pc_del (ibmpc_t *pc)
 	}
 
 	bps_free (&pc->bps);
+
+	atari_pc_del (pc);
 
 	pc_del_xms (pc);
 	pc_del_ems (pc);
@@ -1977,6 +1994,10 @@ void pc_clock (ibmpc_t *pc, unsigned long cnt)
 
 			if (pc->trm != NULL) {
 				trm_check (pc->trm);
+			}
+
+			if (pc->atari_pc_rtc != NULL) {
+				mc146818a_clock (pc->atari_pc_rtc, clk);
 			}
 
 			if (pc->fdc != NULL) {

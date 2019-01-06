@@ -30,6 +30,8 @@
 #include "speaker.h"
 #include "xms.h"
 
+#include <chipset/clock/mc146818a.h>
+
 #include <chipset/82xx/e8237.h>
 #include <chipset/82xx/e8250.h>
 #include <chipset/82xx/e8253.h>
@@ -140,6 +142,12 @@ typedef struct ibmpc_t {
 	unsigned           brk;
 	char               pause;
 	char               trace;
+
+	unsigned           atari_pc_turbo;
+	unsigned char      atari_pc_port34;
+	unsigned char      atari_pc_switches;
+	unsigned char      atari_pc_rtc_port;
+	mc146818a_t        *atari_pc_rtc;
 } ibmpc_t;
 
 
