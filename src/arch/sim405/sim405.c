@@ -30,6 +30,7 @@
 
 #include <stdlib.h>
 
+#include "hook.h"
 #include "msg.h"
 #include "pci.h"
 #include "sercons.h"
@@ -408,6 +409,8 @@ sim405_t *s405_new (ini_sct_t *ini)
 		sim->clk_div[i] = 0;
 	}
 
+	s405_hook_init (sim);
+
 	bps_init (&sim->bps);
 
 	dev_lst_init (&sim->devlst);
@@ -463,6 +466,8 @@ void s405_del (sim405_t *sim)
 	mem_del (sim->mem);
 
 	bps_free (&sim->bps);
+
+	s405_hook_free (sim);
 
 	free (sim);
 }

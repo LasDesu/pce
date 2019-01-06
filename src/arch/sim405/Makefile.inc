@@ -23,6 +23,7 @@ $(rel)/%.o: $(rel)/%.c
 
 PCE_SIM405_BAS := \
 	cmd_ppc \
+	hook \
 	main \
 	msg \
 	pci \
@@ -87,6 +88,7 @@ DIST += $(PCE_SIM405_SRC) $(PCE_SIM405_HDR) $(PCE_SIM405_MAN1)
 DIST += $(rel)/pce-sim405.cfg.in
 
 $(rel)/cmd_ppc.o:	$(rel)/cmd_ppc.c
+$(rel)/hook.o:		$(rel)/hook.c
 $(rel)/sim405.o:	$(rel)/sim405.c
 $(rel)/main.o:		$(rel)/main.c
 $(rel)/pci.o:		$(rel)/pci.c

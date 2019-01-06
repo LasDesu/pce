@@ -28,6 +28,7 @@
 
 #include "main.h"
 #include "cmd_ppc.h"
+#include "hook.h"
 #include "sim405.h"
 
 #include <stdio.h>
@@ -686,27 +687,6 @@ int s405_trap (sim405_t *sim, unsigned ofs)
 }
 
 static
-void ppc_hook (sim405_t *sim, unsigned long ir)
-{
-#if 0
-	fprintf (stderr, "%08lX: hook (%lu)\n",
-		(unsigned long) p405_get_pc (sim->ppc),
-		(unsigned long) (val & 0x0000ffff)
-	);
-#endif
-}
-
-#if 0
-static
-void ppc_log_opcode (void *ext, unsigned long ir)
-{
-	sim405_t *sim;
-
-	sim = (sim405_t *) ext;
-}
-#endif
-
-static
 void ppc_log_undef (void *ext, unsigned long ir)
 {
 	unsigned op1, op2;
@@ -1212,6 +1192,6 @@ void ppc_cmd_init (sim405_t *sim, monitor_t *mon)
 	sim->ppc->log_undef = &ppc_log_undef;
 	sim->ppc->log_mem = NULL;
 
-	p405_set_hook_fct (sim->ppc, sim, ppc_hook);
+	p405_set_hook_fct (sim->ppc, sim, s405_hook);
 	p405_set_trap_fct (sim->ppc, sim, s405_trap);
 }

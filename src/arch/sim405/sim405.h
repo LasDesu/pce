@@ -147,6 +147,13 @@ typedef struct sim405_s {
 	unsigned long      serial_clock;
 	unsigned long      serial_clock_count;
 
+	unsigned           hook_idx;
+	unsigned           hook_cnt;
+	unsigned char      hook_buf[256];
+
+	FILE               *hook_read;
+	FILE               *hook_write;
+
 	unsigned           brk;
 } sim405_t;
 
