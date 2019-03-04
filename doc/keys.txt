@@ -40,6 +40,9 @@ Pause		Quit
 PCE/atarist Terminal Keys
 ==============================================================================
 
+<ESC> Tab	Switch between the normal Atari monitor and the Viking
+		monitor.
+
 
 PCE/ibmpc Terminal Keys
 ==============================================================================
