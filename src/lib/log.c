@@ -159,7 +159,11 @@ void pce_log_va (unsigned level, const char *msg, va_list va)
 
 	for (i = 0; i < par_log_cnt; i++) {
 		if (level <= par_log[i].level) {
+#ifdef va_copy
 			va_copy (tmp, va);
+#else
+			tmp = va;
+#endif
 			vfprintf (par_log[i].fp, msg, tmp);
 			va_end (tmp);
 			fflush (par_log[i].fp);
