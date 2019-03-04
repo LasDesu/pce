@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/atarist/viking.c                                    *
  * Created:     2015-09-30 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2015 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2015-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -133,6 +133,8 @@ void st_viking_set_terminal (st_viking_t *vik, terminal_t *trm)
 		vik->mod = 1;
 		vik->mod_y1 = 0;
 		vik->mod_y2 = VIKING_H - 1;
+
+		trm_open (vik->trm, VIKING_W, VIKING_H);
 	}
 }
 
