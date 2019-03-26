@@ -1040,9 +1040,9 @@ void st_clock (atari_st_t *sim, unsigned n)
 		}
 	}
 
-	st_fdc_clock_media_change (&sim->fdc, sim->clk_div[2]);
+	st_fdc_clock_media_change (&sim->fdc, 8192);
 
-	st_realtime_sync (sim, sim->clk_div[2]);
+	st_realtime_sync (sim, 8192);
 
 	sim->clk_div[2] -= 8192;
 }
