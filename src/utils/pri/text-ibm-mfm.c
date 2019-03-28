@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text-ibm-mfm.c                                 *
  * Created:     2017-10-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2017-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -167,6 +167,12 @@ int txt_mfm_dec_track (pri_text_t *ctx)
 {
 	unsigned long bit, align;
 	unsigned long type, val;
+
+	if (ctx->first_track == 0) {
+		fputs ("\n\n", ctx->fp);
+	}
+
+	ctx->first_track = 0;
 
 	fprintf (ctx->fp, "TRACK %lu %lu\n\n", ctx->c, ctx->h);
 	fprintf (ctx->fp, "MODE IBM-MFM\n");

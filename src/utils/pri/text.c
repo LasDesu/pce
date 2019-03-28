@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text.c                                         *
  * Created:     2014-08-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2014-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2014-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -186,16 +186,24 @@ int pri_decode_text_auto_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, un
 }
 
 static
+void txt_dec_init (pri_text_t *ctx, FILE *fp, pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h)
+{
+	memset (ctx, 0, sizeof (pri_text_t));
+
+	ctx->fp = fp;
+	ctx->img = img;
+	ctx->trk = trk;
+	ctx->c = c;
+	ctx->h = h;
+	ctx->first_track = 1;
+}
+
+static
 int pri_decode_text_mfm_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
 {
 	pri_text_t ctx;
 
-	ctx.fp = opaque;
-	ctx.img = img;
-	ctx.trk = trk;
-	ctx.c = c;
-	ctx.h = h;
-
+	txt_dec_init (&ctx, opaque, img, trk, c, h);
 	txt_mfm_dec_track (&ctx);
 
 	return (0);
@@ -206,12 +214,7 @@ int pri_decode_text_fm_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsi
 {
 	pri_text_t ctx;
 
-	ctx.fp = opaque;
-	ctx.img = img;
-	ctx.trk = trk;
-	ctx.c = c;
-	ctx.h = h;
-
+	txt_dec_init (&ctx, opaque, img, trk, c, h);
 	txt_fm_dec_track (&ctx);
 
 	return (0);
@@ -222,12 +225,7 @@ int pri_decode_text_mac_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, uns
 {
 	pri_text_t ctx;
 
-	ctx.fp = opaque;
-	ctx.img = img;
-	ctx.trk = trk;
-	ctx.c = c;
-	ctx.h = h;
-
+	txt_dec_init (&ctx, opaque, img, trk, c, h);
 	txt_mac_dec_track (&ctx);
 
 	return (0);
@@ -238,12 +236,7 @@ int pri_decode_text_raw_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, uns
 {
 	pri_text_t ctx;
 
-	ctx.fp = opaque;
-	ctx.img = img;
-	ctx.trk = trk;
-	ctx.c = c;
-	ctx.h = h;
-
+	txt_dec_init (&ctx, opaque, img, trk, c, h);
 	txt_raw_dec_track (&ctx);
 
 	return (0);
