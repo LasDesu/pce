@@ -245,7 +245,7 @@ int mfm_decode_weak (psi_sct_t *sct, pri_trk_t *trk)
 	unsigned long ofs, val, idx;
 	pri_evt_t     *evt, *e;
 
-	evt = pri_trk_evt_get_after (trk, PRI_EVENT_WEAK, trk->idx);
+	evt = pri_trk_evt_get_idx (trk, PRI_EVENT_WEAK, 0);
 
 	while (evt != NULL) {
 		e = evt;
@@ -255,11 +255,17 @@ int mfm_decode_weak (psi_sct_t *sct, pri_trk_t *trk)
 			continue;
 		}
 
-		ofs = e->pos - trk->idx;
+		if (e->pos < trk->idx) {
+			ofs = trk->size + e->pos - trk->idx;
+		}
+		else {
+			ofs = e->pos - trk->idx;
+		}
+
 		val = e->val;
 
 		if (ofs >= (16UL * sct->n)) {
-			break;
+			continue;
 		}
 
 		if (psi_weak_alloc (sct)) {
