@@ -179,6 +179,10 @@ void smf_put_event (st_smf_t *smf)
 		return;
 	}
 
+	if ((smf->status >= 0xf1) && (smf->status != 0xf7)) {
+		return;
+	}
+
 	if (smf->clock_inited) {
 		delta = (smf->evt_clk - smf->clock) / (SMF_CLOCK / SMF_TICKS / 2);
 	}
