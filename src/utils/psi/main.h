@@ -36,6 +36,7 @@
 #define PSI_TRK_ENCODING  (1 << 4)
 #define PSI_TRK_TIME      (1 << 5)
 #define PSI_TRK_DUP       (1 << 6)
+#define PSI_TRK_WEAK      (1 << 7)
 
 #define PSI_FLAG_MFM_SIZE (1UL << 16)
 

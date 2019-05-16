@@ -301,6 +301,14 @@ int psi_list_track_cb (psi_img_t *img, psi_trk_t *trk,
 				trk_flg |= PSI_TRK_TIME;
 			}
 
+			if (sct->weak != NULL) {
+				trk_flg |= PSI_TRK_WEAK;
+			}
+
+			if (sct->next != NULL) {
+				trk_flg |= PSI_TRK_ALTERNATE;
+			}
+
 			if (sct->have_mfm_size) {
 				mfm_size = psi_sct_get_mfm_size (sct);
 
@@ -351,6 +359,14 @@ int psi_list_track_cb (psi_img_t *img, psi_trk_t *trk,
 
 	if (sct_flg & PSI_FLAG_CRC_ID) {
 		fputs (" CRC-ID", stdout);
+	}
+
+	if (trk_flg & PSI_TRK_WEAK) {
+		fputs (" WEAK", stdout);
+	}
+
+	if (trk_flg & PSI_TRK_ALTERNATE) {
+		fputs (" ALT", stdout);
 	}
 
 	if (sct_flg & PSI_FLAG_CRC_DATA) {
