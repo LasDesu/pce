@@ -400,19 +400,9 @@ int mac_set_msg_emu_reset (macplus_t *sim, const char *msg, const char *val)
 }
 
 static
-int mac_set_msg_emu_serport_driver (macplus_t *sim, const char *msg, const char *val)
+int mac_set_msg_emu_ser1_driver (macplus_t *sim, const char *msg, const char *val)
 {
-	unsigned idx;
-
-	if (msg_get_prefix_uint (&val, &idx, ":", " \t")) {
-		return (1);
-	}
-
-	if (idx > 1) {
-		return (1);
-	}
-
-	if (mac_ser_set_driver (&sim->ser[idx], val)) {
+	if (mac_ser_set_driver (&sim->ser[0], val)) {
 		return (1);
 	}
 
@@ -420,21 +410,59 @@ int mac_set_msg_emu_serport_driver (macplus_t *sim, const char *msg, const char 
 }
 
 static
-int mac_set_msg_emu_serport_file (macplus_t *sim, const char *msg, const char *val)
+int mac_set_msg_emu_ser1_file (macplus_t *sim, const char *msg, const char *val)
 {
-	unsigned idx;
-
-	if (msg_get_prefix_uint (&val, &idx, ":", " \t")) {
+	if (mac_ser_set_file (&sim->ser[0], val)) {
 		return (1);
 	}
 
-	if (idx > 1) {
+	return (0);
+}
+
+static
+int mac_set_msg_emu_ser1_multi (macplus_t *sim, const char *msg, const char *val)
+{
+	unsigned v;
+
+	if (msg_get_uint (val, &v)) {
 		return (1);
 	}
 
-	if (mac_ser_set_file (&sim->ser[idx], val)) {
+	e8530_set_multichar (&sim->scc, 0, v, v);
+
+	return (0);
+}
+
+static
+int mac_set_msg_emu_ser2_driver (macplus_t *sim, const char *msg, const char *val)
+{
+	if (mac_ser_set_driver (&sim->ser[1], val)) {
 		return (1);
 	}
+
+	return (0);
+}
+
+static
+int mac_set_msg_emu_ser2_file (macplus_t *sim, const char *msg, const char *val)
+{
+	if (mac_ser_set_file (&sim->ser[1], val)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
+int mac_set_msg_emu_ser2_multi (macplus_t *sim, const char *msg, const char *val)
+{
+	unsigned v;
+
+	if (msg_get_uint (val, &v)) {
+		return (1);
+	}
+
+	e8530_set_multichar (&sim->scc, 1, v, v);
 
 	return (0);
 }
@@ -491,8 +519,12 @@ static mac_msg_list_t set_msg_list[] = {
 	{ "emu.realtime", mac_set_msg_emu_realtime },
 	{ "emu.realtime.toggle", mac_set_msg_emu_realtime_toggle },
 	{ "emu.reset", mac_set_msg_emu_reset },
-	{ "emu.serport.driver", mac_set_msg_emu_serport_driver },
-	{ "emu.serport.file", mac_set_msg_emu_serport_file },
+	{ "emu.ser1.driver", mac_set_msg_emu_ser1_driver },
+	{ "emu.ser1.file", mac_set_msg_emu_ser1_file },
+	{ "emu.ser1.multi", mac_set_msg_emu_ser1_multi },
+	{ "emu.ser2.driver", mac_set_msg_emu_ser2_driver },
+	{ "emu.ser2.file", mac_set_msg_emu_ser2_file },
+	{ "emu.ser2.multi", mac_set_msg_emu_ser2_multi },
 	{ "emu.stop", mac_set_msg_emu_stop },
 	{ "emu.video.brightness", mac_set_msg_emu_video_brightness },
 	{ NULL, NULL }

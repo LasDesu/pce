@@ -115,6 +115,9 @@ emu.disk.insert <drive>:<fname>
 	in the config file. The disk image type is "auto". If a disk
 	is already inserted in <drive> it is ejected first.
 
+emu.fdc.accurate "0" | "1"
+	Disable or enable the FDC accurate mode.
+
 emu.parport.driver <port>":"<driver>
 	Attach a parallel port to a new character driver. The driver
 	string has the same format as in the config file.
@@ -221,9 +224,6 @@ emu.disk.rw <drive>
 emu.exit
 	Terminate the emulator immediately.
 
-emu.fdc.accurate "0" | "1"
-	Disable or enable the FDC accurate mode.
-
 emu.iwm.insert <drive>":"<fname>
 	Attach a PRI image to an IWM drive. After this, the disk
 	must still be inserted using "mac.insert".
@@ -251,13 +251,20 @@ emu.pause.toggle
 emu.reset
 	Reset the emulated machine.
 
-emu.serport.driver <port>":"<driver>
-	Attach a serial port to a new character driver. The driver
+emu.ser1.driver <driver>
+	Attach the first serial port to a new character driver. The driver
 	string has the same format as in the config file.
 
-emu.serport.file <port>":"<filename>
+emu.ser1.file <filename>
 	This is equivalent to
-	emu.serport.driver <port>:stdio:file=<filename>.
+	emu.ser1.driver "stdio:file=<filename>"
+
+emu.ser1.multi <count>
+	Set the multi char count for the first serial port.
+
+emu.ser2.driver <driver>
+emu.ser2.file <filename>
+emu.ser2.multi <count>
 
 emu.stop
 	Fall back to the monitor.
