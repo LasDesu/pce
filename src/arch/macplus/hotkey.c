@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/hotkey.c                                    *
  * Created:     2010-11-05 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -31,37 +31,39 @@
 
 int mac_set_hotkey (macplus_t *sim, pce_key_t key)
 {
+	static const char *ins = "emu.mac.insert";
+
 	switch (key) {
 	case PCE_KEY_F1:
-		mac_set_msg (sim, "mac.insert", "1");
+		mac_set_msg (sim, ins, "1");
 		break;
 
 	case PCE_KEY_F2:
-		mac_set_msg (sim, "mac.insert", "2");
+		mac_set_msg (sim, ins, "2");
 		break;
 
 	case PCE_KEY_F3:
-		mac_set_msg (sim, "mac.insert", "3");
+		mac_set_msg (sim, ins, "3");
 		break;
 
 	case PCE_KEY_F4:
-		mac_set_msg (sim, "mac.insert", "4");
+		mac_set_msg (sim, ins, "4");
 		break;
 
 	case PCE_KEY_F5:
-		mac_set_msg (sim, "mac.insert", "5");
+		mac_set_msg (sim, ins, "5");
 		break;
 
 	case PCE_KEY_F6:
-		mac_set_msg (sim, "mac.insert", "6");
+		mac_set_msg (sim, ins, "6");
 		break;
 
 	case PCE_KEY_F7:
-		mac_set_msg (sim, "mac.insert", "7");
+		mac_set_msg (sim, ins, "7");
 		break;
 
 	case PCE_KEY_F8:
-		mac_set_msg (sim, "mac.insert", "8");
+		mac_set_msg (sim, ins, "8");
 		break;
 
 	case PCE_KEY_K:

@@ -239,6 +239,9 @@ emu.iwm.rw <drive>
 emu.iwm.status
 	Print status information on all IWM drives.
 
+emu.mac.insert [<drive>]
+	Simulate re-inserting a disk that has been dragged to the trash.
+
 emu.pause "0" | "1"
 	Pause or resume the emulation.
 
@@ -261,9 +264,6 @@ emu.stop
 
 emu.video.brightness <brightness>
 	Set the video brightness in the range of 0 - 1000.
-
-mac.insert [<drive>]
-	Simulate re-inserting a disk that has been dragged to the trash.
 
 
 Terminal messages

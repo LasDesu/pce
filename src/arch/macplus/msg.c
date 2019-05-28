@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/msg.c                                       *
  * Created:     2007-12-04 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -315,6 +315,34 @@ int mac_set_msg_emu_iwm_status (macplus_t *sim, const char *msg, const char *val
 }
 
 static
+int mac_set_msg_emu_mac_insert (macplus_t *sim, const char *msg, const char *val)
+{
+	unsigned drv;
+
+	if (strcmp (val, "") == 0) {
+		if (sim->sony.enable) {
+			mac_sony_insert (&sim->sony, 1);
+			mac_sony_insert (&sim->sony, 2);
+			mac_sony_insert (&sim->sony, 3);
+		}
+	}
+	else {
+		if (msg_get_uint (val, &drv)) {
+			return (1);
+		}
+
+		if (sim->sony.enable) {
+			mac_sony_insert (&sim->sony, drv);
+		}
+		else {
+			mac_iwm_insert (&sim->iwm, (drv > 0) ? (drv - 1) : 0);
+		}
+	}
+
+	return (0);
+}
+
+static
 int mac_set_msg_emu_pause (macplus_t *sim, const char *msg, const char *val)
 {
 	int v;
@@ -442,34 +470,6 @@ int mac_set_msg_emu_video_brightness (macplus_t *sim, const char *msg, const cha
 	return (0);
 }
 
-static
-int mac_set_msg_mac_insert (macplus_t *sim, const char *msg, const char *val)
-{
-	unsigned drv;
-
-	if (strcmp (val, "") == 0) {
-		if (sim->sony.enable) {
-			mac_sony_insert (&sim->sony, 1);
-			mac_sony_insert (&sim->sony, 2);
-			mac_sony_insert (&sim->sony, 3);
-		}
-	}
-	else {
-		if (msg_get_uint (val, &drv)) {
-			return (1);
-		}
-
-		if (sim->sony.enable) {
-			mac_sony_insert (&sim->sony, drv);
-		}
-		else {
-			mac_iwm_insert (&sim->iwm, (drv > 0) ? (drv - 1) : 0);
-		}
-	}
-
-	return (0);
-}
-
 
 static mac_msg_list_t set_msg_list[] = {
 	{ "emu.cpu.model", mac_set_msg_emu_cpu_model },
@@ -480,11 +480,12 @@ static mac_msg_list_t set_msg_list[] = {
 	{ "emu.disk.insert", mac_set_msg_emu_disk_insert },
 	{ "emu.disk.ro", mac_set_msg_emu_disk_ro },
 	{ "emu.disk.rw", mac_set_msg_emu_disk_rw },
+	{ "emu.exit", mac_set_msg_emu_exit },
 	{ "emu.iwm.insert", mac_set_msg_emu_iwm_insert },
 	{ "emu.iwm.ro", mac_set_msg_emu_iwm_ro },
 	{ "emu.iwm.rw", mac_set_msg_emu_iwm_rw },
 	{ "emu.iwm.status", mac_set_msg_emu_iwm_status },
-	{ "emu.exit", mac_set_msg_emu_exit },
+	{ "emu.mac.insert", mac_set_msg_emu_mac_insert },
 	{ "emu.pause", mac_set_msg_emu_pause },
 	{ "emu.pause.toggle", mac_set_msg_emu_pause_toggle },
 	{ "emu.realtime", mac_set_msg_emu_realtime },
@@ -494,7 +495,6 @@ static mac_msg_list_t set_msg_list[] = {
 	{ "emu.serport.file", mac_set_msg_emu_serport_file },
 	{ "emu.stop", mac_set_msg_emu_stop },
 	{ "emu.video.brightness", mac_set_msg_emu_video_brightness },
-	{ "mac.insert", mac_set_msg_mac_insert },
 	{ NULL, NULL }
 };
 
