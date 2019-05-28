@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/rtc.c                                       *
  * Created:     2007-11-16 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -184,13 +184,6 @@ void mac_rtc_set_defaults (mac_rtc_t *rtc)
 	for (i = 0; i < 256; i++) {
 		rtc->data[i] = 0;
 	}
-
-	rtc->data[0x10] = 0xa8;
-	rtc->data[0x13] = 0x22;	/* serial port */
-	rtc->data[0x1e] = 0x64; /* key repeat delay / rate */
-	rtc->data[0x08] = 0x18; /* mouse speed / speaker volume */
-	rtc->data[0x09] = 0x88; /* double click / caret flash */
-	rtc->data[0x0b] = 0x20; /* mouse tracking / startup drive / menu blink */
 }
 
 int mac_rtc_load_file (mac_rtc_t *rtc, const char *fname)
