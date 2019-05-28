@@ -619,6 +619,55 @@ void mac_cmd_halt (cmd_t *cmd, macplus_t *sim)
 	mac_prt_state_cpu (sim->cpu);
 }
 
+static
+void mac_cmd_hm (cmd_t *cmd)
+{
+	pce_puts (
+		"emu.cpu.model        \"68000\" | \"68010\" | \"68020\"\n"
+		"emu.cpu.speed        <factor>\n"
+		"emu.cpu.speed.step   <adjustment>\n"
+		"\n"
+		"emu.disk.commit      [<drive>]\n"
+		"emu.disk.eject       <drive>\n"
+		"emu.disk.insert      <drive>:<filename>\n"
+		"emu.disk.ro          <drive>\n"
+		"emu.disk.rw          <drive>\n"
+		"\n"
+		"emu.exit\n"
+		"\n"
+		"emu.iwm.insert       <drive>:<filename>\n"
+		"emu.iwm.ro           <drive>\n"
+		"emu.iwm.rw           <drive>\n"
+		"emu.iwm.status\n"
+		"\n"
+		"emu.mac.insert       <drive>\n"
+		"\n"
+		"emu.pause            \"0\" | \"1\"\n"
+		"emu.pause.toggle\n"
+		"emu.realtime         \"0\" | \"1\"\n"
+		"emu.realtime.toggle\n"
+		"emu.reset\n"
+		"\n"
+		"emu.ser1.driver      <driver>\n"
+		"emu.ser1.file        <filename>\n"
+		"emu.ser1.multi       <count>\n"
+		"emu.ser2.driver      <driver>\n"
+		"emu.ser2.file        <filename>\n"
+		"emu.ser2.multi       <count>\n"
+		"\n"
+		"emu.stop\n"
+		"\n"
+		"emu.video.brightness <val>\n"
+		"\n"
+		"emu.term.fullscreen  \"0\" | \"1\"\n"
+		"emu.term.fullscreen.toggle\n"
+		"emu.term.grab\n"
+		"emu.term.release\n"
+		"emu.term.screenshot  [<filename>]\n"
+		"emu.term.title       <title>\n"
+	);
+}
+
 /*
  * p - step
  */
@@ -947,6 +996,9 @@ int mac_cmd (macplus_t *sim, cmd_t *cmd)
 	}
 	else if (cmd_match (cmd, "halt")) {
 		mac_cmd_halt (cmd, sim);
+	}
+	else if (cmd_match (cmd, "hm")) {
+		mac_cmd_hm (cmd);
 	}
 	else if (cmd_match (cmd, "p")) {
 		mac_cmd_p (cmd, sim);
