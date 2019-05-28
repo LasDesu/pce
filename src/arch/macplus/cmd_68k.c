@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/cmd_68k.c                                   *
  * Created:     2007-04-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -59,7 +59,7 @@ static
 void mac_dasm_str (char *dst, e68_dasm_t *op)
 {
 	unsigned   i, n;
-	char       tmp[256];
+	char       tmp[512];
 	const char *ins;
 
 	strcpy (dst, "");
