@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/ibmpc.h                                       *
  * Created:     2001-05-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2001-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2001-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -25,6 +25,7 @@
 
 
 #include "cassette.h"
+#include "covox.h"
 #include "ems.h"
 #include "keyboard.h"
 #include "speaker.h"
@@ -58,9 +59,6 @@
 #include <libini/libini.h>
 
 
-
-
-
 typedef struct ibmpc_t {
 	e8086_t            *cpu;
 	video_t            *video;
@@ -81,6 +79,7 @@ typedef struct ibmpc_t {
 	pc_kbd_t           kbd;
 	pc_cassette_t      *cas;
 	pc_speaker_t       spk;
+	pc_covox_t         *cov;
 
 	unsigned           model;
 

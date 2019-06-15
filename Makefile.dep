@@ -419,6 +419,7 @@ src/arch/dos/path.o: src/arch/dos/path.c \
 src/arch/ibmpc/atari-pc.o: src/arch/ibmpc/atari-pc.c \
 	src/arch/ibmpc/atari-pc.h \
 	src/arch/ibmpc/cassette.h \
+	src/arch/ibmpc/covox.h \
 	src/arch/ibmpc/ems.h \
 	src/arch/ibmpc/ibmpc.h \
 	src/arch/ibmpc/keyboard.h \
@@ -461,6 +462,7 @@ src/arch/ibmpc/cassette.o: src/arch/ibmpc/cassette.c \
 
 src/arch/ibmpc/cmd.o: src/arch/ibmpc/cmd.c \
 	src/arch/ibmpc/cassette.h \
+	src/arch/ibmpc/covox.h \
 	src/arch/ibmpc/ems.h \
 	src/arch/ibmpc/ibmpc.h \
 	src/arch/ibmpc/keyboard.h \
@@ -498,6 +500,13 @@ src/arch/ibmpc/cmd.o: src/arch/ibmpc/cmd.c \
 	src/lib/sysdep.h \
 	src/libini/libini.h
 
+src/arch/ibmpc/covox.o: src/arch/ibmpc/covox.c \
+	src/arch/ibmpc/covox.h \
+	src/arch/ibmpc/main.h \
+	src/config.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h
+
 src/arch/ibmpc/ems.o: src/arch/ibmpc/ems.c \
 	src/arch/ibmpc/ems.h \
 	src/arch/ibmpc/main.h \
@@ -510,6 +519,7 @@ src/arch/ibmpc/ems.o: src/arch/ibmpc/ems.c \
 
 src/arch/ibmpc/hook.o: src/arch/ibmpc/hook.c \
 	src/arch/ibmpc/cassette.h \
+	src/arch/ibmpc/covox.h \
 	src/arch/ibmpc/ems.h \
 	src/arch/ibmpc/hook.h \
 	src/arch/ibmpc/ibmpc.h \
@@ -550,6 +560,7 @@ src/arch/ibmpc/hook.o: src/arch/ibmpc/hook.c \
 src/arch/ibmpc/ibmpc.o: src/arch/ibmpc/ibmpc.c \
 	src/arch/ibmpc/atari-pc.h \
 	src/arch/ibmpc/cassette.h \
+	src/arch/ibmpc/covox.h \
 	src/arch/ibmpc/ems.h \
 	src/arch/ibmpc/hook.h \
 	src/arch/ibmpc/ibmpc.h \
@@ -604,6 +615,7 @@ src/arch/ibmpc/ibmpc.o: src/arch/ibmpc/ibmpc.c \
 
 src/arch/ibmpc/int13.o: src/arch/ibmpc/int13.c \
 	src/arch/ibmpc/cassette.h \
+	src/arch/ibmpc/covox.h \
 	src/arch/ibmpc/ems.h \
 	src/arch/ibmpc/ibmpc.h \
 	src/arch/ibmpc/int13.h \
@@ -649,6 +661,7 @@ src/arch/ibmpc/keyboard.o: src/arch/ibmpc/keyboard.c \
 
 src/arch/ibmpc/m24.o: src/arch/ibmpc/m24.c \
 	src/arch/ibmpc/cassette.h \
+	src/arch/ibmpc/covox.h \
 	src/arch/ibmpc/ems.h \
 	src/arch/ibmpc/ibmpc.h \
 	src/arch/ibmpc/keyboard.h \
@@ -686,6 +699,7 @@ src/arch/ibmpc/m24.o: src/arch/ibmpc/m24.c \
 src/arch/ibmpc/main.o: src/arch/ibmpc/main.c \
 	src/arch/ibmpc/cassette.h \
 	src/arch/ibmpc/cmd.h \
+	src/arch/ibmpc/covox.h \
 	src/arch/ibmpc/ems.h \
 	src/arch/ibmpc/ibmpc.h \
 	src/arch/ibmpc/keyboard.h \
@@ -729,6 +743,7 @@ src/arch/ibmpc/main.o: src/arch/ibmpc/main.c \
 
 src/arch/ibmpc/msg.o: src/arch/ibmpc/msg.c \
 	src/arch/ibmpc/cassette.h \
+	src/arch/ibmpc/covox.h \
 	src/arch/ibmpc/ems.h \
 	src/arch/ibmpc/ibmpc.h \
 	src/arch/ibmpc/keyboard.h \

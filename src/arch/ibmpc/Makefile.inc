@@ -39,6 +39,7 @@ PCE_IBMPC_BAS  := \
 	atari-pc \
 	cassette \
 	cmd \
+	covox \
 	ems \
 	hook \
 	ibmpc \
@@ -116,6 +117,7 @@ DIST += $(rel)/pce-ibmpc.cfg.in $(rel)/pce.inc $(rel)/pce-lib.inc
 
 $(rel)/cassette.o:	$(rel)/cassette.c
 $(rel)/cmd.o:		$(rel)/cmd.c
+$(rel)/covox.o:		$(rel)/covox.c
 $(rel)/ems.o:		$(rel)/ems.c
 $(rel)/hook.o:		$(rel)/hook.c
 $(rel)/ibmpc.o:		$(rel)/ibmpc.c

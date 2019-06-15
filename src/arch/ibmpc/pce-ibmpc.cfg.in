@@ -402,6 +402,35 @@ speaker {
 }
 
 
+covox {
+	# Disable the covox DAC
+	mode = "none"
+
+	# A simple covox DAC
+	#mode = "covox"
+
+	# Disney sound source
+	#mode = "disney"
+
+	# The volume in the range [0...1000]
+	volume = 500
+
+	# Apply a low-pass filter with the specified cut-off
+	# frequency in Herz. This is separate from the low-pass
+	# filter in the sound driver. If the frequency is 0,
+	# the filter is disabled.
+	lowpass = 3000
+
+	# The sample rate at which sound is sent to the sound driver.
+	sample_rate = 44100
+
+	# The parallel port
+	parport = 1
+
+	driver = "wav:wav=covox.wav:lowpass=0:wavfilter=0"
+}
+
+
 # Up to 4 serial ports can be defined
 serial {
 	address = 0x3f8			# COM1

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/ibmpc.c                                       *
  * Created:     1999-04-16 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 1999-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 1999-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -920,6 +920,84 @@ void pc_setup_speaker (ibmpc_t *pc, ini_sct_t *ini)
 }
 
 static
+void pc_setup_covox (ibmpc_t *pc, ini_sct_t *ini)
+{
+	const char    *driver;
+	const char    *mode;
+	unsigned      volume;
+	unsigned long srate, lowpass;
+	unsigned      port;
+	ini_sct_t     *sct;
+
+	pc->cov = NULL;
+
+	sct = ini_next_sct (ini, NULL, "covox");
+
+	if (sct == NULL) {
+		return;
+	}
+
+	ini_get_string (sct, "driver", &driver, NULL);
+	ini_get_string (sct, "mode", &mode, "covox");
+	ini_get_uint16 (sct, "parport", &port, 0);
+	ini_get_uint16 (sct, "volume", &volume, 500);
+	ini_get_uint32 (sct, "sample_rate", &srate, 44100);
+	ini_get_uint32 (sct, "lowpass", &lowpass, 0);
+
+	if (strcmp (mode, "none") == 0) {
+		return;
+	}
+
+	pce_log_tag (MSG_INF,
+		"COVOX:",
+		"parport=%u mode=%s volume=%u srate=%lu lowpass=%lu driver=%s\n",
+		port, mode, volume, srate, lowpass,
+		(driver != NULL) ? driver : "<none>"
+	);
+
+	if ((port > 3) || (pc->parport[port] == NULL)) {
+		pce_log (MSG_ERR, "*** no parallel port (%u)\n", port);
+		return;
+	}
+
+	pc->cov = pc_covox_new();
+
+	if (pc->cov == NULL) {
+		pce_log (MSG_ERR, "*** creating covox failed\n");
+		return;
+	}
+
+	pc_covox_set_clk_fct (pc->cov, pc, pc_get_clock2);
+
+	if (driver != NULL) {
+		if (pc_covox_set_driver (pc->cov, driver, srate)) {
+			pce_log (MSG_ERR,
+				"*** setting sound driver failed (%s)\n",
+				driver
+			);
+		}
+	}
+
+	if (strcmp (mode, "covox") == 0) {
+		pc_covox_set_mode (pc->cov, 0);
+	}
+	else if (strcmp (mode, "disney") == 0) {
+		pc_covox_set_mode (pc->cov, 1);
+	}
+	else {
+		pce_log (MSG_ERR, "*** unknown mode (%s)\n", mode);
+	}
+
+	pc_covox_set_lowpass (pc->cov, lowpass);
+
+	pc_covox_set_volume (pc->cov, volume);
+
+	parport_set_data_fct (pc->parport[port], pc->cov, pc_covox_set_data);
+	parport_set_ctrl_fct (pc->parport[port], pc->cov, pc_covox_set_ctrl);
+	parport_set_status_fct (pc->parport[port], pc->cov, pc_covox_get_status);
+}
+
+static
 void pc_setup_terminal (ibmpc_t *pc, ini_sct_t *ini)
 {
 	pc->trm = ini_get_terminal (ini, par_terminal);
@@ -1573,6 +1651,7 @@ ibmpc_t *pc_new (ini_sct_t *ini)
 	pc_setup_parport (pc, ini);
 	pc_setup_ems (pc, ini);
 	pc_setup_xms (pc, ini);
+	pc_setup_covox (pc, ini);
 
 	pce_load_mem_ini (pc->mem, ini);
 
@@ -1639,6 +1718,7 @@ void pc_del (ibmpc_t *pc)
 
 	trm_del (pc->trm);
 
+	pc_covox_del (pc->cov);
 	pc_speaker_free (&pc->spk);
 	pc_cas_del (pc->cas);
 	e8237_free (&pc->dma);
@@ -2009,6 +2089,10 @@ void pc_clock (ibmpc_t *pc, unsigned long cnt)
 			}
 
 			pc_speaker_clock (&pc->spk, clk);
+
+			if (pc->cov != NULL) {
+				pc_covox_clock (pc->cov, clk);
+			}
 
 			for (i = 0; i < 4; i++) {
 				if (pc->serport[i] != NULL) {
