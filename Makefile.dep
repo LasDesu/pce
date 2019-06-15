@@ -2340,6 +2340,7 @@ src/drivers/char/char-slip.o: src/drivers/char/char-slip.c \
 	src/lib/tun.h
 
 src/drivers/char/char-stdio.o: src/drivers/char/char-stdio.c \
+	src/config.h \
 	src/drivers/char/char-stdio.h \
 	src/drivers/char/char.h \
 	src/drivers/options.h

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/char/char-stdio.c                                *
  * Created:     2009-03-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2009-2011 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2009-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,14 +20,48 @@
  *****************************************************************************/
 
 
+#include <config.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
 
 #include <drivers/options.h>
 #include <drivers/char/char.h>
 #include <drivers/char/char-stdio.h>
 
+
+static
+int stdio_check_reopen (char_stdio_t *drv)
+{
+#ifdef HAVE_SYS_STAT_H
+	struct stat st;
+
+	if (drv->reopen == 0) {
+		return (0);
+	}
+
+	if (drv->fname == NULL) {
+		return (0);
+	}
+
+	if (stat (drv->fname, &st) == 0) {
+		return (0);
+	}
+
+	if ((drv->fp != NULL) && (drv->fp != stdout)) {
+		fclose (drv->fp);
+	}
+
+	drv->fp = fopen (drv->fname, "wb");
+#endif
+
+	return (0);
+}
 
 static
 void chr_stdio_close (char_drv_t *cdrv)
@@ -62,6 +96,8 @@ unsigned chr_stdio_write (char_drv_t *cdrv, const void *buf, unsigned cnt)
 
 	drv = cdrv->ext;
 
+	stdio_check_reopen (drv);
+
 	if (drv->fp == NULL) {
 		return (cnt);
 	}
@@ -88,6 +124,7 @@ int chr_stdio_init (char_stdio_t *drv, const char *name)
 
 	drv->fname = drv_get_option (name, "file");
 	drv->flush = drv_get_option_bool (name, "flush", 1);
+	drv->reopen = drv_get_option_bool (name, "reopen", 1);
 
 	if (drv->fname != NULL) {
 		if (strcmp (drv->fname, "-") == 0) {
