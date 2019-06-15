@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/video/sdl2.c                                     *
  * Created:     2015-06-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2015-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2015-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -821,6 +821,8 @@ void sdl2_init (sdl2_t *sdl, ini_sct_t *sct)
 
 	sdl2_init_keymap_default (sdl);
 	sdl2_init_keymap_user (sdl, sct);
+
+	SDL_SetHint (SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 }
 
 terminal_t *sdl2_new (ini_sct_t *sct)
