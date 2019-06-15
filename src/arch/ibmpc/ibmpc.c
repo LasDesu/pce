@@ -358,6 +358,11 @@ void pc_set_mouse (void *ext, int dx, int dy, unsigned button)
 	chr_mouse_set (dx, dy, button);
 }
 
+static
+int pc_trap (ibmpc_t *pc, unsigned n)
+{
+	return (1);
+}
 
 static
 void pc_set_video_mode (ibmpc_t *pc, unsigned mode)
@@ -634,6 +639,7 @@ void pc_setup_cpu (ibmpc_t *pc, ini_sct_t *ini)
 	pc->cpu->op_hook = pc_hook_old;
 
 	e86_set_hook_fct (pc->cpu, pc, pc_hook);
+	e86_set_trap_fct (pc->cpu, pc, pc_trap);
 
 	pc->speed_current = speed;
 	pc->speed_saved = speed;

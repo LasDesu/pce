@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e8086/e8086.c                                        *
  * Created:     1996-04-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 1996-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 1996-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -74,6 +74,9 @@ void e86_init (e8086_t *c)
 
 	c->hook_ext = NULL;
 	c->hook = NULL;
+
+	c->trap_ext = NULL;
+	c->trap = NULL;
 
 	c->pq_size = 4;
 	c->pq_fill = 6;
@@ -199,6 +202,12 @@ void e86_set_hook_fct (e8086_t *c, void *ext, void *fct)
 {
 	c->hook_ext = ext;
 	c->hook = fct;
+}
+
+void e86_set_trap_fct (e8086_t *c, void *ext, void *fct)
+{
+	c->trap_ext = ext;
+	c->trap = fct;
 }
 
 void e86_set_ram (e8086_t *c, unsigned char *ram, unsigned long cnt)

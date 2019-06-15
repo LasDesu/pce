@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e8086/opcodes.c                                      *
  * Created:     1996-04-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 1996-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 1996-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -3297,6 +3297,13 @@ unsigned op_cb (e8086_t *c)
 static
 unsigned op_cc (e8086_t *c)
 {
+	if (c->trap != NULL) {
+		if (c->trap (c->trap_ext, 3) == 0) {
+			e86_set_clk (c, 4);
+			return (1);
+		}
+	}
+
 	e86_set_ip (c, e86_get_ip (c) + 1);
 	e86_trap (c, 3);
 
@@ -3311,6 +3318,13 @@ unsigned op_cc (e8086_t *c)
 static
 unsigned op_cd (e8086_t *c)
 {
+	if (c->trap != NULL) {
+		if (c->trap (c->trap_ext, c->pq[1]) == 0) {
+			e86_set_clk (c, 4);
+			return (2);
+		}
+	}
+
 	e86_set_ip (c, e86_get_ip (c) + 2);
 	e86_trap (c, c->pq[1]);
 
@@ -3325,20 +3339,26 @@ unsigned op_cd (e8086_t *c)
 static
 unsigned op_ce (e8086_t *c)
 {
-	if (e86_get_of (c)) {
-		e86_set_ip (c, e86_get_ip (c) + 1);
-		e86_trap (c, 4);
-
-		e86_pq_init (c);
-
-		e86_set_clk (c, 53);
-
-		return (0);
+	if (e86_get_of (c) == 0) {
+		e86_set_clk (c, 4);
+		return (1);
 	}
 
-	e86_set_clk (c, 4);
+	if (c->trap != NULL) {
+		if (c->trap (c->trap_ext, 4) == 0) {
+			e86_set_clk (c, 4);
+			return (1);
+		}
+	}
 
-	return (1);
+	e86_set_ip (c, e86_get_ip (c) + 1);
+	e86_trap (c, 4);
+
+	e86_pq_init (c);
+
+	e86_set_clk (c, 53);
+
+	return (0);
 }
 
 /* OP CF: IRET */
