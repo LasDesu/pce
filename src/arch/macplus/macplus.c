@@ -844,7 +844,7 @@ void mac_setup_rtc (macplus_t *sim, ini_sct_t *ini)
 	ini_sct_t     *sct;
 	const char    *fname;
 	const char    *start;
-	int           realtime, romdisk;
+	int           realtime, romdisk, atalk;
 
 	sct = ini_next_sct (ini, NULL, "rtc");
 
@@ -853,8 +853,15 @@ void mac_setup_rtc (macplus_t *sim, ini_sct_t *ini)
 	ini_get_bool (sct, "romdisk", &romdisk, 0);
 	ini_get_string (sct, "start", &start, NULL);
 
-	pce_log_tag (MSG_INF, "RTC:", "file=%s realtime=%d start=%s romdisk=%d\n",
-		fname, realtime, (start != NULL) ? start : "<now>", romdisk
+	if (ini_get_bool (sct, "appletalk", &atalk, 0)) {
+		atalk = -1;
+	}
+
+	pce_log_tag (MSG_INF, "RTC:",
+		"file=%s realtime=%d start=%s romdisk=%d atalk=%d\n",
+		fname, realtime,
+		(start != NULL) ? start : "<now>",
+		romdisk, atalk
 	);
 
 	sim->rtc_fname = strdup (fname);
@@ -875,6 +882,13 @@ void mac_setup_rtc (macplus_t *sim, ini_sct_t *ini)
 		sim->rtc.data[0x79] = 0x06;
 		sim->rtc.data[0x7a] = 0xff;
 		sim->rtc.data[0x7b] = 0xcb;
+	}
+
+	if (atalk == 0) {
+		sim->rtc.data[0x13] = 0x22;
+	}
+	else if (atalk == 1) {
+		sim->rtc.data[0x13] = 0x21;
 	}
 
 	if (start != NULL) {
