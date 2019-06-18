@@ -100,6 +100,7 @@ struct macplus_s {
 
 	int                overlay;
 	int                reset;
+	int                memtest;
 
 	unsigned long      vbuf1;
 	unsigned long      vbuf2;

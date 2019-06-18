@@ -593,18 +593,23 @@ void mac_scc_set_uint8 (void *ext, unsigned long addr, unsigned char val)
 static
 void mac_setup_system (macplus_t *sim, ini_sct_t *ini)
 {
+	int        memtest;
 	const char *model;
 	ini_sct_t  *sct;
 
-	sct = ini_next_sct (ini, NULL, "system");
-
-	if (sct == NULL) {
+	if ((sct = ini_next_sct (ini, NULL, "system")) == NULL) {
 		sct = ini;
 	}
 
 	ini_get_string (sct, "model", &model, "mac-plus");
 
-	pce_log_tag (MSG_INF, "SYSTEM:", "model=%s\n", model);
+	if (ini_get_bool (sct, "memtest", &memtest, 1)) {
+		ini_get_bool (ini, "memtest", &memtest, 1);
+	}
+
+	pce_log_tag (MSG_INF, "SYSTEM:", "model=%s memtest=%d\n",
+		model, memtest
+	);
 
 	if (strcmp (model, "mac-128k") == 0) {
 		sim->model = PCE_MAC_PLUS;
@@ -625,13 +630,13 @@ void mac_setup_system (macplus_t *sim, ini_sct_t *ini)
 		pce_log (MSG_ERR, "*** unknown model (%s)\n", model);
 		sim->model = PCE_MAC_PLUS;
 	}
+
+	sim->memtest = (memtest != 0);
 }
 
 static
 void mac_setup_mem (macplus_t *sim, ini_sct_t *ini)
 {
-	int memtest;
-
 	sim->mem = mem_new();
 
 	mem_set_fct (sim->mem, sim,
@@ -670,9 +675,7 @@ void mac_setup_mem (macplus_t *sim, ini_sct_t *ini)
 
 	sim->overlay = 0;
 
-	ini_get_bool (ini, "memtest", &memtest, 1);
-
-	if (memtest == 0) {
+	if (sim->memtest == 0) {
 		pce_log_tag (MSG_INF, "RAM:", "disabling memory test\n");
 
 		if (sim->model & PCE_MAC_PLUS) {

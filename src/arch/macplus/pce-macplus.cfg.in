@@ -17,17 +17,17 @@ path = "PCE_DIR_DATA/macplus"
 path = "-."
 
 
-# Enable or disable the startup memory test.
-memtest = 0
-
-
 system {
 	# The Macintosh model to emulate. Valid models are:
 	# mac-plus:    A Macintosh 128K, 512K, 512Ke or Plus
 	# mac-se:      A Macintosh SE or SE-FDHD
 	# mac-classic: A Macintosh Classic
 	model = "MODEL"
+
+	# Enable or disable the startup memory test.
+	memtest = 0
 }
+
 
 cpu {
 	# The CPU model. Valid models are "68000" and "68010".
