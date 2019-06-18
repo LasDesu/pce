@@ -1467,6 +1467,57 @@ int int21_fct_58 (dos_t *sim)
 	return (0);
 }
 
+/*
+ * 5B: Create
+ */
+static
+int int21_fct_5b (dos_t *sim)
+{
+	unsigned       fd;
+	unsigned short ds, dx;
+	char           *name;
+	char           dosname[256];
+	struct stat    st;
+
+	if ((fd = sim_get_free_fd (sim)) & 0x8000) {
+		return (int21_ret (sim, 1, 0x0001));
+	}
+
+	ds = e86_get_ds (&sim->cpu);
+	dx = e86_get_dx (&sim->cpu);
+
+	if (sim_get_asciiz (sim, ds, dx, dosname, sizeof (dosname))) {
+		return (int21_ret (sim, 1, 0x0001));
+	}
+
+	if ((name = sim_get_host_name (sim, dosname)) == NULL) {
+		return (int21_ret (sim, 1, 0x0001));
+	}
+
+	if (strcasecmp (dosname, "nul") == 0) {
+		sim->file[fd] = NULL;
+	}
+	else {
+		if (stat (name, &st) == 0) {
+			sim->file[fd] = NULL;
+		}
+		else {
+			sim->file[fd] = fopen (name, "w+b");
+		}
+	}
+
+	if (sim->file[fd] == NULL) {
+		free (name);
+		return (int21_ret (sim, 1, 0x0001));
+	}
+
+	free (name);
+
+	int21_ret (sim, 0, fd);
+
+	return (0);
+}
+
 int sim_int21 (dos_t *sim)
 {
 	switch (e86_get_ah (&sim->cpu)) {
@@ -1604,6 +1655,9 @@ int sim_int21 (dos_t *sim)
 
 	case 0x58:
 		return (int21_fct_58 (sim));
+
+	case 0x5b:
+		return (int21_fct_5b (sim));
 
 	case 0x59:
 	case 0x5a:
