@@ -355,6 +355,14 @@ void pc_set_key (ibmpc_t *pc, unsigned event, unsigned key)
 static
 void pc_set_mouse (void *ext, int dx, int dy, unsigned button)
 {
+	ibmpc_t *pc = ext;
+
+	if ((pc->mouse_button ^ button) & ~button & 4) {
+		pc_set_msg (pc, "term.release", "1");
+	}
+
+	pc->mouse_button = button;
+
 	chr_mouse_set (dx, dy, button);
 }
 
@@ -1621,6 +1629,8 @@ ibmpc_t *pc_new (ini_sct_t *ini)
 	}
 
 	pc->cfg = ini;
+
+	pc->mouse_button = 0;
 
 	bps_init (&pc->bps);
 

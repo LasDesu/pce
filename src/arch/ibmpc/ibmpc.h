@@ -133,6 +133,8 @@ typedef struct ibmpc_t {
 
 	unsigned           current_int;
 
+	unsigned           mouse_button;
+
 	unsigned long      clk_div[4];
 
 	unsigned long      clock1;
