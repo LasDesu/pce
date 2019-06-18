@@ -98,6 +98,10 @@ unsigned char pc_get_port8 (ibmpc_t *pc, unsigned long addr)
 	val = 0xff;
 
 	switch (addr) {
+	case 0x0064:
+		val = 0x00;
+		break;
+
 	case 0x0081:
 		val = pc->dma_page[2] >> 16;
 		break;
