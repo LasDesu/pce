@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/atarist/atarist.c                                   *
  * Created:     2011-03-17 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2011-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2011-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -234,6 +234,9 @@ int st_set_magic (atari_st_t *sim, pce_key_t key)
 {
 	if (key == PCE_KEY_TAB) {
 		st_set_msg (sim, "emu.viking.toggle", "1");
+	}
+	else if (key == PCE_KEY_SPACE) {
+		st_set_msg (sim, "term.release", "1");
 	}
 	else {
 		return (1);

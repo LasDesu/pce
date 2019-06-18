@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/atarist/ikbd.c                                      *
  * Created:     2013-06-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -333,6 +333,12 @@ void st_kbd_check_mouse (st_kbd_t *kbd)
 void st_kbd_set_mouse (st_kbd_t *kbd, int dx, int dy, unsigned but)
 {
 	unsigned tx, ty;
+
+	if ((kbd->mouse_but[1] ^ but) & ~but & 4) {
+		if (kbd->magic != NULL) {
+			kbd->magic (kbd->magic_ext, PCE_KEY_SPACE);
+		}
+	}
 
 	if (kbd->abs_pos) {
 		if (dx < 0) {
