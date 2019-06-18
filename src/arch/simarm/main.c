@@ -111,15 +111,30 @@ void sim_log_banner (void)
 static
 void sig_int (int s)
 {
-	signal (s, sig_int);
+	fprintf (stderr, "\npce-simarm: sigint\n");
+	fflush (stderr);
 
-	par_sig_int = 1;
+	par_sim->brk = PCE_BRK_STOP;
 }
 
 static
-void sig_terminate (int s)
+void sig_term (int s)
 {
-	fprintf (stderr, "pce-simarm: signal %d\n", s);
+	fprintf (stderr, "\npce-simarm: sigterm\n");
+	fflush (stderr);
+
+	if (par_sim->brk == PCE_BRK_ABORT) {
+		pce_set_fd_interactive (0, 1);
+		exit (1);
+	}
+
+	par_sim->brk = PCE_BRK_ABORT;
+}
+
+static
+void sig_segv (int s)
+{
+	fprintf (stderr, "pce-simarm: segmentation fault\n");
 
 	if ((par_sim != NULL) && (par_sim->cpu != NULL)) {
 		sarm_prt_state_cpu (par_sim->cpu, stderr);
@@ -285,8 +300,8 @@ int main (int argc, char *argv[])
 	par_sim = sarm_new (sct);
 
 	signal (SIGINT, sig_int);
-	signal (SIGTERM, sig_terminate);
-	signal (SIGSEGV, sig_terminate);
+	signal (SIGTERM, sig_term);
+	signal (SIGSEGV, sig_segv);
 
 #ifdef SIGPIPE
 	signal (SIGPIPE, SIG_IGN);
