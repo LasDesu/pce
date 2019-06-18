@@ -347,13 +347,15 @@ void mac_set_mouse (void *ext, int dx, int dy, unsigned but)
 		return;
 	}
 
+	if ((sim->mouse_button ^ but) & ~but & 4) {
+		mac_set_msg (sim, "term.release", "1");
+	}
+
+	sim->mouse_button = but;
+
 	if (sim->adb_mouse != NULL) {
 		adb_mouse_move (sim->adb_mouse, but, dx, dy);
 		return;
-	}
-
-	if ((sim->mouse_button ^ but) & ~but & 2) {
-		trm_set_msg_trm (sim->trm, "term.release", "1");
 	}
 
 	old = sim->via_port_b;
@@ -371,7 +373,6 @@ void mac_set_mouse (void *ext, int dx, int dy, unsigned but)
 
 	sim->mouse_delta_x += dx;
 	sim->mouse_delta_y += dy;
-	sim->mouse_button = but;
 }
 
 static
