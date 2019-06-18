@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/macplus.c                                   *
  * Created:     2007-04-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -606,7 +606,13 @@ void mac_setup_system (macplus_t *sim, ini_sct_t *ini)
 
 	pce_log_tag (MSG_INF, "SYSTEM:", "model=%s\n", model);
 
-	if (strcmp (model, "mac-plus") == 0) {
+	if (strcmp (model, "mac-128k") == 0) {
+		sim->model = PCE_MAC_PLUS;
+	}
+	else if (strcmp (model, "mac-512k") == 0) {
+		sim->model = PCE_MAC_PLUS;
+	}
+	else if (strcmp (model, "mac-plus") == 0) {
 		sim->model = PCE_MAC_PLUS;
 	}
 	else if (strcmp (model, "mac-se") == 0) {
