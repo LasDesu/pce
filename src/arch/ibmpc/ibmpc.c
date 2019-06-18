@@ -261,6 +261,10 @@ void pc_ppi_set_port_b (ibmpc_t *pc, unsigned char val)
 	old = pc->ppi_port_b;
 	pc->ppi_port_b = val;
 
+	if (pc->force_keyboard_enable) {
+		val |= 0x40;
+	}
+
 	pc_kbd_set_clk (&pc->kbd, val & 0x40);
 	pc_kbd_set_enable (&pc->kbd, (val & 0x80) == 0);
 
@@ -455,12 +459,14 @@ static
 void pc_setup_system (ibmpc_t *pc, ini_sct_t *ini)
 {
 	unsigned   fdcnt, sw1val, sw1msk;
-	int        patch_init, patch_int19, memtest;
+	int        patch_init, patch_int19, memtest, kbden;
 	const char *model;
 	ini_sct_t  *sct;
 
 	pc->switches1_val = 0;
 	pc->switches1_msk = 0;
+
+	pc->force_keyboard_enable = 0;
 
 	pc->fd_cnt = 0;
 	pc->hd_cnt = 0;
@@ -483,6 +489,7 @@ void pc_setup_system (ibmpc_t *pc, ini_sct_t *ini)
 	ini_get_bool (sct, "rtc", &pc->support_rtc, 1);
 	ini_get_uint16 (sct, "switches_1_val", &sw1val, 0);
 	ini_get_uint16 (sct, "switches_1_msk", &sw1msk, 0);
+	ini_get_bool (sct, "force_keyboard_enable", &kbden, 0);
 	ini_get_bool (sct, "patch_bios_init", &patch_init, 1);
 	ini_get_bool (sct, "patch_bios_int19", &patch_int19, 1);
 	ini_get_bool (sct, "memtest", &memtest, 1);
@@ -522,6 +529,8 @@ void pc_setup_system (ibmpc_t *pc, ini_sct_t *ini)
 
 	pc->switches1_val = sw1val & sw1msk;
 	pc->switches1_msk = sw1msk;
+
+	pc->force_keyboard_enable = (kbden != 0);
 
 	if (pc->model & PCE_IBMPC_5160) {
 		pc->ppi_port_c[0] |= 0x01;

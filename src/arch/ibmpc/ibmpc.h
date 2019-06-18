@@ -119,6 +119,8 @@ typedef struct ibmpc_t {
 	/* allow int 1a to get real time */
 	int                support_rtc;
 
+	char               force_keyboard_enable;
+
 	unsigned           fd_cnt;
 	unsigned           hd_cnt;
 
