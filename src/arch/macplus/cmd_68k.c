@@ -210,14 +210,25 @@ void mac_prt_state_cpu (e68000_t *c)
 static
 void mac_prt_state_scc (macplus_t *sim)
 {
-	unsigned i;
-	e8530_t  *scc;
+	unsigned    i;
+	e8530_t     *scc;
+	e8530_chn_t *chn;
+
+	static const char p[4] = { 'N', 'O', 'E', ' ' };
+	static const char *s[5] = { "0", "", "1", "1.5", "2" };
 
 	scc = &sim->scc;
 
 	pce_prt_sep ("8530-SCC");
 
-	pce_printf ("  IRQ=%u\n", scc->irq_val);
+	pce_printf ("IRQ=%u\n", scc->irq_val);
+
+	for (i = 0; i < 2; i++) {
+		chn = scc->chn + i;
+		pce_printf ("CHN%u=%u%c%u%s\n",
+			i, chn->bps, p[chn->parity & 3], chn->bpc, s[chn->stop]
+		);
+	}
 
 	for (i = 0; i < 16; i++) {
 		pce_printf (
