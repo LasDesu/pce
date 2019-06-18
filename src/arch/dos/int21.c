@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/dos/int21.c                                         *
  * Created:     2012-12-30 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2015 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -264,6 +264,35 @@ int int21_fct_02 (dos_t *sim)
 
 	fputc (e86_get_dl (&sim->cpu), fp);
 	fflush (fp);
+
+	int21_ret (sim, 0, 0x0000);
+
+	return (0);
+}
+
+/*
+ * 06: Direct console output
+ */
+static
+int int21_fct_06 (dos_t *sim)
+{
+	unsigned char val;
+	FILE          *fp;
+
+	val = e86_get_dl (&sim->cpu);
+
+	if (val == 0xff) {
+		return (1);
+	}
+
+	if ((fp = int21_get_fp (sim, 1)) == NULL) {
+		return (int21_ret (sim, 1, 6));
+	}
+
+	fputc (val, fp);
+	fflush (fp);
+
+	e86_set_al (&sim->cpu, val);
 
 	int21_ret (sim, 0, 0x0000);
 
@@ -1449,6 +1478,9 @@ int sim_int21 (dos_t *sim)
 
 	case 0x02:
 		return (int21_fct_02 (sim));
+
+	case 0x06:
+		return (int21_fct_06 (sim));
 
 	case 0x09:
 		return (int21_fct_09 (sim));
