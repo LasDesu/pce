@@ -1667,8 +1667,10 @@ src/arch/simarm/main.o: src/arch/simarm/main.c \
 	src/lib/cfg.h \
 	src/lib/cmd.h \
 	src/lib/console.h \
+	src/lib/getopt.h \
 	src/lib/log.h \
 	src/lib/monitor.h \
+	src/lib/path.h \
 	src/lib/sysdep.h \
 	src/libini/libini.h
 
