@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/sony.c                                      *
  * Created:     2007-11-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2013 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -1059,8 +1059,11 @@ void mac_sony_ctl_format (mac_sony_t *sony)
 	else {
 		blk = dsk_get_block_cnt (dsk);
 
-		if (dsk_get_type (dsk) == PCE_DISK_PSI) {
-			if (format == 1) {
+		if ((blk == 800) || (blk == 1600)) {
+			;
+		}
+		else if (dsk_get_type (dsk) == PCE_DISK_PSI) {
+			if ((format == 0) || (format == 1)) {
 				blk = 800;
 			}
 			else {
