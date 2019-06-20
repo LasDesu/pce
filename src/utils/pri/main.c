@@ -185,7 +185,8 @@ void print_help (void)
 		"  fm-track-size\n"
 		"\n"
 		"decode types are:\n"
-		"  auto, ibm-fm, ibm-mfm, mac-gcr, text\n"
+		"  auto, ibm-fm, ibm-mfm, mac-gcr,\n"
+		"  text, text-fm, text-mfm, text-mac, text-raw\n"
 		"\n"
 		"encode types are:\n"
 		"  auto, text, mac-gcr\n"
@@ -209,7 +210,7 @@ void print_version (void)
 	fputs (
 		"pri version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2012-2018 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2012-2019 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
