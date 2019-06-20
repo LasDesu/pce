@@ -111,6 +111,8 @@ void pfi_trk_reset (pfi_trk_t *trk)
 	free (trk->idx);
 	trk->idx = NULL;
 
+	trk->idx_cnt = 0;
+
 	trk->size = 0;
 	trk->max = 0;
 
