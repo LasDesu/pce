@@ -336,8 +336,8 @@ psi_sct_t *pri_decode_gcr_sct (pri_trk_t *trk)
 
 psi_trk_t *pri_decode_gcr_trk (pri_trk_t *trk, unsigned h)
 {
-	unsigned long pos;
-	unsigned      cnt;
+	unsigned long pos, first_pos;
+	int           first_sct;
 	char          wrap;
 	unsigned char buf[3];
 	psi_sct_t     *sct;
@@ -355,9 +355,10 @@ psi_trk_t *pri_decode_gcr_trk (pri_trk_t *trk, unsigned h)
 	buf[1] = 0;
 	buf[2] = 0;
 
-	cnt = 3;
+	first_pos = 0;
+	first_sct = 0;
 
-	while (cnt > 0) {
+	while ((trk->wrap == 0) || (trk->idx < first_pos)) {
 		buf[0] = buf[1];
 		buf[1] = buf[2];
 		buf[2] = gcr_decode_byte (trk, 0);
@@ -374,10 +375,11 @@ psi_trk_t *pri_decode_gcr_trk (pri_trk_t *trk, unsigned h)
 
 			trk->idx = pos;
 			trk->wrap = wrap;
-		}
 
-		if (trk->wrap) {
-			cnt -= 1;
+			if (first_sct == 0) {
+				first_sct = 1;
+				first_pos = pos - 24;
+			}
 		}
 	}
 
