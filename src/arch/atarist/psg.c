@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/atarist/psg.c                                       *
  * Created:     2013-06-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2015 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -741,7 +741,7 @@ void st_psg_clock (st_psg_t *psg, unsigned long cnt)
 			psg->noise_cnt = psg->noise_per;
 
 			if (psg->noise_val & 1) {
-				psg->noise_val = (psg->noise_val >> 1) ^ 0x12000;
+				psg->noise_val = (psg->noise_val >> 1) ^ 0x80000057;
 			}
 			else {
 				psg->noise_val = psg->noise_val >> 1;
