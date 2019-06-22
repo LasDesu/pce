@@ -354,9 +354,11 @@ psi_trk_t *pri_decode_gcr_trk (pri_trk_t *trk, unsigned h)
 	psi_sct_t     *sct;
 	psi_trk_t     *dtrk;
 
-	dtrk = psi_trk_new (h);
+	if (trk->size == 0) {
+		return (NULL);
+	}
 
-	if (dtrk == NULL) {
+	if ((dtrk = psi_trk_new (h)) == NULL) {
 		return (NULL);
 	}
 
