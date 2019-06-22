@@ -93,7 +93,7 @@ int txt_dec_match (pri_text_t *ctx, const void *buf, unsigned cnt)
 		}
 	}
 
-	if (i < cnt) {
+	if ((i < cnt) || ctx->trk->wrap) {
 		ctx->trk->idx = pos;
 		ctx->trk->wrap = wrap;
 		ctx->trk->cur_evt = evt;

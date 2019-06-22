@@ -130,6 +130,39 @@ void mac_flush (pri_text_t *ctx)
 }
 
 static
+void mac_dec_events (pri_text_t *ctx)
+{
+	unsigned long type, val;
+
+	while (pri_trk_get_event (ctx->trk, &type, &val) == 0) {
+		mac_flush (ctx);
+		txt_dec_event (ctx, type, val);
+	}
+}
+
+static
+int mac_dec_event_occurred (pri_text_t *ctx, pri_evt_t *evt)
+{
+	pri_evt_t *tmp;
+
+	if (ctx->trk->wrap) {
+		return (1);
+	}
+
+	tmp = ctx->trk->cur_evt;
+
+	while ((tmp != NULL) && (tmp->pos < ctx->trk->idx)) {
+		tmp = tmp->next;
+	}
+
+	if (tmp != evt) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
 int gcr_checksum (unsigned char *dst, const unsigned char *src, int enc)
 {
 	unsigned i;
@@ -190,6 +223,8 @@ int mac_decode_sync (pri_text_t *ctx)
 		group_cnt = 0;
 		sync_cnt = 0;
 
+		mac_dec_events (ctx);
+
 		while (txt_dec_match (ctx, gcr_sync_group, 48) == 0) {
 			group_cnt += 1;
 		}
@@ -199,6 +234,8 @@ int mac_decode_sync (pri_text_t *ctx)
 			mac_put_nl (ctx, 0);
 			fprintf (ctx->fp, "SYNC GROUP %u\n", group_cnt);
 		}
+
+		mac_dec_events (ctx);
 
 		while (txt_dec_match (ctx, gcr_sync, 10) == 0) {
 			sync_cnt += 1;
@@ -225,9 +262,13 @@ int mac_decode_id (pri_text_t *ctx)
 	unsigned      c, h;
 	unsigned char buf[8];
 	unsigned char dec[8];
+	pri_evt_t     *evt;
+
+	mac_dec_events (ctx);
 
 	pos = ctx->trk->idx;
 	wrap = ctx->trk->wrap;
+	evt = ctx->trk->cur_evt;
 
 	for (i = 0; i < 8; i++) {
 		pri_trk_get_bits (ctx->trk, &val, 8);
@@ -235,9 +276,10 @@ int mac_decode_id (pri_text_t *ctx)
 		dec[i] = mac_dec_tab[val & 0xff];
 	}
 
-	if (ctx->trk->wrap) {
+	if (mac_dec_event_occurred (ctx, evt)) {
 		ctx->trk->idx = pos;
 		ctx->trk->wrap = wrap;
+		ctx->trk->cur_evt = evt;
 		return (0);
 	}
 
@@ -283,9 +325,13 @@ int mac_decode_data (pri_text_t *ctx)
 	unsigned char s;
 	unsigned char chk[4];
 	unsigned char buf[527];
+	pri_evt_t     *evt;
+
+	mac_dec_events (ctx);
 
 	pos = ctx->trk->idx;
 	wrap = ctx->trk->wrap;
+	evt = ctx->trk->cur_evt;
 
 	pri_trk_get_bits (ctx->trk, &val, 8);
 	s = val & 0xff;
@@ -309,9 +355,10 @@ int mac_decode_data (pri_text_t *ctx)
 		chk[i] = val & 0xff;
 	}
 
-	if (ctx->trk->wrap) {
+	if (mac_dec_event_occurred (ctx, evt)) {
 		ctx->trk->idx = pos;
 		ctx->trk->wrap = wrap;
+		ctx->trk->cur_evt = evt;
 		return (0);
 	}
 
@@ -357,7 +404,6 @@ int mac_decode_data (pri_text_t *ctx)
 int txt_mac_dec_track (pri_text_t *ctx)
 {
 	unsigned long bit;
-	unsigned long type, val;
 	unsigned char buf[3];
 
 	if (ctx->first_track == 0) {
@@ -384,14 +430,11 @@ int txt_mac_dec_track (pri_text_t *ctx)
 	buf[2] = 0;
 
 	while (ctx->trk->wrap == 0) {
-		while (pri_trk_get_event (ctx->trk, &type, &val) == 0) {
-			mac_flush (ctx);
-			txt_dec_event (ctx, type, val);
-		}
-
 		if (mac_decode_sync (ctx)) {
 			return (1);
 		}
+
+		mac_dec_events (ctx);
 
 		pri_trk_get_bits (ctx->trk, &bit, 1);
 
@@ -437,6 +480,8 @@ int txt_mac_dec_track (pri_text_t *ctx)
 
 	mac_flush (ctx);
 	mac_put_nl (ctx, 0);
+
+	mac_dec_events (ctx);
 
 	return (0);
 }
