@@ -24,6 +24,8 @@
 #define PCE_PRI_IMG_H 1
 
 
+#include <stdio.h>
+
 #include <drivers/pri/pri.h>
 
 
@@ -53,12 +55,16 @@ int pri_write (FILE *fp, const void *buf, unsigned long cnt);
 int pri_write_ofs (FILE *fp, unsigned long ofs, const void *buf, unsigned long cnt);
 int pri_skip (FILE *fp, unsigned long cnt);
 
+unsigned pri_guess_type (const char *fname);
 
 pri_img_t *pri_img_load_fp (FILE *fp, unsigned type);
 pri_img_t *pri_img_load (const char *fname, unsigned type);
 
 int pri_img_save_fp (FILE *fp, const pri_img_t *img, unsigned type);
 int pri_img_save (const char *fname, const pri_img_t *img, unsigned type);
+
+unsigned pri_probe_fp (FILE *fp);
+unsigned pri_probe (const char *fname);
 
 
 #endif

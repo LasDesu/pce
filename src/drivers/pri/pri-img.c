@@ -203,6 +203,35 @@ int pri_skip (FILE *fp, unsigned long cnt)
 }
 
 
+unsigned pri_guess_type (const char *fname)
+{
+	unsigned   i;
+	const char *ext;
+
+	ext = "";
+
+	i = 0;
+	while (fname[i] != 0) {
+		if (fname[i] == '.') {
+			ext = fname + i;
+		}
+
+		i += 1;
+	}
+
+	if (strcasecmp (ext, ".pbit") == 0) {
+		return (PRI_FORMAT_PBIT);
+	}
+	else if (strcasecmp (ext, ".pri") == 0) {
+		return (PRI_FORMAT_PRI);
+	}
+	else if (strcasecmp (ext, ".tc") == 0) {
+		return (PRI_FORMAT_TC);
+	}
+
+	return (PRI_FORMAT_NONE);
+}
+
 static
 unsigned pri_get_type (unsigned type, const char *fname)
 {
@@ -311,4 +340,37 @@ int pri_img_save (const char *fname, const pri_img_t *img, unsigned type)
 	fclose (fp);
 
 	return (r);
+}
+
+unsigned pri_probe_fp (FILE *fp)
+{
+	if (pri_probe_pri_fp (fp)) {
+		return (PRI_FORMAT_PRI);
+	}
+
+	if (pri_probe_pbit_fp (fp)) {
+		return (PRI_FORMAT_PBIT);
+	}
+
+	if (pri_probe_tc_fp (fp)) {
+		return (PRI_FORMAT_TC);
+	}
+
+	return (PRI_FORMAT_NONE);
+}
+
+unsigned pri_probe (const char *fname)
+{
+	unsigned ret;
+	FILE     *fp;
+
+	if ((fp = fopen (fname, "rb")) == NULL) {
+		return (PRI_FORMAT_NONE);
+	}
+
+	ret = pri_probe_fp (fp);
+
+	fclose (fp);
+
+	return (ret);
 }
