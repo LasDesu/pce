@@ -3,9 +3,9 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * File name:   src/drivers/pri/pri-io.h                                     *
+ * File name:   src/drivers/pri/pri-img.h                                    *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2013 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -46,6 +46,7 @@ void pri_set_uint32_be (void *buf, unsigned idx, unsigned long val);
 void pri_set_uint32_le (void *buf, unsigned idx, unsigned long val);
 
 
+int pri_set_ofs (FILE *fp, unsigned long ofs);
 int pri_read (FILE *fp, void *buf, unsigned long cnt);
 int pri_read_ofs (FILE *fp, unsigned long ofs, void *buf, unsigned long cnt);
 int pri_write (FILE *fp, const void *buf, unsigned long cnt);

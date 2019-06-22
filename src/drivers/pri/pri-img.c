@@ -3,9 +3,9 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * File name:   src/drivers/pri/pri-io.c                                     *
+ * File name:   src/drivers/pri/pri-img.c                                    *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2013 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -130,6 +130,15 @@ void pri_set_uint32_le (void *buf, unsigned idx, unsigned long val)
 	tmp[3] = (val >> 24) & 0xff;
 }
 
+
+int pri_set_ofs (FILE *fp, unsigned long ofs)
+{
+	if (fseek (fp, ofs, SEEK_SET)) {
+		return (1);
+	}
+
+	return (0);
+}
 
 int pri_read (FILE *fp, void *buf, unsigned long cnt)
 {
