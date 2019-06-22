@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pri/pri.c                                        *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -1213,6 +1213,23 @@ int pri_img_del_cylinder (pri_img_t *img, unsigned long c)
 	pri_img_fix_cyl (img);
 
 	return (0);
+}
+
+pri_trk_t *pri_img_get_track_const (const pri_img_t *img, unsigned long c, unsigned long h)
+{
+	pri_cyl_t *cyl;
+
+	if ((c >= img->cyl_cnt) || (img->cyl[c] == NULL)) {
+		return (NULL);
+	}
+
+	cyl = img->cyl[c];
+
+	if (h >= cyl->trk_cnt) {
+		return (NULL);
+	}
+
+	return (cyl->trk[h]);
 }
 
 pri_trk_t *pri_img_get_track (pri_img_t *img, unsigned long c, unsigned long h, int alloc)

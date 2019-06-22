@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pri/pri.h                                        *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -122,6 +122,7 @@ int pri_img_set_cylinder (pri_img_t *img, pri_cyl_t *cyl, unsigned long c);
 int pri_img_add_cylinder (pri_img_t *img, pri_cyl_t *cyl);
 int pri_img_del_cylinder (pri_img_t *img, unsigned long c);
 
+pri_trk_t *pri_img_get_track_const (const pri_img_t *img, unsigned long c, unsigned long h);
 pri_trk_t *pri_img_get_track (pri_img_t *img, unsigned long c, unsigned long h, int alloc);
 int pri_img_set_track (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h);
 int pri_img_del_track (pri_img_t *img, unsigned long c, unsigned long h);
