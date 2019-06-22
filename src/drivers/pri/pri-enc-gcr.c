@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pri/pri-enc-gcr.c                                *
  * Created:     2012-02-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -303,12 +303,18 @@ psi_sct_t *pri_decode_gcr_sct (pri_trk_t *trk)
 
 		if ((buf[0] == 0xd5) && (buf[1] == 0xaa)) {
 			if (buf[2] != 0xad) {
+				fprintf (stderr, "mac-gcr: bad dam (%u/%u/%u)\n",
+					lc, lh, ls
+				);
 				return (sct);
 			}
 
 			buf[2] = gcr_decode_byte (trk, 1);
 
 			if (buf[2] != ls) {
+				fprintf (stderr, "mac-gcr: bad dam (%u/%u/%u)\n",
+					lc, lh, ls
+				);
 				return (sct);
 			}
 
@@ -317,13 +323,18 @@ psi_sct_t *pri_decode_gcr_sct (pri_trk_t *trk)
 	}
 
 	if (i >= 64) {
+		fprintf (stderr, "mac-gcr: missing dam (%u/%u/%u)\n",
+			lc, lh, ls
+		);
 		return (sct);
 	}
 
 	psi_sct_set_flags (sct, PSI_FLAG_NO_DAM, 0);
 
 	if (gcr_decode_data (trk, buf)) {
-		fprintf (stderr, "gcr: data crc error (%u/%u/%u)\n", lc, lh, ls);
+		fprintf (stderr, "mac-gcr: data crc error (%u/%u/%u)\n",
+			lc, lh, ls
+		);
 		psi_sct_set_flags (sct, PSI_FLAG_CRC_DATA, 1);
 	}
 
