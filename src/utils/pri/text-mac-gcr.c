@@ -244,7 +244,9 @@ int mac_decode_id (pri_text_t *ctx)
 	c = (dec[0] & 0x3f) | ((dec[2] & 0x1f) << 6);
 	h = (dec[2] >> 5) & 1;
 
-	fprintf (ctx->fp, " %02X %02X %02X %02X %02X %02X %02X %02X\t# SECT %02X %02X %02X %02X\n",
+	fprintf (ctx->fp,
+		"  %02X %02X %02X %02X %02X  %02X %02X %02X"
+		"\t# SECT %02X %02X %02X %02X\n",
 		buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7],
 		c, h, dec[1], dec[3]
 	);
