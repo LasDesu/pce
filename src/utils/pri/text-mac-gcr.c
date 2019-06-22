@@ -769,6 +769,32 @@ int mac_enc_hex (pri_text_t *ctx, unsigned val)
 }
 
 static
+int mac_enc_nibble (pri_text_t *ctx)
+{
+	unsigned long val;
+
+	if (txt_match_uint (ctx, 16, &val) == 0) {
+		return (1);
+	}
+
+	if (val > 63) {
+		return (1);
+	}
+
+	val = gcr_enc_tab[val];
+
+	if (txt_match (ctx, ">", 1) == 0) {
+		return (1);
+	}
+
+	if (mac_enc_byte (ctx, val)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
 int mac_enc_rep (pri_text_t *ctx)
 {
 	unsigned long cnt;
@@ -941,6 +967,9 @@ int txt_encode_pri0_mac (pri_text_t *ctx)
 	}
 	else if (txt_match (ctx, "SYNC", 1)) {
 		return (mac_enc_sync (ctx));
+	}
+	else if (txt_match (ctx, "<", 1)) {
+		return (mac_enc_nibble (ctx));
 	}
 	else if (txt_match_uint (ctx, 16, &val)) {
 		return (mac_enc_hex (ctx, val));
