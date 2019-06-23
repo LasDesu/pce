@@ -375,12 +375,16 @@ void dsk_init (disk_t *dsk, void *ext, uint32_t n, uint32_t c, uint32_t h, uint3
 
 void dsk_del (disk_t *dsk)
 {
+	char *tmp;
+
 	if (dsk != NULL) {
-		free (dsk->fname);
+		tmp = dsk->fname;
 
 		if (dsk->del != NULL) {
 			dsk->del (dsk);
 		}
+
+		free (tmp);
 	}
 }
 
