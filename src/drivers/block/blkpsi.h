@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/block/blkpsi.h                                   *
  * Created:     2010-08-11 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2013 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,8 +20,8 @@
  *****************************************************************************/
 
 
-#ifndef PCE_DEVICES_BLOCK_BLKPSI_H
-#define PCE_DEVICES_BLOCK_BLKPSI_H 1
+#ifndef PCE_BLOCK_BLKPSI_H
+#define PCE_BLOCK_BLKPSI_H 1
 
 
 #include <config.h>
@@ -49,16 +49,13 @@
  * @short The fdc disk structure
  *****************************************************************************/
 typedef struct {
-	disk_t     dsk;
+	disk_t    dsk;
 
-	psi_img_t  *img;
+	psi_img_t *img;
 
-	char       dirty;
-
-	unsigned   encoding;
-
-	unsigned   type;
-	char       *fname;
+	unsigned  type;
+	unsigned  encoding;
+	char      dirty;
 } disk_psi_t;
 
 

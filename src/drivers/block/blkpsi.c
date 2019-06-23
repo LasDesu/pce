@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/block/blkfdc.c                                   *
  * Created:     2010-08-11 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,7 +20,7 @@
  *****************************************************************************/
 
 
-#include "blkpsi.h"
+#include <drivers/block/blkpsi.h>
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -434,7 +434,7 @@ int dsk_psi_write (disk_t *dsk, const void *buf, uint32_t i, uint32_t n)
 static
 int fdc_save (disk_psi_t *fdc)
 {
-	if (fdc->fname == NULL) {
+	if (fdc->dsk.fname == NULL) {
 		return (1);
 	}
 
@@ -446,7 +446,7 @@ int fdc_save (disk_psi_t *fdc)
 		return (1);
 	}
 
-	if (psi_save (fdc->fname, fdc->img, fdc->type)) {
+	if (psi_save (fdc->dsk.fname, fdc->img, fdc->type)) {
 		return (1);
 	}
 
@@ -525,8 +525,9 @@ void dsk_psi_del (disk_t *dsk)
 	fdc = dsk->ext;
 
 	if (fdc->dirty) {
-		fprintf (stderr, "disk %u: writing back fdc image\n",
-			dsk->drive
+		fprintf (stderr, "disk %u: writing back psi image to %s\n",
+			fdc->dsk.drive,
+			(fdc->dsk.fname != NULL) ? fdc->dsk.fname : "<none>"
 		);
 
 		if (fdc_save (fdc)) {
@@ -540,7 +541,6 @@ void dsk_psi_del (disk_t *dsk)
 		psi_img_del (fdc->img);
 	}
 
-	free (fdc->fname);
 	free (fdc);
 }
 
@@ -563,11 +563,9 @@ disk_t *dsk_psi_open_fp (FILE *fp, unsigned type, int ro)
 	fdc->dsk.write = dsk_psi_write;
 	fdc->dsk.set_msg = dsk_psi_set_msg;
 
-	fdc->dirty = 0;
-	fdc->encoding = PSI_ENC_MFM;
-
 	fdc->type = type;
-	fdc->fname = NULL;
+	fdc->encoding = PSI_ENC_MFM;
+	fdc->dirty = 0;
 
 	fdc->img = psi_load_fp (fp, type);
 
@@ -583,10 +581,8 @@ disk_t *dsk_psi_open_fp (FILE *fp, unsigned type, int ro)
 
 disk_t *dsk_psi_open (const char *fname, unsigned type, int ro)
 {
-	unsigned   n;
-	disk_t     *dsk;
-	disk_psi_t *fdc;
-	FILE       *fp;
+	disk_t *dsk;
+	FILE   *fp;
 
 	if (type == PSI_FORMAT_NONE) {
 		type = psi_probe (fname);
@@ -622,16 +618,6 @@ disk_t *dsk_psi_open (const char *fname, unsigned type, int ro)
 
 	if (dsk == NULL) {
 		return (NULL);
-	}
-
-	fdc = dsk->ext;
-
-	n = strlen (fname);
-
-	fdc->fname = malloc (n + 1);
-
-	if (fdc->fname != NULL) {
-		strcpy (fdc->fname, fname);
 	}
 
 	dsk_set_fname (dsk, fname);
