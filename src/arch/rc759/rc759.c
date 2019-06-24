@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/rc759.c                                       *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2013 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -1167,6 +1167,8 @@ rc759_t *rc759_new (ini_sct_t *ini)
 	memset (sim, 0, sizeof (rc759_t));
 
 	sim->cfg = ini;
+
+	sim->disk_id = 0;
 
 	bps_init (&sim->bps);
 	rc759_setup_system (sim, ini);

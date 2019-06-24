@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/msg.c                                         *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -31,6 +31,7 @@
 #include <lib/log.h>
 #include <lib/monitor.h>
 #include <lib/msg.h>
+#include <lib/msgdsk.h>
 #include <lib/sysdep.h>
 
 
@@ -43,6 +44,82 @@ typedef struct {
 	int (*set_msg) (rc759_t *sim, const char *msg, const char *val);
 } rc759_msg_list_t;
 
+
+static
+int rc759_set_msg_disk_eject (rc759_t *sim, const char *msg, const char *val)
+{
+	unsigned drv;
+	disk_t   *dsk;
+
+	while (*val != 0) {
+		if (msg_get_prefix_uint (&val, &drv, ":", " \t")) {
+			pce_log (MSG_ERR,
+				"*** disk eject error: bad drive (%s)\n",
+				val
+			);
+
+			return (1);
+		}
+
+		pce_log (MSG_INF, "ejecting drive %lu\n", drv);
+
+		rc759_fdc_save (&sim->fdc, drv);
+		rc759_fdc_set_fname (&sim->fdc, drv, NULL);
+
+		dsk = dsks_get_disk (sim->dsks, drv);
+		dsks_rmv_disk (sim->dsks, dsk);
+		dsk_del (dsk);
+
+		rc759_fdc_load (&sim->fdc, drv);
+	}
+
+	return (0);
+}
+
+static
+int rc759_set_msg_disk_insert (rc759_t *sim, const char *msg, const char *val)
+{
+	unsigned   i;
+	unsigned   drv;
+	const char *str, *ext;
+
+	str = val;
+
+	if (msg_get_prefix_uint (&str, &drv, ":", " \t")) {
+		pce_log (MSG_ERR,
+			"*** disk eject error: bad drive (%s)\n",
+			val
+		);
+
+		return (1);
+	}
+
+	i = 0;
+	ext = str;
+
+	while (str[i] != 0) {
+		if (str[i] == '.') {
+			ext = str + i;
+		}
+
+		i += 1;
+	}
+
+	rc759_fdc_save (&sim->fdc, drv);
+
+	if (strcasecmp (ext, ".pbit") == 0) {
+		rc759_fdc_set_fname (&sim->fdc, drv, str);
+	}
+	else {
+		if (dsk_insert (sim->dsks, val, 1)) {
+			return (1);
+		}
+	}
+
+	rc759_fdc_load (&sim->fdc, drv);
+
+	return (0);
+}
 
 static
 int rc759_set_msg_emu_config_save (rc759_t *sim, const char *msg, const char *val)
@@ -91,131 +168,6 @@ int rc759_set_msg_emu_cpu_speed_step (rc759_t *sim, const char *msg, const char 
 	}
 
 	rc759_set_cpu_clock (sim, clk);
-
-	return (0);
-}
-
-static
-int rc759_set_msg_emu_disk_commit (rc759_t *sim, const char *msg, const char *val)
-{
-	int      r;
-	unsigned drv;
-
-	if (strcmp (val, "all") == 0) {
-		pce_log (MSG_INF, "commiting all drives\n");
-
-		rc759_fdc_save (&sim->fdc, 0);
-		rc759_fdc_save (&sim->fdc, 1);
-
-		if (dsks_commit (sim->dsks)) {
-			pce_log (MSG_ERR,
-				"*** commit failed for at least one disk\n"
-			);
-			return (1);
-		}
-
-		return (0);
-	}
-
-	r = 0;
-
-	while (*val != 0) {
-		if (msg_get_prefix_uint (&val, &drv, ":", " \t")) {
-			pce_log (MSG_ERR, "*** commit error: bad drive (%s)\n",
-				val
-			);
-
-			return (1);
-		}
-
-		pce_log (MSG_INF, "commiting drive %u\n", drv);
-
-		rc759_fdc_save (&sim->fdc, drv);
-
-		if (dsks_set_msg (sim->dsks, drv, "commit", NULL)) {
-			pce_log (MSG_ERR, "*** commit error for drive %u\n",
-				drv
-			);
-
-			r = 1;
-		}
-	}
-
-	return (r);
-}
-
-static
-int rc759_set_msg_emu_disk_eject (rc759_t *sim, const char *msg, const char *val)
-{
-	unsigned drv;
-	disk_t   *dsk;
-
-	while (*val != 0) {
-		if (msg_get_prefix_uint (&val, &drv, ":", " \t")) {
-			pce_log (MSG_ERR,
-				"*** disk eject error: bad drive (%s)\n",
-				val
-			);
-
-			return (1);
-		}
-
-		pce_log (MSG_INF, "ejecting drive %lu\n", drv);
-
-		rc759_fdc_save (&sim->fdc, drv);
-		rc759_fdc_set_fname (&sim->fdc, drv, NULL);
-
-		dsk = dsks_get_disk (sim->dsks, drv);
-		dsks_rmv_disk (sim->dsks, dsk);
-		dsk_del (dsk);
-
-		rc759_fdc_load (&sim->fdc, drv);
-	}
-
-	return (0);
-}
-
-static
-int rc759_set_msg_emu_disk_insert (rc759_t *sim, const char *msg, const char *val)
-{
-	unsigned   i;
-	unsigned   drv;
-	const char *str, *ext;
-
-	str = val;
-
-	if (msg_get_prefix_uint (&str, &drv, ":", " \t")) {
-		pce_log (MSG_ERR,
-			"*** disk eject error: bad drive (%s)\n",
-			val
-		);
-
-		return (1);
-	}
-
-	i = 0;
-	ext = str;
-
-	while (str[i] != 0) {
-		if (str[i] == '.') {
-			ext = str + i;
-		}
-
-		i += 1;
-	}
-
-	rc759_fdc_save (&sim->fdc, drv);
-
-	if (strcasecmp (ext, ".pbit") == 0) {
-		rc759_fdc_set_fname (&sim->fdc, drv, str);
-	}
-	else {
-		if (dsk_insert (sim->dsks, val, 1)) {
-			return (1);
-		}
-	}
-
-	rc759_fdc_load (&sim->fdc, drv);
 
 	return (0);
 }
@@ -310,12 +262,11 @@ int rc759_set_msg_emu_stop (rc759_t *sim, const char *msg, const char *val)
 
 
 static rc759_msg_list_t set_msg_list[] = {
+	{ "disk.eject", rc759_set_msg_disk_eject },
+	{ "disk.insert", rc759_set_msg_disk_insert },
 	{ "emu.config.save", rc759_set_msg_emu_config_save },
 	{ "emu.cpu.speed", rc759_set_msg_emu_cpu_speed },
 	{ "emu.cpu.speed.step", rc759_set_msg_emu_cpu_speed_step },
-	{ "emu.disk.commit", rc759_set_msg_emu_disk_commit },
-	{ "emu.disk.eject", rc759_set_msg_emu_disk_eject },
-	{ "emu.disk.insert", rc759_set_msg_emu_disk_insert },
 	{ "emu.exit", rc759_set_msg_emu_exit },
 	{ "emu.parport1.driver", rc759_set_msg_emu_parport1_driver },
 	{ "emu.parport1.file", rc759_set_msg_emu_parport1_file },
@@ -355,6 +306,10 @@ int rc759_set_msg (rc759_t *sim, const char *msg, const char *val)
 		}
 
 		lst += 1;
+	}
+
+	if ((r = msg_dsk_set_msg (msg, val, sim->dsks, &sim->disk_id)) >= 0) {
+		return (r);
 	}
 
 	if (sim->trm != NULL) {

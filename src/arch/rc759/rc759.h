@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/rc759.h                                       *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -86,6 +86,8 @@ typedef struct rc759_t {
 	unsigned char      ppi_port_a;
 	unsigned char      ppi_port_b;
 	unsigned char      ppi_port_c;
+
+	unsigned           disk_id;
 
 	unsigned           current_int;
 

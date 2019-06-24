@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/cmd.c                                         *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -31,6 +31,7 @@
 #include <lib/console.h>
 #include <lib/log.h>
 #include <lib/monitor.h>
+#include <lib/msgdsk.h>
 #include <lib/sysdep.h>
 
 
@@ -678,10 +679,6 @@ void rc759_cmd_hm (cmd_t *cmd)
 		"emu.cpu.speed        <factor>\n"
 		"emu.cpu.speed.step   <adjustment>\n"
 		"\n"
-		"emu.disk.commit      [<drive>]\n"
-		"emu.disk.eject       <drive>\n"
-		"emu.disk.insert      <drive>:<fname>\n"
-		"\n"
 		"emu.parport1.driver  <driver>\n"
 		"emu.parport1.file    <filename>\n"
 		"emu.parport2.driver  <driver>\n"
@@ -693,7 +690,10 @@ void rc759_cmd_hm (cmd_t *cmd)
 		"emu.term.release\n"
 		"emu.term.screenshot  [<filename>]\n"
 		"emu.term.title       <title>\n"
+		"\n"
 	);
+
+	msg_dsk_print_help();
 }
 
 static
