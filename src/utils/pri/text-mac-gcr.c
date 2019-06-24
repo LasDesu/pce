@@ -111,7 +111,7 @@ void mac_put_byte (pri_text_t *ctx, unsigned val)
 		}
 	}
 
-	fprintf (ctx->fp, "%02X", val);
+	fprintf (ctx->fp, "%02X", val & 0xff);
 
 	ctx->column += 1;
 }
@@ -255,20 +255,16 @@ int mac_decode_sync (pri_text_t *ctx)
 static
 int mac_decode_id (pri_text_t *ctx)
 {
-	unsigned      i;
-	unsigned long val;
-	unsigned long pos;
-	int           wrap;
-	unsigned      c, h;
-	unsigned char buf[8];
-	unsigned char dec[8];
-	pri_evt_t     *evt;
+	unsigned       i;
+	unsigned long  val;
+	unsigned       c, h;
+	unsigned char  buf[8];
+	unsigned char  dec[8];
+	pri_text_pos_t pos;
 
 	mac_dec_events (ctx);
 
-	pos = ctx->trk->idx;
-	wrap = ctx->trk->wrap;
-	evt = ctx->trk->cur_evt;
+	txt_save_pos (ctx, &pos);
 
 	for (i = 0; i < 8; i++) {
 		pri_trk_get_bits (ctx->trk, &val, 8);
@@ -276,10 +272,8 @@ int mac_decode_id (pri_text_t *ctx)
 		dec[i] = mac_dec_tab[val & 0xff];
 	}
 
-	if (mac_dec_event_occurred (ctx, evt)) {
-		ctx->trk->idx = pos;
-		ctx->trk->wrap = wrap;
-		ctx->trk->cur_evt = evt;
+	if (mac_dec_event_occurred (ctx, pos.evt)) {
+		txt_restore_pos (ctx, &pos);
 		return (0);
 	}
 
@@ -318,20 +312,16 @@ int mac_check_data (const unsigned char *buf, unsigned size)
 static
 int mac_decode_data (pri_text_t *ctx)
 {
-	unsigned      i, j;
-	unsigned long val, high;
-	unsigned long pos;
-	int           wrap;
-	unsigned char s;
-	unsigned char chk[4];
-	unsigned char buf[527];
-	pri_evt_t     *evt;
+	unsigned       i, j;
+	unsigned long  val, high, dec;
+	unsigned char  s;
+	unsigned char  chk[4];
+	unsigned char  buf[527];
+	pri_text_pos_t pos;
 
 	mac_dec_events (ctx);
 
-	pos = ctx->trk->idx;
-	wrap = ctx->trk->wrap;
-	evt = ctx->trk->cur_evt;
+	txt_save_pos (ctx, &pos);
 
 	pri_trk_get_bits (ctx->trk, &val, 8);
 	s = val & 0xff;
@@ -339,12 +329,27 @@ int mac_decode_data (pri_text_t *ctx)
 	for (i = 0; i < 524; i++) {
 		if ((i % 3) == 0) {
 			pri_trk_get_bits (ctx->trk, &high, 8);
-			high = mac_dec_tab[high & 0xff] << 2;
+
+			dec = mac_dec_tab[high & 0xff];
+
+			if (dec > 64) {
+				txt_restore_pos (ctx, &pos);
+				return (0);
+			}
+
+			high = (dec & 0x3f) << 2;
 		}
 
 		pri_trk_get_bits (ctx->trk, &val, 8);
 
-		val = (mac_dec_tab[val & 0xff] & 0x3f) | (high & 0xc0);
+		dec = mac_dec_tab[val & 0xff];
+
+		if (dec > 64) {
+			txt_restore_pos (ctx, &pos);
+			return (0);
+		}
+
+		val = (dec & 0x3f) | (high & 0xc0);
 		high <<= 2;
 
 		buf[i] = val & 0xff;
@@ -355,10 +360,8 @@ int mac_decode_data (pri_text_t *ctx)
 		chk[i] = val & 0xff;
 	}
 
-	if (mac_dec_event_occurred (ctx, evt)) {
-		ctx->trk->idx = pos;
-		ctx->trk->wrap = wrap;
-		ctx->trk->cur_evt = evt;
+	if (mac_dec_event_occurred (ctx, pos.evt)) {
+		txt_restore_pos (ctx, &pos);
 		return (0);
 	}
 
@@ -446,7 +449,7 @@ int txt_mac_dec_track (pri_text_t *ctx)
 		}
 
 		if (ctx->shift_cnt >= 16) {
-			mac_put_byte (ctx, 0);
+			mac_put_byte (ctx, ctx->shift >> 8);
 			ctx->shift_cnt -= 8;
 			buf[2] = 0;
 		}
