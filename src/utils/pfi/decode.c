@@ -250,7 +250,6 @@ int pfi_dec_fold_mindiff (pfi_dec_t *bit, unsigned window, unsigned long max, un
 	unsigned long min_val, min_pos, min_cnt, dist;
 
 	if ((bit->index < 256) || ((bit->cnt - bit->index) < 256)) {
-		bit->cnt = bit->index;
 		return (0);
 	}
 
@@ -294,7 +293,7 @@ int pfi_dec_fold_mindiff (pfi_dec_t *bit, unsigned window, unsigned long max, un
 		);
 	}
 
-	bit->cnt = min_pos;
+	bit->index = min_pos;
 
 	return (0);
 }
@@ -344,7 +343,6 @@ int pfi_dec_fold_maxrun (pfi_dec_t *bit, unsigned window, unsigned long max, uns
 	unsigned long max_val, max_pos, dist;
 
 	if ((bit->index < 256) || ((bit->cnt - bit->index) < 256)) {
-		bit->cnt = bit->index;
 		return (0);
 	}
 
@@ -382,7 +380,7 @@ int pfi_dec_fold_maxrun (pfi_dec_t *bit, unsigned window, unsigned long max, uns
 		);
 	}
 
-	bit->cnt = max_pos;
+	bit->index = max_pos;
 
 	return (0);
 }
@@ -393,13 +391,13 @@ void pfi_decode_weak (pri_trk_t *trk, pfi_dec_t *bit, unsigned long i1, unsigned
 	unsigned long i;
 	unsigned long val;
 
-	if ((i1 + i2) >= bit->cnt) {
+	if ((i1 + i2) >= bit->index) {
 		return;
 	}
 
 	val = 0;
 
-	for (i = i1; i < (bit->cnt - i2); i++) {
+	for (i = i1; i < (bit->index - i2); i++) {
 		val <<= 1;
 
 		if (bit->weak[i >> 3] & (0x80 >> (i & 7))) {
@@ -433,7 +431,7 @@ void pfi_decode_clock (pri_trk_t *trk, pfi_dec_t *bit, unsigned long tolerance)
 
 	have_clock = 0;
 
-	for (i = 0; i < bit->cnt; i++) {
+	for (i = 0; i < bit->index; i++) {
 		if (bit->clk[i] < clk_min) {
 			cnt_min += 1;
 			cnt_max = 0;
@@ -529,9 +527,9 @@ int pfi_decode_pri_trk_cb (pfi_img_t *img, pfi_trk_t *strk, unsigned long c, uns
 	}
 
 	pri_trk_set_clock (dtrk, rate);
-	pri_trk_set_size (dtrk, bit.cnt);
+	pri_trk_set_size (dtrk, bit.index);
 
-	memcpy (dtrk->data, bit.buf, (bit.cnt + 7) / 8);
+	memcpy (dtrk->data, bit.buf, (bit.index + 7) / 8);
 
 	if (par_weak_bits) {
 		pfi_decode_weak (dtrk, &bit, par_weak_i1, par_weak_i2);
