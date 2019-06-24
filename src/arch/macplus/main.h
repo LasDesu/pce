@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/main.h                                      *
  * Created:     2007-04-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2011 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -50,8 +50,7 @@ extern int        par_verbose;
 
 extern const char *par_terminal;
 
-extern unsigned   par_disk_delay_valid;
-extern unsigned   par_disk_delay[];
+extern unsigned   par_disk_boot;
 
 extern macplus_t  *par_sim;
 

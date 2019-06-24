@@ -50,8 +50,7 @@
 
 const char *par_terminal = NULL;
 
-unsigned   par_disk_delay_valid = 0;
-unsigned   par_disk_delay[SONY_DRIVES];
+unsigned   par_disk_boot = 0;
 
 macplus_t  *par_sim = NULL;
 
@@ -66,8 +65,7 @@ static ini_strings_t par_ini_str;
 
 static pce_option_t opts[] = {
 	{ '?', 0, "help", NULL, "Print usage information" },
-	{ 'b', 1, "disk-delay-1", "delay", "Set the disk delay for drive 1 [30]" },
-	{ 'B', 2, "disk-delay", "drive delay", "Set the disk delay [30]" },
+	{ 'b', 1, "boot-disk", "int", "Set the boot disk [none]" },
 	{ 'c', 1, "config", "string", "Set the config file name [none]" },
 	{ 'd', 1, "path", "string", "Add a directory to the search path" },
 	{ 'i', 1, "ini-prefix", "string", "Add an ini string before the config file" },
@@ -238,24 +236,11 @@ int main (int argc, char *argv[])
 			return (0);
 
 		case 'b':
-			par_disk_delay_valid |= 1;
-			par_disk_delay[0] = (unsigned) strtoul (optarg[0], NULL, 0);
-			break;
+			drive = (unsigned) strtoul (optarg[0], NULL, 0);
 
-		case 'B':
-			drive = strtoul (optarg[0], NULL, 0);
-
-			if ((drive < 1) || (drive >= SONY_DRIVES)) {
-				fprintf (stderr, "%s: bad drive number (%u)\n",
-					argv[0], drive
-				);
-				return (1);
+			if ((drive >= 1) && (drive <= 8)) {
+				par_disk_boot |= 1U << (drive - 1);
 			}
-
-			drive -= 1;
-
-			par_disk_delay_valid |= 1U << drive;
-			par_disk_delay[drive] = (unsigned) strtoul (optarg[1], NULL, 0);
 			break;
 
 		case 'c':

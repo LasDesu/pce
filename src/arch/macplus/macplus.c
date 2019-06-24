@@ -1039,12 +1039,18 @@ void mac_setup_iwm (macplus_t *sim, ini_sct_t *ini)
 		ini_get_bool (sct, "inserted", &inserted, 0);
 		ini_get_bool (sctdev, "inserted", &inserted, inserted);
 
+		if ((drive >= 1) && (drive <= 8)) {
+			if (par_disk_boot & (1U << (drive - 1))) {
+				inserted = 1;
+			}
+		}
+
 		ini_get_bool (sct, "auto_rotate", &rotate, 0);
 		ini_get_bool (sctdev, "auto_rotate", &rotate, rotate);
 
 		pce_log_tag (MSG_INF,
-			"IWM:", "drive=%u size=%uK locked=%d rotate=%d disk=%u\n",
-			drive, single ? 400 : 800, locked, rotate, disk
+			"IWM:", "drive=%u size=%uK locked=%d ins=%d rotate=%d disk=%u\n",
+			drive, single ? 400 : 800, locked, inserted, rotate, disk
 		);
 
 		mac_iwm_set_heads (&sim->iwm, drive - 1, single ? 1 : 2);
@@ -1133,7 +1139,7 @@ void mac_setup_sony (macplus_t *sim, ini_sct_t *ini)
 
 	sct = ini_next_sct (ini, NULL, "sony");
 
-	ini_get_uint16 (sct, "insert_delay", &def, 30);
+	ini_get_uint16 (sct, "insert_delay", &def, 0);
 	ini_get_bool (sct, "format_hd_as_dd", &format_hd_as_dd, 0);
 
 	mac_sony_init (&sim->sony, sct != NULL);
@@ -1147,8 +1153,8 @@ void mac_setup_sony (macplus_t *sim, ini_sct_t *ini)
 	}
 
 	for (i = 0; i < SONY_DRIVES; i++) {
-		if (par_disk_delay_valid & (1U << i)) {
-			val = par_disk_delay[i];
+		if (par_disk_boot & (1U << i)) {
+			val = 1;
 		}
 		else {
 			sprintf (var, "insert_delay_%u", i + 1);
