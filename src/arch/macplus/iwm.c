@@ -104,6 +104,7 @@ int iwm_drv_init (mac_iwm_drive_t *drv, unsigned drive)
 	drv->input_clock = MAC_CPU_CLOCK / 10;
 	drv->input_clock_cnt = 0;
 
+	drv->track_dirty = 0;
 	drv->dirty = 0;
 
 	return (0);
@@ -159,6 +160,35 @@ void iwm_drv_write_end (mac_iwm_drive_t *drv)
 }
 
 static
+void iwm_drv_print_status (mac_iwm_drive_t *drv)
+{
+	char str[4];
+
+	if (drv->motor_on == 0) {
+		return;
+	}
+
+	str[0] = drv->dirty ? '*' : ' ';
+
+	if (drv->track_dirty & 2) {
+		str[1] = '+';
+	}
+	else if (drv->track_dirty & 1) {
+		str[1] = '*';
+	}
+	else {
+		str[1] = ' ';
+	}
+
+	str[2] = 0;
+
+	pce_printf ("IWM: D%u%s %u/%u    \r",
+		drv->drive + 1, str,
+		drv->cur_cyl, drv->cur_head
+	);
+}
+
+static
 void iwm_drv_select_track (mac_iwm_drive_t *drv, unsigned c, unsigned h)
 {
 	pri_trk_t *trk;
@@ -205,7 +235,10 @@ void iwm_drv_select_track (mac_iwm_drive_t *drv, unsigned c, unsigned h)
 		drv->evt = drv->evt->next;
 	}
 
+	drv->track_dirty = 0;
 	drv->weak_mask = 0;
+
+	iwm_drv_print_status (drv);
 }
 
 static
@@ -487,11 +520,7 @@ void iwm_drv_set_step (mac_iwm_drive_t *drv)
 
 	drv->stepping = 1;
 
-	iwm_drv_select_track(drv, drv->cur_cyl, drv->cur_head);
-
-	pce_printf ("IWM: D%u Track %u    \r",
-		drv->drive + 1, drv->cur_cyl
-	);
+	iwm_drv_select_track (drv, drv->cur_cyl, drv->cur_head);
 
 #if DEBUG_IWM >= 2
 	mac_log_deb ("iwm: drive %u step to track %u\n",
@@ -1033,7 +1062,9 @@ void mac_iwm_access_uint8 (mac_iwm_t *iwm, unsigned reg)
 
 		if (iwm->writing) {
 			iwm->writing = 0;
+			iwm->curdrv->track_dirty &= ~2U;
 			iwm_drv_write_end (iwm->curdrv);
+			iwm_drv_print_status (iwm->curdrv);
 		}
 	}
 }
@@ -1114,6 +1145,9 @@ void mac_iwm_set_uint8 (mac_iwm_t *iwm, unsigned long addr, unsigned char val)
 				iwm->writing = 1;
 				iwm->shift_cnt = 0;
 				iwm->curdrv->write_cnt = 0;
+				iwm->curdrv->track_dirty |= 3;
+
+				iwm_drv_print_status (iwm->curdrv);
 #if DEBUG_IWM >= 1
 				mac_log_deb (
 					"iwm: drive %u writing track %u head %u\n",
@@ -1241,6 +1275,7 @@ void mac_iwm_write (mac_iwm_t *iwm, mac_iwm_drive_t *drv)
 				iwm->handshake &= ~0x40;
 				iwm->shift_cnt = 0;
 				iwm->writing = 0;
+				iwm->curdrv->track_dirty &= ~2U;
 
 				iwm_drv_write_end (drv);
 
@@ -1259,6 +1294,7 @@ void mac_iwm_write (mac_iwm_t *iwm, mac_iwm_drive_t *drv)
 			data[p] &= ~m;
 		}
 
+		drv->track_dirty |= 3;
 		drv->dirty = 1;
 
 		iwm->shift = (iwm->shift << 1) & 0xff;

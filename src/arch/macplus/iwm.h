@@ -77,6 +77,7 @@ typedef struct {
 
 	unsigned        pwm_val;
 
+	unsigned char   track_dirty;
 	char            dirty;
 } mac_iwm_drive_t;
 
