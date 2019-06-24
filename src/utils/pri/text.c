@@ -32,6 +32,20 @@
 #include "text.h"
 
 
+void txt_save_pos (const pri_text_t *ctx, pri_text_pos_t *pos)
+{
+	pos->pos = ctx->trk->idx;
+	pos->wrap = ctx->trk->wrap;
+	pos->evt = ctx->trk->cur_evt;
+}
+
+void txt_restore_pos (pri_text_t *ctx, const pri_text_pos_t *pos)
+{
+	ctx->trk->idx = pos->pos;
+	ctx->trk->wrap = pos->wrap;
+	ctx->trk->cur_evt = pos->evt;
+}
+
 static
 unsigned txt_guess_encoding (pri_trk_t *trk)
 {
@@ -68,16 +82,12 @@ unsigned txt_guess_encoding (pri_trk_t *trk)
 int txt_dec_match (pri_text_t *ctx, const void *buf, unsigned cnt)
 {
 	unsigned            i;
-	unsigned long       pos;
 	unsigned long       type, val;
-	int                 wrap;
 	unsigned long       bit;
-	pri_evt_t           *evt;
 	const unsigned char *ptr;
+	pri_text_pos_t      pos;
 
-	pos = ctx->trk->idx;
-	wrap = ctx->trk->wrap;
-	evt = ctx->trk->cur_evt;
+	txt_save_pos (ctx, &pos);
 
 	ptr = buf;
 
@@ -94,9 +104,7 @@ int txt_dec_match (pri_text_t *ctx, const void *buf, unsigned cnt)
 	}
 
 	if ((i < cnt) || ctx->trk->wrap) {
-		ctx->trk->idx = pos;
-		ctx->trk->wrap = wrap;
-		ctx->trk->cur_evt = evt;
+		txt_restore_pos (ctx, &pos);
 
 		return (1);
 	}

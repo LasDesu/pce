@@ -32,6 +32,13 @@
 
 
 typedef struct {
+	unsigned long pos;
+	char          wrap;
+	pri_evt_t     *evt;
+} pri_text_pos_t;
+
+
+typedef struct {
 	FILE           *fp;
 
 	unsigned       cnt;
@@ -69,6 +76,9 @@ typedef struct {
 	unsigned short crc;
 } pri_text_t;
 
+
+void txt_save_pos (const pri_text_t *ctx, pri_text_pos_t *pos);
+void txt_restore_pos (pri_text_t *ctx, const pri_text_pos_t *pos);
 
 int txt_dec_match (pri_text_t *ctx, const void *buf, unsigned cnt);
 
