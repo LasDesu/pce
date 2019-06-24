@@ -1643,6 +1643,8 @@ ibmpc_t *pc_new (ini_sct_t *ini)
 
 	pc->cfg = ini;
 
+	pc->disk_id = 0;
+
 	pc->mouse_button = 0;
 
 	bps_init (&pc->bps);

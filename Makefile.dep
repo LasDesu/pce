@@ -499,6 +499,7 @@ src/arch/ibmpc/cmd.o: src/arch/ibmpc/cmd.c \
 	src/lib/console.h \
 	src/lib/log.h \
 	src/lib/monitor.h \
+	src/lib/msgdsk.h \
 	src/lib/sysdep.h \
 	src/libini/libini.h
 
@@ -777,10 +778,10 @@ src/arch/ibmpc/msg.o: src/arch/ibmpc/msg.c \
 	src/drivers/video/terminal.h \
 	src/lib/brkpt.h \
 	src/lib/cmd.h \
-	src/lib/inidsk.h \
 	src/lib/log.h \
 	src/lib/monitor.h \
 	src/lib/msg.h \
+	src/lib/msgdsk.h \
 	src/lib/sysdep.h \
 	src/libini/libini.h
 

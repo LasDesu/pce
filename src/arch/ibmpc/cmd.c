@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/cmd.c                                         *
  * Created:     2010-09-21 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -31,6 +31,7 @@
 #include <lib/console.h>
 #include <lib/log.h>
 #include <lib/monitor.h>
+#include <lib/msgdsk.h>
 #include <lib/sysdep.h>
 
 
@@ -49,7 +50,7 @@ static mon_cmd_t par_cmd[] = {
 	{ "pq", "[c|f|s]", "prefetch queue clear/fill/status" },
 	{ "p", "[cnt]", "execute cnt instructions, without trace in calls [1]" },
 	{ "r", "[reg val]", "set a register" },
-	{ "s", "[what]", "print status (pc|cpu|mem|pit|ppi|pic|time|uart|video|xms)" },
+	{ "s", "[what]", "print status (pc|cpu|disks|ems|mem|pic|pit|ports|ppi|time|uart|video|xms)" },
 	{ "trace", "on|off|expr", "turn trace on or off" },
 	{ "t", "[cnt]", "execute cnt instructions [1]" },
 	{ "u", "[addr [cnt [mode]]]", "disassemble" }
@@ -796,10 +797,6 @@ void pc_cmd_hm (cmd_t *cmd)
 		"emu.cpu.speed.step   <adjustment>\n"
 		"\n"
 		"emu.disk.boot        <bootdrive>\n"
-		"emu.disk.commit      [<drive>]\n"
-		"emu.disk.eject       <drive>\n"
-		"emu.disk.insert      <drive>:<fname>\n"
-		"\n"
 		"emu.fdc.accurate     \"0\" | \"1\"\n"
 		"\n"
 		"emu.parport.driver   <driver>\n"
@@ -826,7 +823,10 @@ void pc_cmd_hm (cmd_t *cmd)
 		"\n"
 		"emu.video.blink      <blink-rate>\n"
 		"emu.video.redraw     [\"now\"]\n"
+		"\n"
 	);
+
+	msg_dsk_print_help();
 }
 
 static
@@ -1216,20 +1216,26 @@ void pc_cmd_s (cmd_t *cmd, ibmpc_t *pc)
 		else if (cmd_match (cmd, "cpu")) {
 			prt_state_cpu (pc->cpu);
 		}
+		else if (cmd_match (cmd, "dma")) {
+			prt_state_dma (&pc->dma);
+		}
+		else if (cmd_match (cmd, "disks")) {
+			dsks_print_info (pc->dsk);
+		}
+		else if (cmd_match (cmd, "ems")) {
+			prt_state_ems (pc->ems);
+		}
+		else if (cmd_match (cmd, "mem")) {
+			prt_state_mem (pc);
+		}
+		else if (cmd_match (cmd, "pic")) {
+			prt_state_pic (&pc->pic);
+		}
 		else if (cmd_match (cmd, "pit")) {
 			prt_state_pit (&pc->pit);
 		}
 		else if (cmd_match (cmd, "ppi")) {
 			prt_state_ppi (&pc->ppi);
-		}
-		else if (cmd_match (cmd, "pic")) {
-			prt_state_pic (&pc->pic);
-		}
-		else if (cmd_match (cmd, "dma")) {
-			prt_state_dma (&pc->dma);
-		}
-		else if (cmd_match (cmd, "mem")) {
-			prt_state_mem (pc);
 		}
 		else if (cmd_match (cmd, "ports")) {
 			prt_state_ports (pc);
@@ -1248,9 +1254,6 @@ void pc_cmd_s (cmd_t *cmd, ibmpc_t *pc)
 		}
 		else if (cmd_match (cmd, "video")) {
 			prt_state_video (pc->video);
-		}
-		else if (cmd_match (cmd, "ems")) {
-			prt_state_ems (pc->ems);
 		}
 		else if (cmd_match (cmd, "xms")) {
 			prt_state_xms (pc->xms);

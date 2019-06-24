@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/msg.c                                         *
  * Created:     2004-09-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -28,10 +28,10 @@
 
 #include <drivers/block/block.h>
 
-#include <lib/inidsk.h>
 #include <lib/log.h>
 #include <lib/monitor.h>
 #include <lib/msg.h>
+#include <lib/msgdsk.h>
 #include <lib/sysdep.h>
 
 
@@ -109,95 +109,6 @@ int pc_set_msg_emu_disk_boot (ibmpc_t *pc, const char *msg, const char *val)
 	}
 
 	pc->bootdrive = v;
-
-	return (0);
-}
-
-static
-int pc_set_msg_emu_disk_commit (ibmpc_t *pc, const char *msg, const char *val)
-{
-	int      r;
-	unsigned drv;
-
-	if (strcmp (val, "all") == 0) {
-		pce_log (MSG_INF, "commiting all drives\n");
-
-		if (dsks_commit (pc->dsk)) {
-			pce_log (MSG_ERR,
-				"*** commit failed for at least one disk\n"
-			);
-			return (1);
-		}
-
-		return (0);
-	}
-
-	r = 0;
-
-	while (*val != 0) {
-		if (msg_get_prefix_uint (&val, &drv, ":", " \t")) {
-			pce_log (MSG_ERR, "*** commit error: bad drive (%s)\n",
-				val
-			);
-
-			return (1);
-		}
-
-		pce_log (MSG_INF, "commiting drive %u\n", drv);
-
-		if (dsks_set_msg (pc->dsk, drv, "commit", NULL)) {
-			pce_log (MSG_ERR, "*** commit error for drive %u\n",
-				drv
-			);
-
-			r = 1;
-		}
-	}
-
-	return (r);
-}
-
-static
-int pc_set_msg_emu_disk_eject (ibmpc_t *pc, const char *msg, const char *val)
-{
-	unsigned drv;
-	disk_t   *dsk;
-
-	while (*val != 0) {
-		if (msg_get_prefix_uint (&val, &drv, ":", " \t")) {
-			pce_log (MSG_ERR,
-				"*** disk eject error: bad drive (%s)\n",
-				val
-			);
-
-			return (1);
-		}
-
-		dsk = dsks_get_disk (pc->dsk, drv);
-
-		if (dsk == NULL) {
-			pce_log (MSG_ERR,
-				"*** disk eject error: no such disk (%lu)\n", drv
-			);
-		}
-		else {
-			pce_log (MSG_INF, "ejecting drive %lu\n", drv);
-
-			dsks_rmv_disk (pc->dsk, dsk);
-
-			dsk_del (dsk);
-		}
-	}
-
-	return (0);
-}
-
-static
-int pc_set_msg_emu_disk_insert (ibmpc_t *pc, const char *msg, const char *val)
-{
-	if (dsk_insert (pc->dsk, val, 1)) {
-		return (1);
-	}
 
 	return (0);
 }
@@ -552,9 +463,6 @@ static pc_msg_list_t set_msg_list[] = {
 	{ "emu.cpu.speed", pc_set_msg_emu_cpu_speed },
 	{ "emu.cpu.speed.step", pc_set_msg_emu_cpu_speed_step },
 	{ "emu.disk.boot", pc_set_msg_emu_disk_boot },
-	{ "emu.disk.commit", pc_set_msg_emu_disk_commit },
-	{ "emu.disk.eject", pc_set_msg_emu_disk_eject },
-	{ "emu.disk.insert", pc_set_msg_emu_disk_insert },
 	{ "emu.exit", pc_set_msg_emu_exit },
 	{ "emu.fdc.accurate", pc_set_msg_emu_fdc_accurate },
 	{ "emu.parport.driver", pc_set_msg_emu_parport_driver },
@@ -605,6 +513,10 @@ int pc_set_msg (ibmpc_t *pc, const char *msg, const char *val)
 		}
 
 		lst += 1;
+	}
+
+	if ((r = msg_dsk_set_msg (msg, val, pc->dsk, &pc->disk_id)) >= 0) {
+		return (r);
 	}
 
 	if (pc->trm != NULL) {

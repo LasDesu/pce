@@ -92,17 +92,6 @@ emu.cpu.speed.step <adjustment>
 emu.disk.boot <bootdrive>
 	Set the boot drive.
 
-emu.disk.commit (<drive> [":" <drive> ...]) | "all"
-	Commit changes to drives that have copy-on-write enabled.
-
-emu.disk.eject <drive> [":" <drive> ...]
-	Eject the disk in drive <drive>.
-
-emu.disk.insert <drive>:<fname>
-	Insert a new disk. <drive> is a drive number as specified
-	in the config file. The disk image type is "auto". If a disk
-	is already inserted in <drive> it is ejected first.
-
 emu.fdc.accurate "0" | "1"
 	Disable or enable the FDC accurate mode.
 

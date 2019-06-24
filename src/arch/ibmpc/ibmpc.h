@@ -105,6 +105,7 @@ typedef struct ibmpc_t {
 	bp_set_t           bps;
 
 	unsigned           bootdrive;
+	unsigned           disk_id;
 
 	unsigned long      dma_page[4];
 
