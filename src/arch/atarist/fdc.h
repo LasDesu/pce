@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/atarist/fdc.h                                       *
  * Created:     2013-06-02 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2013-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -35,9 +35,6 @@ typedef struct {
 	wd179x_t       wd179x;
 	disks_t        *dsks;
 
-	char           use_fname[2];
-	char           *fname[2];
-
 	unsigned short diskid[2];
 
 	char           wprot[2];
@@ -46,6 +43,7 @@ typedef struct {
 	unsigned long  media_change_clk;
 
 	pri_img_t      *img[2];
+	char           img_del[2];
 
 	char           modified[2];
 } st_fdc_t;
@@ -63,9 +61,8 @@ void st_fdc_set_disk_id (st_fdc_t *fdc, unsigned drive, unsigned diskid);
 
 void st_fdc_set_wprot (st_fdc_t *fdc, unsigned drive, int wprot);
 
-void st_fdc_set_fname (st_fdc_t *fdc, unsigned drive, const char *fname);
-
-int st_fdc_insert (st_fdc_t *fdc, const char *str);
+int st_fdc_eject_disk (st_fdc_t *fdc, unsigned id);
+int st_fdc_insert_disk (st_fdc_t *fdc, unsigned id);
 
 unsigned char st_fdc_get_reserve (const st_fdc_t *fdc);
 void st_fdc_set_reserve (st_fdc_t *fdc, unsigned char val);

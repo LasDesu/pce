@@ -196,21 +196,18 @@ psg {
 }
 
 fdc {
-	# The PRI file associated with drive 0. If this file does not
-	# exist, the disk image for drive 0, configured below, is used
-	# instead.
-	file0 = "fd0.pri"
+	# The disk id used for drive 0.
+	id0 = 0
 
-	# The PRI file associated with drive 1. If this file does not
-	# exist, the disk image for drive 1, configured below, is used
-	# instead.
-	file1 = "fd1.pri"
+	# The disk id used for drive 1.
+	id1 = 1
 }
 
 # The first floppy disk
 disk {
 	drive    = 0
 	type     = "auto"
+	file     = "fd0.pri"
 	file     = "fd0.st"
 	file     = "fd0.img"
 	file     = "fd0.psi"
@@ -221,6 +218,7 @@ disk {
 disk {
 	drive    = 1
 	type     = "auto"
+	file     = "fd1.pri"
 	file     = "fd1.st"
 	file     = "fd1.img"
 	file     = "fd1.psi"

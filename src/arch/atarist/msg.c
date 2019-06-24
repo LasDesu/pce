@@ -50,34 +50,13 @@ typedef struct {
 static
 int st_set_msg_disk_eject (atari_st_t *sim, const char *msg, const char *val)
 {
-	unsigned drv;
-	disk_t   *dsk;
-
-	while (*val != 0) {
-		if (msg_get_prefix_uint (&val, &drv, ":", " \t")) {
-			pce_log (MSG_ERR,
-				"*** disk eject error: bad drive (%s)\n",
-				val
-			);
-
-			return (1);
-		}
-
-		pce_log (MSG_INF, "ejecting drive %lu\n", drv);
-
-		if (drv < 2) {
-			st_fdc_save (&sim->fdc, drv);
-		}
-
-		dsk = dsks_get_disk (sim->dsks, drv);
-		dsks_rmv_disk (sim->dsks, dsk);
-		dsk_del (dsk);
-
-		if (drv < 2) {
-			st_fdc_set_fname (&sim->fdc, drv, NULL);
-			st_fdc_load (&sim->fdc, drv);
-		}
+	if (msg_dsk_get_disk_id (val, &sim->disk_id)) {
+		return (1);
 	}
+
+	st_fdc_eject_disk (&sim->fdc, sim->disk_id);
+
+	msg_dsk_emu_disk_eject (val, sim->dsks, &sim->disk_id);
 
 	return (0);
 }
@@ -85,46 +64,15 @@ int st_set_msg_disk_eject (atari_st_t *sim, const char *msg, const char *val)
 static
 int st_set_msg_disk_insert (atari_st_t *sim, const char *msg, const char *val)
 {
-	unsigned   i;
-	unsigned   drv;
-	const char *str, *ext;
+	if (dsks_get_disk (sim->dsks, sim->disk_id) != NULL) {
+		st_fdc_eject_disk (&sim->fdc, sim->disk_id);
+	}
 
-	str = val;
-
-	if (msg_get_prefix_uint (&str, &drv, ":", " \t")) {
-		pce_log (MSG_ERR,
-			"*** disk eject error: bad drive (%s)\n",
-			val
-		);
-
+	if (msg_dsk_emu_disk_insert (val, sim->dsks, sim->disk_id)) {
 		return (1);
 	}
 
-	i = 0;
-	ext = str;
-
-	while (str[i] != 0) {
-		if (str[i] == '.') {
-			ext = str + i;
-		}
-
-		i += 1;
-	}
-
-	st_fdc_save (&sim->fdc, drv);
-
-	if (strcasecmp (ext, ".pri") == 0) {
-		st_fdc_set_fname (&sim->fdc, drv, str);
-	}
-	else {
-		st_fdc_set_fname (&sim->fdc, drv, NULL);
-
-		if (dsk_insert (sim->dsks, val, 1)) {
-			return (1);
-		}
-	}
-
-	st_fdc_load (&sim->fdc, drv);
+	st_fdc_insert_disk (&sim->fdc, sim->disk_id);
 
 	return (0);
 }
