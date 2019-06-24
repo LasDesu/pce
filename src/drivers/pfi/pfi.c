@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pfi/pfi.c                                        *
  * Created:     2012-01-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -91,7 +91,7 @@ pfi_trk_t *pfi_cyl_get_track (pfi_cyl_t *cyl, unsigned long idx, int alloc)
 {
 	pfi_trk_t *trk;
 
-	if (idx < cyl->trk_cnt) {
+	if ((idx < cyl->trk_cnt) && (cyl->trk[idx] != NULL)) {
 		return (cyl->trk[idx]);
 	}
 
@@ -257,7 +257,7 @@ pfi_cyl_t *pfi_img_get_cylinder (pfi_img_t *img, unsigned long idx, int alloc)
 {
 	pfi_cyl_t *cyl;
 
-	if (idx < img->cyl_cnt) {
+	if ((idx < img->cyl_cnt) && (img->cyl[idx] != NULL)) {
 		return (img->cyl[idx]);
 	}
 
