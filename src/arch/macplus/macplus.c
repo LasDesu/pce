@@ -1297,6 +1297,8 @@ void mac_init (macplus_t *sim, ini_sct_t *ini)
 
 	sim->reset = 0;
 
+	sim->disk_id = 1;
+
 	sim->dcd_a = 0;
 	sim->dcd_b = 0;
 

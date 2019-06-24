@@ -33,6 +33,7 @@
 #include <lib/cmd.h>
 #include <lib/console.h>
 #include <lib/log.h>
+#include <lib/msgdsk.h>
 #include <lib/monitor.h>
 #include <lib/sysdep.h>
 
@@ -47,7 +48,7 @@ mon_cmd_t par_cmd[] = {
 	{ "reset", "", "reset" },
 	{ "rte", "", "execute to next rte" },
 	{ "r", "reg [val]", "get or set a register" },
-	{ "s", "[what]", "print status (cpu|mem|scc|via)" },
+	{ "s", "[what]", "print status (cpu|disks|mem|scc|via)" },
 	{ "t", "[cnt]", "execute cnt instructions [1]" },
 	{ "u", "[[-]addr [cnt]]", "disassemble" }
 };
@@ -295,6 +296,9 @@ void mac_prt_state (macplus_t *sim, const char *str)
 	while (!cmd_match_eol (&cmd)) {
 		if (cmd_match (&cmd, "cpu")) {
 			mac_prt_state_cpu (sim->cpu);
+		}
+		else if (cmd_match (&cmd, "disks")) {
+			dsks_print_info (sim->dsks);
 		}
 		else if (cmd_match (&cmd, "mem")) {
 			mac_prt_state_mem (sim);
@@ -638,12 +642,6 @@ void mac_cmd_hm (cmd_t *cmd)
 		"emu.cpu.speed        <factor>\n"
 		"emu.cpu.speed.step   <adjustment>\n"
 		"\n"
-		"emu.disk.commit      [<drive>]\n"
-		"emu.disk.eject       <drive>\n"
-		"emu.disk.insert      <drive>:<filename>\n"
-		"emu.disk.ro          <drive>\n"
-		"emu.disk.rw          <drive>\n"
-		"\n"
 		"emu.exit\n"
 		"\n"
 		"emu.iwm.insert       <drive>:<filename>\n"
@@ -676,7 +674,10 @@ void mac_cmd_hm (cmd_t *cmd)
 		"emu.term.release\n"
 		"emu.term.screenshot  [<filename>]\n"
 		"emu.term.title       <title>\n"
+		"\n"
 	);
+
+	msg_dsk_print_help();
 }
 
 /*
