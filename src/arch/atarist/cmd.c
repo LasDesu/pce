@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/atarist/cmd.c                                       *
  * Created:     2011-03-17 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2011-2013 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2011-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -30,6 +30,7 @@
 #include <lib/console.h>
 #include <lib/log.h>
 #include <lib/monitor.h>
+#include <lib/msgdsk.h>
 #include <lib/sysdep.h>
 
 
@@ -49,7 +50,7 @@ mon_cmd_t par_cmd[] = {
 	{ "reset", "", "reset" },
 	{ "rte", "", "execute to next rte" },
 	{ "r", "reg [val]", "get or set a register" },
-	{ "s", "[what]", "print status (acia0|acia1|cpu|dma|mem|mfp|psg|video)" },
+	{ "s", "[what]", "print status (acia0|acia1|cpu|disks|dma|mem|mfp|psg|video)" },
 	{ "t", "[cnt]", "execute cnt instructions [1]" },
 	{ "u", "[w][[-]addr [cnt]]", "disassemble" },
 	{ "uw", "[addr [cnt]]", "disassemble as constant words" }
@@ -430,6 +431,9 @@ void st_print_state (atari_st_t *sim, const char *str)
 	while (!cmd_match_eol (&cmd)) {
 		if (cmd_match (&cmd, "cpu")) {
 			st_print_state_cpu (sim);
+		}
+		else if (cmd_match (&cmd, "disks")) {
+			dsks_print_info (sim->dsks);
 		}
 		else if (cmd_match (&cmd, "dma")) {
 			st_print_state_dma (sim);
@@ -833,10 +837,6 @@ void st_cmd_hm (cmd_t *cmd)
 		"emu.cpu.speed        <factor>\n"
 		"emu.cpu.speed.step   <adjustment>\n"
 		"\n"
-		"emu.disk.commit      [<drive>]\n"
-		"emu.disk.eject       <drive>\n"
-		"emu.disk.insert      <drive>:<fname>\n"
-		"\n"
 		"emu.midi.file        <fname>\n"
 		"\n"
 		"emu.fdc.ro           <drive>\n"
@@ -862,7 +862,10 @@ void st_cmd_hm (cmd_t *cmd)
 		"term.release\n"
 		"term.screenshot      [<filename>]\n"
 		"term.title           <title>\n"
+		"\n"
 	);
+
+	msg_dsk_print_help();
 }
 
 /*

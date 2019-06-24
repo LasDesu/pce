@@ -695,6 +695,8 @@ void st_init (atari_st_t *sim, ini_sct_t *ini)
 	sim->pause = 0;
 	sim->brk = 0;
 
+	sim->disk_id = 0;
+
 	sim->speed_factor = 1;
 	sim->speed_clock_extra = 0;
 

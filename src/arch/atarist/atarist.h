@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/atarist/atarist.h                                   *
  * Created:     2011-03-17 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2011-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2011-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -102,6 +102,8 @@ struct atari_st_s {
 	char          pause;
 	char          video_viking;
 	unsigned      brk;
+
+	unsigned      disk_id;
 
 	unsigned char psg_port_a;
 	unsigned char psg_port_b;

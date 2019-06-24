@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/atarist/msg.c                                       *
  * Created:     2011-03-17 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2011-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2011-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -32,6 +32,7 @@
 #include <lib/log.h>
 #include <lib/monitor.h>
 #include <lib/msg.h>
+#include <lib/msgdsk.h>
 #include <lib/string.h>
 #include <lib/sysdep.h>
 
@@ -45,6 +46,88 @@ typedef struct {
 	int (*set_msg) (atari_st_t *sim, const char *msg, const char *val);
 } st_msg_list_t;
 
+
+static
+int st_set_msg_disk_eject (atari_st_t *sim, const char *msg, const char *val)
+{
+	unsigned drv;
+	disk_t   *dsk;
+
+	while (*val != 0) {
+		if (msg_get_prefix_uint (&val, &drv, ":", " \t")) {
+			pce_log (MSG_ERR,
+				"*** disk eject error: bad drive (%s)\n",
+				val
+			);
+
+			return (1);
+		}
+
+		pce_log (MSG_INF, "ejecting drive %lu\n", drv);
+
+		if (drv < 2) {
+			st_fdc_save (&sim->fdc, drv);
+		}
+
+		dsk = dsks_get_disk (sim->dsks, drv);
+		dsks_rmv_disk (sim->dsks, dsk);
+		dsk_del (dsk);
+
+		if (drv < 2) {
+			st_fdc_set_fname (&sim->fdc, drv, NULL);
+			st_fdc_load (&sim->fdc, drv);
+		}
+	}
+
+	return (0);
+}
+
+static
+int st_set_msg_disk_insert (atari_st_t *sim, const char *msg, const char *val)
+{
+	unsigned   i;
+	unsigned   drv;
+	const char *str, *ext;
+
+	str = val;
+
+	if (msg_get_prefix_uint (&str, &drv, ":", " \t")) {
+		pce_log (MSG_ERR,
+			"*** disk eject error: bad drive (%s)\n",
+			val
+		);
+
+		return (1);
+	}
+
+	i = 0;
+	ext = str;
+
+	while (str[i] != 0) {
+		if (str[i] == '.') {
+			ext = str + i;
+		}
+
+		i += 1;
+	}
+
+	st_fdc_save (&sim->fdc, drv);
+
+	if (strcasecmp (ext, ".pri") == 0) {
+		st_fdc_set_fname (&sim->fdc, drv, str);
+	}
+	else {
+		st_fdc_set_fname (&sim->fdc, drv, NULL);
+
+		if (dsk_insert (sim->dsks, val, 1)) {
+			return (1);
+		}
+	}
+
+	st_fdc_load (&sim->fdc, drv);
+
+	return (0);
+}
 
 static
 int st_set_msg_emu_cpu_model (atari_st_t *sim, const char *msg, const char *val)
@@ -87,139 +170,6 @@ int st_set_msg_emu_cpu_speed_step (atari_st_t *sim, const char *msg, const char 
 	}
 
 	st_set_speed (sim, v);
-
-	return (0);
-}
-
-static
-int st_set_msg_emu_disk_commit (atari_st_t *sim, const char *msg, const char *val)
-{
-	int      r;
-	unsigned drv;
-
-	if (strcmp (val, "all") == 0) {
-		pce_log (MSG_INF, "commiting all drives\n");
-
-		st_fdc_save (&sim->fdc, 0);
-		st_fdc_save (&sim->fdc, 1);
-
-		if (dsks_commit (sim->dsks)) {
-			pce_log (MSG_ERR,
-				"*** commit failed for at least one disk\n"
-			);
-			return (1);
-		}
-
-		return (0);
-	}
-
-	r = 0;
-
-	while (*val != 0) {
-		if (msg_get_prefix_uint (&val, &drv, ":", " \t")) {
-			pce_log (MSG_ERR, "*** commit error: bad drive (%s)\n",
-				val
-			);
-
-			return (1);
-		}
-
-		pce_log (MSG_INF, "commiting drive %u\n", drv);
-
-		if (drv < 2) {
-			st_fdc_save (&sim->fdc, drv);
-		}
-
-		if (dsks_set_msg (sim->dsks, drv, "commit", NULL)) {
-			pce_log (MSG_ERR, "*** commit error for drive %u\n",
-				drv
-			);
-
-			r = 1;
-		}
-	}
-
-	return (r);
-}
-
-static
-int st_set_msg_emu_disk_eject (atari_st_t *sim, const char *msg, const char *val)
-{
-	unsigned drv;
-	disk_t   *dsk;
-
-	while (*val != 0) {
-		if (msg_get_prefix_uint (&val, &drv, ":", " \t")) {
-			pce_log (MSG_ERR,
-				"*** disk eject error: bad drive (%s)\n",
-				val
-			);
-
-			return (1);
-		}
-
-		pce_log (MSG_INF, "ejecting drive %lu\n", drv);
-
-		if (drv < 2) {
-			st_fdc_save (&sim->fdc, drv);
-		}
-
-		dsk = dsks_get_disk (sim->dsks, drv);
-		dsks_rmv_disk (sim->dsks, dsk);
-		dsk_del (dsk);
-
-		if (drv < 2) {
-			st_fdc_set_fname (&sim->fdc, drv, NULL);
-			st_fdc_load (&sim->fdc, drv);
-		}
-	}
-
-	return (0);
-}
-
-static
-int st_set_msg_emu_disk_insert (atari_st_t *sim, const char *msg, const char *val)
-{
-	unsigned   i;
-	unsigned   drv;
-	const char *str, *ext;
-
-	str = val;
-
-	if (msg_get_prefix_uint (&str, &drv, ":", " \t")) {
-		pce_log (MSG_ERR,
-			"*** disk eject error: bad drive (%s)\n",
-			val
-		);
-
-		return (1);
-	}
-
-	i = 0;
-	ext = str;
-
-	while (str[i] != 0) {
-		if (str[i] == '.') {
-			ext = str + i;
-		}
-
-		i += 1;
-	}
-
-	st_fdc_save (&sim->fdc, drv);
-
-	if (strcasecmp (ext, ".pri") == 0) {
-		st_fdc_set_fname (&sim->fdc, drv, str);
-	}
-	else {
-		st_fdc_set_fname (&sim->fdc, drv, NULL);
-
-		if (dsk_insert (sim->dsks, val, 1)) {
-			return (1);
-		}
-	}
-
-	st_fdc_load (&sim->fdc, drv);
 
 	return (0);
 }
@@ -518,12 +468,11 @@ int st_set_msg_emu_viking_toggle (atari_st_t *sim, const char *msg, const char *
 
 
 static st_msg_list_t set_msg_list[] = {
+	{ "disk.eject", st_set_msg_disk_eject },
+	{ "disk.insert", st_set_msg_disk_insert },
 	{ "emu.cpu.model", st_set_msg_emu_cpu_model },
 	{ "emu.cpu.speed", st_set_msg_emu_cpu_speed },
 	{ "emu.cpu.speed.step", st_set_msg_emu_cpu_speed_step },
-	{ "emu.disk.commit", st_set_msg_emu_disk_commit },
-	{ "emu.disk.eject", st_set_msg_emu_disk_eject },
-	{ "emu.disk.insert", st_set_msg_emu_disk_insert },
 	{ "emu.exit", st_set_msg_emu_exit },
 	{ "emu.fdc.ro", st_set_msg_emu_fdc_ro },
 	{ "emu.fdc.rw", st_set_msg_emu_fdc_rw },
@@ -574,6 +523,10 @@ int st_set_msg (atari_st_t *sim, const char *msg, const char *val)
 		}
 
 		lst += 1;
+	}
+
+	if ((r = msg_dsk_set_msg (msg, val, sim->dsks, &sim->disk_id)) >= 0) {
+		return (r);
 	}
 
 	if (sim->trm != NULL) {

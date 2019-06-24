@@ -48,7 +48,7 @@ static mon_cmd_t par_cmd[] = {
 	{ "pq", "[c|f|s]", "prefetch queue clear/fill/status" },
 	{ "p", "[cnt]", "execute cnt instructions, without trace in calls [1]" },
 	{ "r", "[reg val]", "set a register" },
-	{ "s", "[what]", "print status (cpu|icu|mem||ppi|pic|rc759|tcu|time)" },
+	{ "s", "[what]", "print status (cpu|disks|icu|mem||ppi|pic|rc759|tcu|time)" },
 	{ "t", "[cnt]", "execute cnt instructions [1]" },
 	{ "u", "[addr [cnt [mode]]]", "disassemble" }
 };
@@ -1100,6 +1100,9 @@ void rc759_cmd_s (cmd_t *cmd, rc759_t *sim)
 		}
 		else if (cmd_match (cmd, "cpu")) {
 			print_state_cpu (sim->cpu);
+		}
+		else if (cmd_match (cmd, "disks")) {
+			dsks_print_info (sim->dsks);
 		}
 		else if (cmd_match (cmd, "dma")) {
 			print_state_dma (&sim->dma);
