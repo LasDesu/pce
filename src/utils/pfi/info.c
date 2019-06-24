@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/info.c                                         *
  * Created:     2013-12-27 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -111,9 +111,9 @@ int pfi_print_info (pfi_img_t *img)
 				len = 0;
 			}
 			else {
-				idx = trk->idx_cnt;
+				idx = trk->index_cnt;
 				clk = pfi_trk_get_clock (trk);
-				len = (trk->idx_cnt < 2) ? 0 : (trk->idx[1] - trk->idx[0]);
+				len = (trk->index_cnt < 2) ? 0 : (trk->index[1] - trk->index[0]);
 			}
 
 			if (len > 0) {
@@ -160,7 +160,7 @@ int pfi_list_track_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned
 	unsigned long len, clock;
 	double        rpm;
 
-	if (trk->size == 0) {
+	if (trk->pulse_cnt == 0) {
 		return (0);
 	}
 
@@ -168,26 +168,29 @@ int pfi_list_track_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned
 
 	clock = pfi_trk_get_clock (trk);
 
-	if (trk->idx_cnt >= 2) {
-		len = trk->idx[trk->idx_cnt - 1] - trk->idx[0];
-		rpm = (60.0 * (trk->idx_cnt - 1) * clock) / len;
+	if (trk->index_cnt >= 2) {
+		len = trk->index[trk->index_cnt - 1] - trk->index[0];
+		rpm = (60.0 * (trk->index_cnt - 1) * clock) / len;
 	}
 	else {
 		len = 0;
 		rpm = 0.0;
 	}
 
-	printf ("TRACK %2lu/%lu: DATA=%6lu  CLK=%lu  LEN=%lu  IDX=%u  RPM=%.4f\n",
-		c, h, trk->size, clock, len, trk->idx_cnt, rpm
+	printf ("TRACK %2lu/%lu: PULSE=%6lu  CLK=%lu  LEN=%lu  IDX=%u  RPM=%.4f\n",
+		c, h, trk->pulse_cnt, clock, len, trk->index_cnt, rpm
 	);
 
 	if (*verb) {
-		for (i = 1; i < trk->idx_cnt; i++) {
-			len = trk->idx[i] - trk->idx[i - 1];
+		for (i = 1; i < trk->index_cnt; i++) {
+			len = trk->index[i] - trk->index[i - 1];
 			rpm = (60.0 * clock) / len;
 
 			printf ("\t\tR%u: IDX=[%8lu, %8lu]  LEN=%lu  RPM=%.4f\n",
-				i, trk->idx[i - 1], trk->idx[i], len, rpm
+				i,
+				(unsigned long) trk->index[i - 1],
+				(unsigned long) trk->index[i],
+				len, rpm
 			);
 		}
 	}

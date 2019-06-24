@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/export.c                                       *
  * Created:     2012-01-20 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -32,8 +32,8 @@
 static
 int pfi_export_track_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
 {
-	unsigned long val, ofs;
-	FILE          *fp;
+	uint32_t val, ofs;
+	FILE     *fp;
 
 	fp = opaque;
 
@@ -44,11 +44,11 @@ int pfi_export_track_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsign
 
 	while (pfi_trk_get_pulse (trk, &val, &ofs) == 0) {
 		if ((val == 0) || (ofs < val)) {
-			fprintf (fp, "INDEX %lu\n", ofs);
+			fprintf (fp, "INDEX %lu\n", (unsigned long) ofs);
 		}
 
 		if (val > 0) {
-			fprintf (fp, "%3lu\n", val);
+			fprintf (fp, "%3lu\n", (unsigned long) val);
 		}
 	}
 

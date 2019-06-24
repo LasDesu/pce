@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pfi/decode-bits.c                                *
  * Created:     2012-01-21 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,6 +20,7 @@
  *****************************************************************************/
 
 
+#include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -182,7 +183,7 @@ void pfi_dec_clock_median (pfi_dec_t *bit)
 int pfi_trk_decode_bits (pfi_trk_t *trk, pfi_dec_t *dst, unsigned long rate, unsigned rev)
 {
 	unsigned      idx;
-	unsigned long val, ofs;
+	uint32_t      val, ofs;
 	unsigned char weak;
 	double        cell, cell0, pulse;
 	double        adjust1, adjust2, limit1, limit2, phase;

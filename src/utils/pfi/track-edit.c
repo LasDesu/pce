@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/track-edit.c                                   *
  * Created:     2013-12-27 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -34,10 +34,11 @@ int pfi_revolutions_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 {
 	unsigned      rev1, rev2;
 	unsigned long pos1, pos2, add1, add2;
-	unsigned long pulse, index, clk1, clk2;
+	unsigned long clk1, clk2;
+	uint32_t      pulse, index;
 	pfi_trk_t     *dst;
 
-	if (trk->idx_cnt < 2) {
+	if (trk->index_cnt < 2) {
 		return (0);
 	}
 
@@ -48,19 +49,19 @@ int pfi_revolutions_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 		rev1 = 1;
 	}
 
-	if (rev2 > (trk->idx_cnt - 1)) {
-		rev2 = trk->idx_cnt - 1;
+	if (rev2 > (trk->index_cnt - 1)) {
+		rev2 = trk->index_cnt - 1;
 	}
 
 	if (rev2 < rev1) {
 		return (1);
 	}
 
-	pos1 = trk->idx[rev1 - 1];
-	pos2 = trk->idx[rev2];
+	pos1 = trk->index[rev1 - 1];
+	pos2 = trk->index[rev2];
 
-	add1 = (par_slack1 * (trk->idx[rev1] - trk->idx[rev1 - 1])) / 100;
-	add2 = (par_slack2 * (trk->idx[rev2] - trk->idx[rev2 - 1])) / 100;
+	add1 = (par_slack1 * (trk->index[rev1] - trk->index[rev1 - 1])) / 100;
+	add2 = (par_slack2 * (trk->index[rev2] - trk->index[rev2 - 1])) / 100;
 
 	pos1 = (pos1 < add1) ? 0 : (pos1 - add1);
 	pos2 = pos2 + add2;
@@ -205,14 +206,14 @@ int pfi_set_rpm_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned lo
 
 	rpm = opaque;
 
-	if (trk->idx_cnt < 2) {
+	if (trk->index_cnt < 2) {
 		return (0);
 	}
 
 	clk = pfi_trk_get_clock (trk);
-	len = trk->idx[trk->idx_cnt - 1] - trk->idx[0];
+	len = trk->index[trk->index_cnt - 1] - trk->index[0];
 
-	rat = (60.0 * clk * (trk->idx_cnt - 1)) / (*rpm * len);
+	rat = (60.0 * clk * (trk->index_cnt - 1)) / (*rpm * len);
 	mul = (unsigned long) (16.0 * 65536.0 * rat);
 	div = 16UL * 65536;
 
@@ -250,16 +251,16 @@ int pfi_set_rpm_mac_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 		393.38, 429.17, 472.14, 524.57, 590.11
 	};
 
-	if (trk->idx_cnt < 2) {
+	if (trk->index_cnt < 2) {
 		return (0);
 	}
 
 	rpm = rpmtab[(c < 80) ? (c / 16) : 4];
 
 	clk = pfi_trk_get_clock (trk);
-	len = trk->idx[trk->idx_cnt - 1] - trk->idx[0];
+	len = trk->index[trk->index_cnt - 1] - trk->index[0];
 
-	rat = (60.0 * clk * (trk->idx_cnt - 1)) / (rpm * len);
+	rat = (60.0 * clk * (trk->index_cnt - 1)) / (rpm * len);
 	mul = (unsigned long) (16.0 * 65536.0 * rat);
 	div = 16UL * 65536;
 

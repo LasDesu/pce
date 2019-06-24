@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pfi/track.c                                      *
  * Created:     2012-01-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -20,12 +20,38 @@
  *****************************************************************************/
 
 
+#include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "track.h"
 
+
+void pfi_trk_init (pfi_trk_t *trk)
+{
+	trk->clock = 0;
+
+	trk->pulse_cnt = 0;
+	trk->pulse_max = 0;
+	trk->pulse = NULL;
+
+	trk->index_cnt = 0;
+	trk->index_max = 0;
+	trk->index = NULL;
+
+	trk->cur_pos = 0;
+	trk->cur_clk = 0;
+	trk->cur_idx = 0;
+}
+
+void pfi_trk_free (pfi_trk_t *trk)
+{
+	if (trk != NULL) {
+		free (trk->index);
+		free (trk->pulse);
+	}
+}
 
 pfi_trk_t *pfi_trk_new (void)
 {
@@ -35,18 +61,7 @@ pfi_trk_t *pfi_trk_new (void)
 		return (NULL);
 	}
 
-	trk->clock = 0;
-
-	trk->size = 0;
-	trk->max = 0;
-	trk->data = NULL;
-
-	trk->idx_cnt = 0;
-	trk->idx = NULL;
-
-	trk->cur_pos = 0;
-	trk->cur_clk = 0;
-	trk->cur_idx = 0;
+	pfi_trk_init (trk);
 
 	return (trk);
 }
@@ -54,50 +69,74 @@ pfi_trk_t *pfi_trk_new (void)
 void pfi_trk_del (pfi_trk_t *trk)
 {
 	if (trk != NULL) {
-		free (trk->idx);
-		free (trk->data);
+		pfi_trk_free (trk);
 		free (trk);
 	}
 }
 
-pfi_trk_t *pfi_trk_clone (const pfi_trk_t *trk)
+void pfi_trk_clean (pfi_trk_t *trk)
 {
-	unsigned  i;
+	uint32_t *tmp;
+
+	if (trk->pulse_max > trk->pulse_cnt) {
+		tmp = realloc (trk->pulse, trk->pulse_cnt * sizeof (uint32_t));
+
+		if (tmp == NULL) {
+			return;
+		}
+
+		trk->pulse = tmp;
+		trk->pulse_max = trk->pulse_cnt;
+	}
+
+	if (trk->index_max > trk->index_cnt) {
+		tmp = realloc (trk->index, trk->index_cnt * sizeof (uint32_t));
+
+		if (tmp == NULL) {
+			return;
+		}
+
+		trk->index = tmp;
+		trk->index_max = trk->index_cnt;
+	}
+}
+
+pfi_trk_t *pfi_trk_clone (const pfi_trk_t *trk, int data, int index)
+{
 	pfi_trk_t *ret;
 
 	if ((ret = pfi_trk_new()) == NULL) {
 		return (NULL);
 	}
 
-	*ret = *trk;
+	ret->clock = trk->clock;
 
-	ret->idx = NULL;
-	ret->data = NULL;
+	if (data && (trk->pulse_cnt > 0)) {
+		ret->pulse = malloc (trk->pulse_cnt * sizeof (uint32_t));
 
-	if (trk->size > 0) {
-		ret->data = malloc (ret->size);
-
-		if (ret->data == NULL) {
+		if (ret->pulse == NULL) {
 			pfi_trk_del (ret);
 			return (NULL);
 		}
 
-		memcpy (ret->data, trk->data, trk->size);
+		ret->pulse_cnt = trk->pulse_cnt;
+		ret->pulse_max = trk->pulse_cnt;
 
-		ret->max = ret->size;
+		memcpy (ret->pulse, trk->pulse, trk->pulse_cnt * sizeof (uint32_t));
 	}
 
-	if (trk->idx_cnt > 0) {
-		ret->idx = malloc (trk->idx_cnt * sizeof (unsigned long));
+	if (index && (trk->index_cnt > 0)) {
+		ret->index = malloc (trk->index_cnt * sizeof (uint32_t));
 
-		if (ret->idx == NULL) {
+		if (ret->index == NULL) {
 			pfi_trk_del (ret);
 			return (NULL);
 		}
 
-		for (i = 0; i < trk->idx_cnt; i++) {
-			ret->idx[i] = trk->idx[i];
-		}
+		ret->index_cnt = trk->index_cnt;
+		ret->index_max = trk->index_cnt;
+
+		memcpy (ret->index, trk->index, trk->index_cnt * sizeof (uint32_t));
 	}
 
 	return (ret);
@@ -105,16 +144,15 @@ pfi_trk_t *pfi_trk_clone (const pfi_trk_t *trk)
 
 void pfi_trk_reset (pfi_trk_t *trk)
 {
-	free (trk->data);
-	trk->data = NULL;
+	free (trk->pulse);
+	trk->pulse = NULL;
+	trk->pulse_cnt = 0;
+	trk->pulse_max = 0;
 
-	free (trk->idx);
-	trk->idx = NULL;
-
-	trk->idx_cnt = 0;
-
-	trk->size = 0;
-	trk->max = 0;
+	free (trk->index);
+	trk->index = NULL;
+	trk->index_cnt = 0;
+	trk->index_max = 0;
 
 	trk->cur_pos = 0;
 	trk->cur_clk = 0;
@@ -131,40 +169,48 @@ unsigned long pfi_trk_get_clock (const pfi_trk_t *trk)
 	return (trk->clock);
 }
 
-int pfi_trk_set_size (pfi_trk_t *trk, unsigned long cnt)
+int pfi_trk_get_pos (const pfi_trk_t *trk, uint32_t clk, unsigned long *pos, uint32_t *ofs)
 {
-	unsigned char *tmp;
+	unsigned long i;
+	uint32_t      curclk;
 
-	tmp = realloc (trk->data, cnt);
+	curclk = 0;
 
-	if (tmp == NULL) {
+	for (i = 0; i < trk->pulse_cnt; i++) {
+		if ((curclk + trk->pulse[i]) > clk) {
+			*pos = i;
+			*ofs = clk - curclk;
+			return (0);
+		}
+
+		curclk += trk->pulse[i];
+	}
+
+	return (1);
+}
+
+int pfi_trk_get_index (const pfi_trk_t *trk, unsigned idx, unsigned long *pos, uint32_t *ofs)
+{
+	if (idx >= trk->index_cnt) {
 		return (1);
 	}
 
-	if (cnt > trk->size) {
-		memset (tmp + trk->size, 0, cnt - trk->size);
+	if (pfi_trk_get_pos (trk, trk->index[idx], pos, ofs)) {
+		return (1);
 	}
-
-	trk->size = cnt;
-	trk->max = cnt;
-	trk->data = tmp;
-
-	trk->cur_pos = 0;
-	trk->cur_clk = 0;
-	trk->cur_idx = 0;
 
 	return (0);
 }
 
-int pfi_trk_add_data (pfi_trk_t *trk, const void *buf, unsigned long cnt)
+int pfi_trk_add_index (pfi_trk_t *trk, uint32_t clk)
 {
-	unsigned long max;
-	unsigned char *tmp;
+	unsigned i, max;
+	uint32_t *tmp;
 
-	if ((trk->size + cnt) > trk->max) {
-		max = (trk->max < 128) ? 128 : trk->max;
+	if ((trk->index_cnt + 1) > trk->index_max) {
+		max = (trk->index_max < 4) ? 4 : trk->index_max;
 
-		while (max < (trk->size + cnt)) {
+		while (max < (trk->index_cnt + 1)) {
 			max *= 2;
 
 			if ((max & (max - 1)) != 0) {
@@ -172,99 +218,68 @@ int pfi_trk_add_data (pfi_trk_t *trk, const void *buf, unsigned long cnt)
 			}
 		}
 
-		tmp = realloc (trk->data, max);
+		tmp = realloc (trk->index, max * sizeof (uint32_t));
 
 		if (tmp == NULL) {
 			return (1);
 		}
 
-		trk->max = max;
-		trk->data = tmp;
+		trk->index = tmp;
+		trk->index_max = max;
 	}
 
-	memcpy (trk->data + trk->size, buf, cnt);
+	i = trk->index_cnt;
 
-	trk->size += cnt;
-
-	return (0);
-}
-
-int pfi_trk_add_index (pfi_trk_t *trk, unsigned long clk)
-{
-	unsigned      i, n;
-	unsigned long *tmp;
-
-	n = trk->idx_cnt + 1;
-
-	tmp = realloc (trk->idx, n * sizeof (unsigned long));
-
-	if (tmp == NULL) {
-		return (1);
-	}
-
-	i = trk->idx_cnt;
-
-	while ((i > 0) && (clk < tmp[i - 1])) {
-		tmp[i] = tmp[i - 1];
+	while ((i > 0) && (clk < trk->index[i - 1])) {
+		trk->index[i] = trk->index[i - 1];
 		i -= 1;
 	}
 
-	tmp[i] = clk;
+	trk->index[i] = clk;
 
-	trk->idx = tmp;
-	trk->idx_cnt = n;
+	trk->index_cnt += 1;
 
 	return (0);
 }
 
-int pfi_trk_add_pulse (pfi_trk_t *trk, unsigned long cnt)
+int pfi_trk_add_pulses (pfi_trk_t *trk, const uint32_t *buf, unsigned long cnt)
 {
-	unsigned      n;
-	unsigned char buf[16];
+	unsigned long i;
+	unsigned long max;
+	uint32_t      *tmp;
 
-	if (cnt == 0) {
-		return (0);
-	}
+	if ((trk->pulse_cnt + cnt) > trk->pulse_max) {
+		max = (trk->pulse_max < 256) ? 256 : trk->pulse_max;
 
-	n = 0;
+		while (max < (trk->pulse_cnt + cnt)) {
+			max *= 2;
 
-	if (cnt < 8) {
-		buf[n++] = 4;
-		buf[n++] = cnt;
-	}
-	else if (cnt < (1UL << 8)) {
-		buf[n++] = cnt;
-	}
-	else if (cnt < (1UL << 10)) {
-		buf[n++] = ((cnt >> 8) & 3) | 4;
-		buf[n++] = cnt & 0xff;
-	}
-	else if (cnt < (1UL << 16)) {
-		buf[n++] = 1;
-		buf[n++] = (cnt >> 8) & 0xff;
-		buf[n++] = cnt & 0xff;
-	}
-	else if (cnt < (1UL << 24)) {
-		buf[n++] = 2;
-		buf[n++] = (cnt >> 16) & 0xff;
-		buf[n++] = (cnt >> 8) & 0xff;
-		buf[n++] = cnt & 0xff;
-	}
-	else {
-		buf[n++] = 3;
-		buf[n++] = (cnt >> 24) & 0xff;
-		buf[n++] = (cnt >> 16) & 0xff;
-		buf[n++] = (cnt >> 8) & 0xff;
-		buf[n++] = cnt & 0xff;
+			if ((max & (max - 1)) != 0) {
+				max &= max - 1;
+			}
+		}
+
+		tmp = realloc (trk->pulse, max * sizeof (uint32_t));
+
+		if (tmp == NULL) {
+			return (1);
+		}
+
+		trk->pulse = tmp;
+		trk->pulse_max = max;
 	}
 
-	if (pfi_trk_add_data (trk, buf, n)) {
-		return (1);
+	for (i = 0; i < cnt; i++) {
+		trk->pulse[trk->pulse_cnt++] = buf[i];
 	}
 
 	return (0);
 }
 
+int pfi_trk_add_pulse (pfi_trk_t *trk, uint32_t val)
+{
+	return (pfi_trk_add_pulses (trk, &val, 1));
+}
 
 void pfi_trk_rewind (pfi_trk_t *trk)
 {
@@ -273,16 +288,11 @@ void pfi_trk_rewind (pfi_trk_t *trk)
 	trk->cur_idx = 0;
 }
 
-int pfi_trk_get_pulse (pfi_trk_t *trk, unsigned long *val, unsigned long *idx)
+int pfi_trk_get_pulse (pfi_trk_t *trk, uint32_t *val, uint32_t *idx)
 {
-	unsigned      cnt;
-	unsigned long pos, ret;
-
-	pos = trk->cur_pos;
-
-	if (pos >= trk->size) {
-		if (trk->cur_idx < trk->idx_cnt) {
-			*idx = trk->idx[trk->cur_idx] - trk->cur_clk;
+	if (trk->cur_pos >= trk->pulse_cnt) {
+		if (trk->cur_idx < trk->index_cnt) {
+			*idx = trk->index[trk->cur_idx] - trk->cur_clk;
 			*val = 0;
 
 			trk->cur_idx += 1;
@@ -293,64 +303,33 @@ int pfi_trk_get_pulse (pfi_trk_t *trk, unsigned long *val, unsigned long *idx)
 		return (1);
 	}
 
-	if (trk->data[pos] == 0) {
-		return (1);
-	}
-
-	cnt = trk->data[pos++];
-
-	if (cnt < 4) {
-		if ((pos + cnt + 1) > trk->size) {
-			return (1);
-		}
-
-		ret = trk->data[pos++];
-
-		while (cnt > 0) {
-			ret = (ret << 8) | trk->data[pos++];
-			cnt -= 1;
-		}
-	}
-	else if (cnt < 8) {
-		if ((pos + 1) > trk->size) {
-			return (1);
-		}
-
-		ret = ((cnt << 8) | trk->data[pos++]) & 0x03ff;
-	}
-	else {
-		ret = cnt;
-	}
-
-	*val = ret;
+	*val = trk->pulse[trk->cur_pos];
 	*idx = -1;
 
-	if (trk->cur_idx < trk->idx_cnt) {
-		*idx = trk->idx[trk->cur_idx] - trk->cur_clk;
+	if (trk->cur_idx < trk->index_cnt) {
+		*idx = trk->index[trk->cur_idx] - trk->cur_clk;
 
-		if ((trk->cur_clk + ret) > trk->idx[trk->cur_idx]) {
+		if ((trk->cur_clk + *val) > trk->index[trk->cur_idx]) {
 			trk->cur_idx += 1;
 		}
 	}
 
-	trk->cur_pos = pos;
-	trk->cur_clk += ret;
+	trk->cur_pos += 1;
+	trk->cur_clk += *val;
 
 	return (0);
 }
 
 pfi_trk_t *pfi_trk_scale (pfi_trk_t *trk, unsigned long mul, unsigned long div)
 {
-	unsigned long      val, idx, clk;
+	uint32_t           val, idx, clk;
 	unsigned long      v;
 	unsigned long long m, d, t, r;
 	pfi_trk_t          *ret;
 
-	if ((ret = pfi_trk_new()) == NULL) {
+	if ((ret = pfi_trk_clone (trk, 0, 0)) == NULL) {
 		return (NULL);
 	}
-
-	pfi_trk_set_clock (ret, trk->clock);
 
 	pfi_trk_rewind (trk);
 
@@ -382,7 +361,7 @@ pfi_trk_t *pfi_trk_scale (pfi_trk_t *trk, unsigned long mul, unsigned long div)
 		clk += v;
 	}
 
-	if (trk->cur_pos < trk->size) {
+	if (trk->cur_pos < trk->pulse_cnt) {
 		pfi_trk_del (ret);
 		return (NULL);
 	}
@@ -399,14 +378,16 @@ void pfi_trk_shift_index (pfi_trk_t *trk, long ofs)
 
 	j = 0;
 
-	for (i = 0; i < trk->idx_cnt; i++) {
+	for (i = 0; i < trk->index_cnt; i++) {
 		if (ofs < 0) {
-			if (val <= trk->idx[i]) {
-				trk->idx[j++] = trk->idx[i] - val;
+			if (val <= trk->index[i]) {
+				trk->index[j++] = trk->index[i] - val;
 			}
 		}
 		else {
-			trk->idx[j++] = trk->idx[i] + val;
+			trk->index[j++] = trk->index[i] + val;
 		}
 	}
+
+	trk->index_cnt = j;
 }

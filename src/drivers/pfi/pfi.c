@@ -71,7 +71,7 @@ pfi_cyl_t *pfi_cyl_clone (const pfi_cyl_t *cyl)
 			continue;
 		}
 
-		if ((trk = pfi_trk_clone (cyl->trk[i])) == NULL) {
+		if ((trk = pfi_trk_clone (cyl->trk[i], 1, 1)) == NULL) {
 			pfi_cyl_del (ret);
 			return (NULL);
 		}

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pfi/pfi-scp.c                                    *
  * Created:     2014-01-30 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2014-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2014-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -34,7 +34,7 @@
 
 
 typedef struct {
-	FILE *fp;
+	FILE          *fp;
 
 	unsigned char disk_type;
 	unsigned char heads;
@@ -160,6 +160,8 @@ int scp_load_track (FILE *fp, pfi_img_t *img, unsigned c, unsigned h, unsigned r
 		}
 	}
 
+	pfi_trk_clean (trk);
+
 	return (0);
 }
 
@@ -237,13 +239,13 @@ void scp_get_disk_type (scp_save_t *scp, pfi_img_t *img)
 	for (i = 0; i < 168; i++) {
 		trk = pfi_img_get_track (img, i >> 1, i & 1, 0);
 
-		if ((trk == NULL) || (trk->idx_cnt < 2)) {
+		if ((trk == NULL) || (trk->index_cnt < 2)) {
 			continue;
 		}
 
 		scp->heads |= 1 << (i & 1);
 
-		rev = trk->idx_cnt - 1;
+		rev = trk->index_cnt - 1;
 
 		if ((scp->revolutions == 0) || (rev < scp->revolutions)) {
 			scp->revolutions = rev;
@@ -373,7 +375,8 @@ int scp_save_track (scp_save_t *scp, pfi_trk_t *trk, unsigned c, unsigned h)
 {
 	unsigned           index;
 	unsigned long      head_ofs, curr_ofs, flux_ofs;
-	unsigned long      pulse, idx, rem;
+	uint32_t           pulse, idx;
+	unsigned long      rem;
 	unsigned long      pcnt, clock;
 	unsigned long long tmp;
 	unsigned char      buf[2];
@@ -399,7 +402,7 @@ int scp_save_track (scp_save_t *scp, pfi_trk_t *trk, unsigned c, unsigned h)
 	while (pfi_trk_get_pulse (trk, &pulse, &idx) == 0) {
 		if ((pulse == 0) || (idx < pulse)) {
 			if (index > 0) {
-				clock = trk->idx[index] - trk->idx[index - 1];
+				clock = trk->index[index] - trk->index[index - 1];
 				clock = ((unsigned long long) SCP_CLOCK * clock + trk->clock / 2) / trk->clock;
 
 				if (scp_write_rev_header (scp, head_ofs, clock, pcnt, flux_ofs - scp->offset)) {

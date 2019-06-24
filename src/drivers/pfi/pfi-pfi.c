@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pfi/pfi-pfi.c                                    *
  * Created:     2013-12-26 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -39,19 +39,33 @@
 #define PFI_CRC_POLY   0x1edc6f41
 
 
+typedef struct {
+	FILE          *fp;
+	pfi_img_t     *img;
+	pfi_trk_t     *trk;
+
+	uint32_t      crc;
+
+	char          have_header;
+
+	unsigned long bufmax;
+	unsigned char *buf;
+} pfi_load_t;
+
+
 static
-unsigned long pfi_crc (unsigned long crc, const void *buf, unsigned cnt)
+uint32_t pfi_crc (uint32_t crc, const void *buf, unsigned cnt)
 {
-	unsigned             i, j;
-	unsigned             val;
-	unsigned long        reg;
-	const unsigned char  *src;
-	static int           tab_ok = 0;
-	static unsigned long tab[256];
+	unsigned            i, j;
+	unsigned            val;
+	uint32_t            reg;
+	const unsigned char *src;
+	static int          tab_ok = 0;
+	static uint32_t     tab[256];
 
 	if (tab_ok == 0) {
 		for (i = 0; i < 256; i++) {
-			reg = (unsigned long) i << 24;
+			reg = (uint32_t) i << 24;
 
 			for (j = 0; j < 8; j++) {
 				if (reg & 0x80000000) {
@@ -80,28 +94,68 @@ unsigned long pfi_crc (unsigned long crc, const void *buf, unsigned cnt)
 }
 
 static
-int pfi_skip_chunk (FILE *fp, unsigned long size, unsigned long crc)
+int pfi_read_crc (pfi_load_t *pfi, void *buf, unsigned long cnt)
 {
-	unsigned      cnt;
-	unsigned char buf[256];
+	if (pfi_read (pfi->fp, buf, cnt)) {
+		return (1);
+	}
 
-	while (size > 0) {
-		cnt = (size < 256) ? size : 256;
+	pfi->crc = pfi_crc (pfi->crc, buf, cnt);
 
-		if (pfi_read (fp, buf, cnt)) {
-			return (1);
+	return (0);
+}
+
+static
+unsigned char *pfi_alloc (pfi_load_t *pfi, unsigned long size)
+{
+	unsigned char *tmp;
+
+	if (pfi->bufmax < size) {
+		if ((tmp = realloc (pfi->buf, size)) == NULL) {
+			return (NULL);
 		}
 
-		crc = pfi_crc (crc, buf, cnt);
+		pfi->buf = tmp;
+		pfi->bufmax = size;
+	}
+
+	return (pfi->buf);
+}
+
+static
+void pfi_free (pfi_load_t *pfi)
+{
+	free (pfi->buf);
+
+	pfi->buf = NULL;
+	pfi->bufmax = 0;
+}
+
+static
+int pfi_skip_chunk (pfi_load_t *pfi, unsigned long size)
+{
+	unsigned      cnt;
+	unsigned char *buf;
+
+	if ((buf = pfi_alloc (pfi, 4096)) == NULL) {
+		return (1);
+	}
+
+	while (size > 0) {
+		cnt = (size < 4096) ? size : 4096;
+
+		if (pfi_read_crc (pfi, buf, cnt)) {
+			return (1);
+		}
 
 		size -= cnt;
 	}
 
-	if (pfi_read (fp, buf, 4)) {
+	if (pfi_read (pfi->fp, buf, 4)) {
 		return (1);
 	}
 
-	if (pfi_get_uint32_be (buf, 0) != crc) {
+	if (pfi_get_uint32_be (buf, 0) != pfi->crc) {
 		fprintf (stderr, "pfi: crc error\n");
 		return (1);
 	}
@@ -110,7 +164,7 @@ int pfi_skip_chunk (FILE *fp, unsigned long size, unsigned long crc)
 }
 
 static
-int pfi_load_header (FILE *fp, pfi_img_t *img, unsigned long size, unsigned long crc)
+int pfi_load_header (pfi_load_t *pfi, unsigned long size)
 {
 	unsigned char buf[4];
 	unsigned long vers;
@@ -119,11 +173,9 @@ int pfi_load_header (FILE *fp, pfi_img_t *img, unsigned long size, unsigned long
 		return (1);
 	}
 
-	if (pfi_read (fp, buf, 4)) {
+	if (pfi_read_crc (pfi, buf, 4)) {
 		return (1);
 	}
-
-	crc = pfi_crc (crc, buf, 4);
 
 	vers = pfi_get_uint32_be (buf, 0);
 
@@ -132,7 +184,7 @@ int pfi_load_header (FILE *fp, pfi_img_t *img, unsigned long size, unsigned long
 		return (1);
 	}
 
-	if (pfi_skip_chunk (fp, size - 4, crc)) {
+	if (pfi_skip_chunk (pfi, size - 4)) {
 		return (1);
 	}
 
@@ -140,25 +192,22 @@ int pfi_load_header (FILE *fp, pfi_img_t *img, unsigned long size, unsigned long
 }
 
 static
-int pfi_load_comment (FILE *fp, pfi_img_t *img, unsigned size, unsigned long crc)
+int pfi_load_comment (pfi_load_t *pfi, unsigned size)
 {
 	unsigned      i, j, k, d;
 	unsigned char *buf;
 
 	if (size == 0) {
-		return (pfi_skip_chunk (fp, size, crc));
+		return (pfi_skip_chunk (pfi, size));
 	}
 
-	if ((buf = malloc (size)) == NULL) {
+	if ((buf = pfi_alloc (pfi, size)) == NULL) {
 		return (1);
 	}
 
-	if (pfi_read (fp, buf, size)) {
-		free (buf);
+	if (pfi_read_crc (pfi, buf, size)) {
 		return (1);
 	}
-
-	crc = pfi_crc (crc, buf, size);
 
 	i = 0;
 	j = size;
@@ -188,7 +237,7 @@ int pfi_load_comment (FILE *fp, pfi_img_t *img, unsigned size, unsigned long crc
 	}
 
 	if (i == j) {
-		return (pfi_skip_chunk (fp, 0, crc));
+		return (pfi_skip_chunk (pfi, 0));
 	}
 
 	k = i;
@@ -212,24 +261,21 @@ int pfi_load_comment (FILE *fp, pfi_img_t *img, unsigned size, unsigned long crc
 
 	j = d;
 
-	if (img->comment_size > 0) {
+	if (pfi->img->comment_size > 0) {
 		unsigned char c;
 
 		c = 0x0a;
 
-		if (pfi_img_add_comment (img, &c, 1)) {
+		if (pfi_img_add_comment (pfi->img, &c, 1)) {
 			return (1);
 		}
 	}
 
-	if (pfi_img_add_comment (img, buf + i, j - i)) {
-		free (buf);
+	if (pfi_img_add_comment (pfi->img, buf + i, j - i)) {
 		return (1);
 	}
 
-	free (buf);
-
-	if (pfi_skip_chunk (fp, 0, crc)) {
+	if (pfi_skip_chunk (pfi, 0)) {
 		return (1);
 	}
 
@@ -237,21 +283,18 @@ int pfi_load_comment (FILE *fp, pfi_img_t *img, unsigned size, unsigned long crc
 }
 
 static
-pfi_trk_t *pfi_load_track_header (FILE *fp, pfi_img_t *img, unsigned long size, unsigned long crc)
+int pfi_load_track_header (pfi_load_t *pfi, unsigned long size)
 {
 	unsigned char buf[12];
 	unsigned long c, h, clock;
-	pfi_trk_t     *trk;
 
 	if (size < 12) {
-		return (NULL);
+		return (1);
 	}
 
-	if (pfi_read (fp, buf, 12)) {
-		return (NULL);
+	if (pfi_read_crc (pfi, buf, 12)) {
+		return (1);
 	}
-
-	crc = pfi_crc (crc, buf, 12);
 
 	size -= 12;
 
@@ -259,41 +302,39 @@ pfi_trk_t *pfi_load_track_header (FILE *fp, pfi_img_t *img, unsigned long size, 
 	h = pfi_get_uint32_be (buf, 4);
 	clock = pfi_get_uint32_be (buf, 8);
 
-	trk = pfi_img_get_track (img, c, h, 1);
+	pfi->trk = pfi_img_get_track (pfi->img, c, h, 1);
 
-	if (trk == NULL) {
-		return (NULL);
+	if (pfi->trk == NULL) {
+		return (1);
 	}
 
-	pfi_trk_set_clock (trk, clock);
+	pfi_trk_set_clock (pfi->trk, clock);
 
-	if (pfi_skip_chunk (fp, size, crc)) {
-		return (NULL);
+	if (pfi_skip_chunk (pfi, size)) {
+		return (1);
 	}
 
-	return (trk);
+	return (0);
 }
 
 static
-int pfi_load_indx (FILE *fp, pfi_img_t *img, pfi_trk_t *trk, unsigned long size, unsigned long crc)
+int pfi_load_indx (pfi_load_t *pfi, unsigned long size)
 {
 	unsigned char buf[4];
 
 	while (size >= 4) {
-		if (pfi_read (fp, buf, 4)) {
+		if (pfi_read_crc (pfi, buf, 4)) {
 			return (1);
 		}
 
-		crc = pfi_crc (crc, buf, 4);
-
-		if (pfi_trk_add_index (trk, pfi_get_uint32_be (buf, 0))) {
+		if (pfi_trk_add_index (pfi->trk, pfi_get_uint32_be (buf, 0))) {
 			return (1);
 		}
 
 		size -= 4;
 	}
 
-	if (pfi_skip_chunk (fp, size, crc)) {
+	if (pfi_skip_chunk (pfi, size)) {
 		return (1);
 	}
 
@@ -301,19 +342,68 @@ int pfi_load_indx (FILE *fp, pfi_img_t *img, pfi_trk_t *trk, unsigned long size,
 }
 
 static
-int pfi_load_track_data (FILE *fp, pfi_img_t *img, pfi_trk_t *trk, unsigned long size, unsigned long crc)
+int pfi_decode_track_data (pfi_load_t *pfi, unsigned char *buf, unsigned long size)
 {
-	if (pfi_trk_set_size (trk, size)) {
+	unsigned      cnt;
+	unsigned long pos;
+	uint32_t      val;
+
+	if (pfi_read_crc (pfi, buf, size)) {
 		return (1);
 	}
 
-	if (pfi_read (fp, trk->data, size)) {
+	pos = 0;
+
+	while (pos < size) {
+		cnt = buf[pos++];
+
+		if (cnt < 4) {
+			if ((pos + cnt + 1) > size) {
+				return (1);
+			}
+
+			val = buf[pos++];
+
+			while (cnt > 0) {
+				val = (val << 8) | buf[pos++];
+				cnt -= 1;
+			}
+		}
+		else if (cnt < 8) {
+			if ((pos + 1) > size) {
+				return (1);
+			}
+
+			val = ((cnt << 8) | buf[pos++]) & 0x03ff;
+		}
+		else {
+			val = cnt;
+		}
+
+		if (pfi_trk_add_pulse (pfi->trk, val)) {
+			return (1);
+		}
+	}
+
+	pfi_trk_clean (pfi->trk);
+
+	return (0);
+}
+
+static
+int pfi_load_track_data (pfi_load_t *pfi, unsigned long size)
+{
+	unsigned char *buf;
+
+	if ((buf = pfi_alloc (pfi, size)) == NULL) {
 		return (1);
 	}
 
-	crc = pfi_crc (crc, trk->data, size);
+	if (pfi_decode_track_data (pfi, buf, size)) {
+		return (1);
+	}
 
-	if (pfi_skip_chunk (fp, 0, crc)) {
+	if (pfi_skip_chunk (pfi, 0)) {
 		return (1);
 	}
 
@@ -321,89 +411,84 @@ int pfi_load_track_data (FILE *fp, pfi_img_t *img, pfi_trk_t *trk, unsigned long
 }
 
 static
-int pfi_load_image (FILE *fp, pfi_img_t *img)
+int pfi_load_image (pfi_load_t *pfi)
 {
-	int           have_header;
 	unsigned long type, size;
-	unsigned long crc;
-	pfi_trk_t     *trk;
 	unsigned char buf[8];
 
-	have_header = 0;
-	trk = NULL;
+	pfi->have_header = 0;
+	pfi->trk = NULL;
 
 	while (1) {
-		if (pfi_read (fp, buf, 8)) {
+		pfi->crc = 0;
+
+		if (pfi_read_crc (pfi, buf, 8)) {
 			return (1);
 		}
 
 		type = pfi_get_uint32_be (buf, 0);
 		size = pfi_get_uint32_be (buf, 4);
 
-		crc = pfi_crc (0, buf, 8);
-
 		if (type == PFI_MAGIC_END) {
-			if (pfi_skip_chunk (fp, size, crc)) {
+			if (pfi_skip_chunk (pfi, size)) {
 				return (1);
 			}
 
 			return (0);
 		}
 		else if (type == PFI_MAGIC_PFI) {
-			if (have_header) {
+			if (pfi->have_header) {
 				return (1);
 			}
 
-			if (pfi_load_header (fp, img, size, crc)) {
+			if (pfi_load_header (pfi, size)) {
 				return (1);
 			}
 
-			have_header = 1;
+			pfi->have_header = 1;
 		}
 		else if (type == PFI_MAGIC_TEXT) {
-			if (have_header == 0) {
+			if (pfi->have_header == 0) {
 				return (1);
 			}
 
-			if (pfi_load_comment (fp, img, size, crc)) {
+			if (pfi_load_comment (pfi, size)) {
 				return (1);
 			}
 		}
 		else if (type == PFI_MAGIC_TRAK) {
-			if (have_header == 0) {
+			if (pfi->have_header == 0) {
 				return (1);
 			}
 
-			trk = pfi_load_track_header (fp, img, size, crc);
-
-			if (trk == NULL) {
+			if (pfi_load_track_header (pfi, size)) {
 				return (1);
 			}
 		}
 		else if (type == PFI_MAGIC_INDX) {
-			if (trk == NULL) {
+			if (pfi->trk == NULL) {
 				return (1);
 			}
 
-			if (pfi_load_indx (fp, img, trk, size, crc)) {
+			if (pfi_load_indx (pfi, size)) {
 				return (1);
 			}
 		}
 		else if (type == PFI_MAGIC_DATA) {
-			if (trk == NULL) {
+			if (pfi->trk == NULL) {
 				return (1);
 			}
 
-			if (pfi_load_track_data (fp, img, trk, size, crc)) {
+			if (pfi_load_track_data (pfi, size)) {
 				return (1);
 			}
 		}
 		else {
-			if (have_header == 0) {
+			if (pfi->have_header == 0) {
 				return (1);
 			}
 
-			if (pfi_skip_chunk (fp, size, crc)) {
+			if (pfi_skip_chunk (pfi, size)) {
 				return (1);
 			}
 		}
@@ -414,20 +499,29 @@ int pfi_load_image (FILE *fp, pfi_img_t *img)
 
 pfi_img_t *pfi_load_pfi (FILE *fp)
 {
-	pfi_img_t *img;
+	int        r;
+	pfi_load_t pfi;
 
-	img = pfi_img_new();
+	pfi.fp = fp;
+	pfi.img = NULL;
+	pfi.trk = NULL;
+	pfi.buf = NULL;
+	pfi.bufmax = 0;
 
-	if (img == NULL) {
+	if ((pfi.img = pfi_img_new()) == NULL) {
 		return (NULL);
 	}
 
-	if (pfi_load_image (fp, img)) {
-		pfi_img_del (img);
+	r = pfi_load_image (&pfi);
+
+	pfi_free (&pfi);
+
+	if (r) {
+		pfi_img_del (pfi.img);
 		return (NULL);
 	}
 
-	return (img);
+	return (pfi.img);
 }
 
 
@@ -559,14 +653,37 @@ int pfi_save_comment (FILE *fp, const pfi_img_t *img)
 }
 
 static
+int pfi_save_track_header (FILE *fp, const pfi_trk_t *trk, unsigned long c, unsigned long h)
+{
+	unsigned char buf[32];
+
+	pfi_set_uint32_be (buf, 0, PFI_MAGIC_TRAK);
+	pfi_set_uint32_be (buf, 4, 12);
+	pfi_set_uint32_be (buf, 8, c);
+	pfi_set_uint32_be (buf, 12, h);
+	pfi_set_uint32_be (buf, 16, trk->clock);
+	pfi_set_uint32_be (buf, 20, pfi_crc (0, buf, 20));
+
+	if (pfi_write (fp, buf, 24)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
 int pfi_save_indx (FILE *fp, const pfi_trk_t *trk)
 {
 	unsigned      i;
 	unsigned long crc;
 	unsigned char buf[8];
 
+	if (trk->index_cnt == 0) {
+		return (0);
+	}
+
 	pfi_set_uint32_be (buf, 0, PFI_MAGIC_INDX);
-	pfi_set_uint32_be (buf, 4, 4 * trk->idx_cnt);
+	pfi_set_uint32_be (buf, 4, 4 * trk->index_cnt);
 
 	crc = pfi_crc (0, buf, 8);
 
@@ -574,8 +691,8 @@ int pfi_save_indx (FILE *fp, const pfi_trk_t *trk)
 		return (1);
 	}
 
-	for (i = 0; i < trk->idx_cnt; i++) {
-		pfi_set_uint32_be (buf, 0, trk->idx[i]);
+	for (i = 0; i < trk->index_cnt; i++) {
+		pfi_set_uint32_be (buf, 0, trk->index[i]);
 
 		crc = pfi_crc (crc, buf, 4);
 
@@ -596,50 +713,88 @@ int pfi_save_indx (FILE *fp, const pfi_trk_t *trk)
 static
 int pfi_save_data (FILE *fp, const pfi_trk_t *trk)
 {
-	unsigned long crc;
-	unsigned char buf[32];
+	int           r;
+	uint32_t      val;
+	unsigned long i, n, max;
+	unsigned char *buf, *tmp;
 
-	if (trk->size == 0) {
+	if (trk->pulse_cnt == 0) {
 		return (0);
 	}
 
+	max = 4096;
+
+	if ((buf = malloc (max)) == NULL) {
+		return (1);
+	}
+
 	pfi_set_uint32_be (buf, 0, PFI_MAGIC_DATA);
-	pfi_set_uint32_be (buf, 4, trk->size);
 
-	crc = pfi_crc (0, buf, 8);
+	n = 8;
 
-	if (pfi_write (fp, buf, 8)) {
-		return (1);
+	for (i = 0; i < trk->pulse_cnt; i++) {
+		val = trk->pulse[i];
+
+		if (val == 0) {
+			continue;
+		}
+
+		if ((max - n) < 16) {
+			max *= 2;
+
+			if ((tmp = realloc (buf, max)) == 0) {
+				free (buf);
+				return (1);
+			}
+
+			buf = tmp;
+		}
+
+		if (val < 8) {
+			buf[n++] = 4;
+			buf[n++] = val;
+		}
+		else if (val < (1UL << 8)) {
+			buf[n++] = val;
+		}
+		else if (val < (1UL << 10)) {
+			buf[n++] = ((val >> 8) & 3) | 4;
+			buf[n++] = val & 0xff;
+		}
+		else if (val < (1UL << 16)) {
+			buf[n++] = 1;
+			buf[n++] = (val >> 8) & 0xff;
+			buf[n++] = val & 0xff;
+		}
+		else if (val < (1UL << 24)) {
+			buf[n++] = 2;
+			buf[n++] = (val >> 16) & 0xff;
+			buf[n++] = (val >> 8) & 0xff;
+			buf[n++] = val & 0xff;
+		}
+		else {
+			buf[n++] = 3;
+			buf[n++] = (val >> 24) & 0xff;
+			buf[n++] = (val >> 16) & 0xff;
+			buf[n++] = (val >> 8) & 0xff;
+			buf[n++] = val & 0xff;
+		}
 	}
 
-	crc = pfi_crc (crc, trk->data, trk->size);
+	pfi_set_uint32_be (buf, 4, n - 8);
+	pfi_set_uint32_be (buf, n, pfi_crc (0, buf, n));
 
-	if (pfi_write (fp, trk->data, trk->size)) {
-		return (1);
-	}
+	r = pfi_write (fp, buf, n + 4);
 
-	pfi_set_uint32_be (buf, 0, crc);
+	free (buf);
 
-	if (pfi_write (fp, buf, 4)) {
-		return (1);
-	}
-
-	return (0);
+	return (r);
 }
 
 static
 int pfi_save_track (FILE *fp, const pfi_trk_t *trk, unsigned long c, unsigned long h)
 {
-	unsigned char buf[32];
-
-	pfi_set_uint32_be (buf, 0, PFI_MAGIC_TRAK);
-	pfi_set_uint32_be (buf, 4, 12);
-	pfi_set_uint32_be (buf, 8, c);
-	pfi_set_uint32_be (buf, 12, h);
-	pfi_set_uint32_be (buf, 16, trk->clock);
-	pfi_set_uint32_be (buf, 20, pfi_crc (0, buf, 20));
-
-	if (pfi_write (fp, buf, 24)) {
+	if (pfi_save_track_header (fp, trk, c, h)) {
 		return (1);
 	}
 
@@ -669,16 +824,12 @@ int pfi_save_pfi (FILE *fp, const pfi_img_t *img)
 	}
 
 	for (c = 0; c < img->cyl_cnt; c++) {
-		cyl = img->cyl[c];
-
-		if (cyl == NULL) {
+		if ((cyl = img->cyl[c]) == NULL) {
 			continue;
 		}
 
 		for (h = 0; h < cyl->trk_cnt; h++) {
-			trk = cyl->trk[h];
-
-			if (trk == NULL) {
+			if ((trk = cyl->trk[h]) == NULL) {
 				continue;
 			}
 
@@ -698,7 +849,17 @@ int pfi_save_pfi (FILE *fp, const pfi_img_t *img)
 
 int pfi_probe_pfi_fp (FILE *fp)
 {
-	return (0);
+	unsigned char buf[4];
+
+	if (pfi_read (fp, buf, 4)) {
+		return (0);
+	}
+
+	if (pfi_get_uint32_be (buf, 0) != PFI_MAGIC_PFI) {
+		return (0);
+	}
+
+	return (1);
 }
 
 int pfi_probe_pfi (const char *fname)
