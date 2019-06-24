@@ -230,12 +230,6 @@ iwm {
 		# corresponds to a "disk" section below.
 		disk         = 1
 
-		# The file containing the disk's contents. If this is
-		# a valid PBIT file, the disk contents are read from
-		# and written back to it and the "disk" parameter above
-		# is ignored.
-		file         = "disk1.pbit"
-
 		# Insert the disk before the emulation starts, in order
 		# to boot from it.
 		inserted     = 0
@@ -253,7 +247,6 @@ iwm {
 	drive {
 		drive        = 2
 		disk         = 2
-		file         = "disk2.pbit"
 		inserted     = 0
 		single_sided = 0
 		locked       = 0
@@ -343,6 +336,8 @@ video {
 disk {
 	drive    = 1
 	type     = "auto"
+	file     = "disk1.pri"
+	file     = "disk1.image"
 	file     = "disk1.img"
 	optional = 1
 }
@@ -350,6 +345,8 @@ disk {
 disk {
 	drive    = 2
 	type     = "auto"
+	file     = "disk2.pri"
+	file     = "disk2.image"
 	file     = "disk2.img"
 	optional = 1
 }
@@ -357,6 +354,8 @@ disk {
 disk {
 	drive    = 3
 	type     = "auto"
+	file     = "disk3.pri"
+	file     = "disk3.image"
 	file     = "disk3.img"
 	optional = 1
 }

@@ -1012,7 +1012,6 @@ void mac_setup_iwm (macplus_t *sim, ini_sct_t *ini)
 	unsigned   n;
 	int        single, locked, rotate, inserted;
 	unsigned   drive, disk;
-	const char *fname;
 	ini_sct_t  *sct, *sctdev;
 
 	sct = ini_next_sct (ini, NULL, "iwm");
@@ -1030,7 +1029,6 @@ void mac_setup_iwm (macplus_t *sim, ini_sct_t *ini)
 	while (sctdev != NULL) {
 		ini_get_uint16 (sctdev, "drive", &drive, n);
 		ini_get_uint16 (sctdev, "disk", &disk, drive);
-		ini_get_string (sctdev, "file", &fname, NULL);
 
 		ini_get_bool (sct, "single_sided", &single, 0);
 		ini_get_bool (sctdev, "single_sided", &single, single);
@@ -1045,14 +1043,12 @@ void mac_setup_iwm (macplus_t *sim, ini_sct_t *ini)
 		ini_get_bool (sctdev, "auto_rotate", &rotate, rotate);
 
 		pce_log_tag (MSG_INF,
-			"IWM:", "drive=%u size=%uK locked=%d rotate=%d disk=%u file=%s\n",
-			drive, single ? 400 : 800, locked, rotate, disk,
-			(fname != NULL) ? fname : "<none>"
+			"IWM:", "drive=%u size=%uK locked=%d rotate=%d disk=%u\n",
+			drive, single ? 400 : 800, locked, rotate, disk
 		);
 
 		mac_iwm_set_heads (&sim->iwm, drive - 1, single ? 1 : 2);
 		mac_iwm_set_disk_id (&sim->iwm, drive - 1, disk);
-		mac_iwm_set_fname (&sim->iwm, drive - 1, fname);
 		mac_iwm_set_locked (&sim->iwm, drive - 1, locked);
 		mac_iwm_set_auto_rotate (&sim->iwm, drive - 1, rotate);
 

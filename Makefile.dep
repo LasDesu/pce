@@ -99,6 +99,7 @@ src/arch/atarist/fdc.o: src/arch/atarist/fdc.c \
 	src/arch/atarist/main.h \
 	src/chipset/wd179x.h \
 	src/config.h \
+	src/drivers/block/blkpri.h \
 	src/drivers/block/blkpsi.h \
 	src/drivers/block/block.h \
 	src/drivers/pri/pri-enc-mfm.h \
@@ -932,6 +933,7 @@ src/arch/macplus/iwm-io.o: src/arch/macplus/iwm-io.c \
 	src/arch/macplus/iwm.h \
 	src/arch/macplus/main.h \
 	src/config.h \
+	src/drivers/block/blkpri.h \
 	src/drivers/block/blkpsi.h \
 	src/drivers/block/block.h \
 	src/drivers/pri/pri-enc-gcr.h \

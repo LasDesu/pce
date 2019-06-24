@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/iwm.c                                       *
  * Created:     2007-11-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2013 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -64,14 +64,12 @@ int iwm_drv_init (mac_iwm_drive_t *drv, unsigned drive)
 {
 	drv->drive = drive;
 
-	drv->fname = NULL;
-
 	drv->dsks = NULL;
 	drv->diskid = drive;
 
 	drv->img = NULL;
+	drv->img_del = 0;
 
-	drv->use_fname = 0;
 	drv->locked = 0;
 	drv->auto_rotate = 0;
 
@@ -115,7 +113,9 @@ void iwm_drv_free (mac_iwm_drive_t *drv)
 		iwm_drv_save (drv);
 	}
 
-	pri_img_del (drv->img);
+	if (drv->img_del) {
+		pri_img_del (drv->img);
+	}
 }
 
 /*
@@ -358,12 +358,10 @@ int iwm_drv_get_locked (mac_iwm_drive_t *drv)
 
 	val = drv->locked;
 
-	if (drv->use_fname == 0) {
-		dsk = dsks_get_disk (drv->dsks, drv->diskid);
+	dsk = dsks_get_disk (drv->dsks, drv->diskid);
 
-		if ((dsk != NULL) && dsk_get_readonly (dsk)) {
-			val = 1;
-		}
+	if ((dsk != NULL) && dsk_get_readonly (dsk)) {
+		val = 1;
 	}
 
 #if DEBUG_IWM >= 2
@@ -534,6 +532,15 @@ void iwm_drv_set_eject (mac_iwm_drive_t *drv)
 	if (drv->dirty) {
 		iwm_drv_save (drv);
 	}
+
+	if (drv->img_del) {
+		pri_img_del (drv->img);
+	}
+
+	drv->img = NULL;
+	drv->img_del = 0;
+
+	drv->cur_track = NULL;
 }
 
 void mac_iwm_init (mac_iwm_t *iwm)
@@ -624,34 +631,26 @@ void mac_iwm_set_disk_id (mac_iwm_t *iwm, unsigned drive, unsigned id)
 	}
 }
 
-void mac_iwm_set_fname (mac_iwm_t *iwm, unsigned drive, const char *fname)
+void mac_iwm_flush_disk (mac_iwm_t *iwm, unsigned id)
 {
-	unsigned n;
-	char     *str;
+	unsigned i;
 
-	if (drive >= MAC_IWM_DRIVES) {
-		return;
+	for (i = 0; i < MAC_IWM_DRIVES; i++) {
+		if (iwm->drv[i].diskid == id) {
+			iwm_drv_set_eject (iwm->drv + i);
+		}
 	}
+}
 
-	free (iwm->drv[drive].fname);
-	iwm->drv[drive].fname = NULL;
-	iwm->drv[drive].use_fname = 0;
+void mac_iwm_insert_disk (mac_iwm_t *iwm, unsigned id)
+{
+	unsigned i;
 
-	if (fname == NULL) {
-		return;
+	for (i = 0; i < MAC_IWM_DRIVES; i++) {
+		if (iwm->drv[i].diskid == id) {
+			mac_iwm_insert (iwm, i);
+		}
 	}
-
-	n = strlen (fname);
-
-	str = malloc (n + 1);
-
-	if (str == NULL) {
-		return;
-	}
-
-	memcpy (str, fname, n + 1);
-
-	iwm->drv[drive].fname = str;
 }
 
 int mac_iwm_get_locked (const mac_iwm_t *iwm, unsigned drive)

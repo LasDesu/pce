@@ -44,6 +44,36 @@ typedef struct {
 
 
 static
+int mac_set_msg_disk_eject (macplus_t *sim, const char *msg, const char *val)
+{
+	if (msg_dsk_get_disk_id (val, &sim->disk_id)) {
+		return (1);
+	}
+
+	if (dsks_get_disk (sim->dsks, sim->disk_id) != NULL) {
+		mac_iwm_flush_disk (&sim->iwm, sim->disk_id);
+	}
+
+	return (msg_dsk_emu_disk_eject (val, sim->dsks, &sim->disk_id));
+}
+
+static
+int mac_set_msg_disk_insert (macplus_t *sim, const char *msg, const char *val)
+{
+	if (dsks_get_disk (sim->dsks, sim->disk_id) != NULL) {
+		mac_iwm_flush_disk (&sim->iwm, sim->disk_id);
+	}
+
+	if (msg_dsk_emu_disk_insert (val, sim->dsks, sim->disk_id)) {
+		return (1);
+	}
+
+	mac_iwm_insert_disk (&sim->iwm, sim->disk_id);
+
+	return (0);
+}
+
+static
 int mac_set_msg_emu_cpu_model (macplus_t *sim, const char *msg, const char *val)
 {
 	if (mac_set_cpu_model (sim, val)) {
@@ -94,32 +124,6 @@ int mac_set_msg_emu_exit (macplus_t *sim, const char *msg, const char *val)
 	sim->brk = PCE_BRK_ABORT;
 
 	mon_set_terminate (&par_mon, 1);
-
-	return (0);
-}
-
-static
-int mac_set_msg_emu_iwm_insert (macplus_t *sim, const char *msg, const char *val)
-{
-	unsigned drv;
-
-	if (msg_get_prefix_uint (&val, &drv, ":", " \t")) {
-		pce_log (MSG_ERR, "*** insert error: bad drive (%s)\n",
-			val
-		);
-
-		return (1);
-	}
-
-	if (drv == 0) {
-		pce_log (MSG_ERR, "*** insert error: bad drive (%u)\n",
-			drv
-		);
-
-		return (1);
-	}
-
-	mac_iwm_set_fname (&sim->iwm, drv - 1, val);
 
 	return (0);
 }
@@ -370,11 +374,12 @@ int mac_set_msg_emu_video_brightness (macplus_t *sim, const char *msg, const cha
 
 
 static mac_msg_list_t set_msg_list[] = {
+	{ "disk.eject", mac_set_msg_disk_eject },
+	{ "disk.insert", mac_set_msg_disk_insert },
 	{ "emu.cpu.model", mac_set_msg_emu_cpu_model },
 	{ "emu.cpu.speed", mac_set_msg_emu_cpu_speed },
 	{ "emu.cpu.speed.step", mac_set_msg_emu_cpu_speed_step },
 	{ "emu.exit", mac_set_msg_emu_exit },
-	{ "emu.iwm.insert", mac_set_msg_emu_iwm_insert },
 	{ "emu.iwm.ro", mac_set_msg_emu_iwm_ro },
 	{ "emu.iwm.rw", mac_set_msg_emu_iwm_rw },
 	{ "emu.iwm.status", mac_set_msg_emu_iwm_status },
