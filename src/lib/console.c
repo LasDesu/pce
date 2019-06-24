@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/lib/console.c                                            *
  * Created:     2006-06-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2006-2012 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2006-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -165,23 +165,45 @@ int pce_gets (const char *prompt, char *str, unsigned max)
 	return (0);
 }
 
-void pce_puts (const char *str)
+int pce_putc (int c)
 {
 	if (pce_fp_out == NULL) {
 		pce_fp_out = stdout;
 	}
 
-	fputs (str, pce_fp_out);
+	fputc (c, pce_fp_out);
+	fflush (pce_fp_out);
+
+	if (pce_redir_out != NULL) {
+		fputc (c, pce_redir_out);
+		fflush (pce_redir_out);
+	}
+
+	return (c);
+}
+
+int pce_puts (const char *str)
+{
+	int r;
+
+	if (pce_fp_out == NULL) {
+		pce_fp_out = stdout;
+	}
+
+	r = fputs (str, pce_fp_out);
 	fflush (pce_fp_out);
 
 	if (pce_redir_out != NULL) {
 		fputs (str, pce_redir_out);
 		fflush (pce_redir_out);
 	}
+
+	return (r);
 }
 
-void pce_printf (const char *msg, ...)
+int pce_printf (const char *msg, ...)
 {
+	int     r;
 	va_list va;
 
 	if (pce_fp_out == NULL) {
@@ -190,7 +212,7 @@ void pce_printf (const char *msg, ...)
 
 	va_start (va, msg);
 
-	vfprintf (pce_fp_out, msg, va);
+	r = vfprintf (pce_fp_out, msg, va);
 	fflush (pce_fp_out);
 
 	if (pce_redir_out != NULL) {
@@ -199,21 +221,27 @@ void pce_printf (const char *msg, ...)
 	}
 
 	va_end (va);
+
+	return (r);
 }
 
-void pce_vprintf (const char *msg, va_list va)
+int pce_vprintf (const char *msg, va_list va)
 {
+	int r;
+
 	if (pce_fp_out == NULL) {
 		pce_fp_out = stdout;
 	}
 
-	vfprintf (pce_fp_out, msg, va);
+	r = vfprintf (pce_fp_out, msg, va);
 	fflush (pce_fp_out);
 
 	if (pce_redir_out != NULL) {
 		vfprintf (pce_redir_out, msg, va);
 		fflush (pce_redir_out);
 	}
+
+	return (r);
 }
 
 void pce_prt_sep (const char *str)
