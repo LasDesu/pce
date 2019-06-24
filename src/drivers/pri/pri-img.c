@@ -28,6 +28,7 @@
 #include "pri-img-pbit.h"
 #include "pri-img-pri.h"
 #include "pri-img-tc.h"
+#include "pri-img-woz.h"
 
 
 unsigned pri_get_uint16_be (const void *buf, unsigned idx)
@@ -228,6 +229,9 @@ unsigned pri_guess_type (const char *fname)
 	else if (strcasecmp (ext, ".tc") == 0) {
 		return (PRI_FORMAT_TC);
 	}
+	else if (strcasecmp (ext, ".woz") == 0) {
+		return (PRI_FORMAT_WOZ);
+	}
 
 	return (PRI_FORMAT_NONE);
 }
@@ -262,6 +266,9 @@ unsigned pri_get_type (unsigned type, const char *fname)
 	else if (strcasecmp (ext, ".tc") == 0) {
 		return (PRI_FORMAT_TC);
 	}
+	else if (strcasecmp (ext, ".woz") == 0) {
+		return (PRI_FORMAT_WOZ);
+	}
 
 	return (PRI_FORMAT_PRI);
 }
@@ -284,6 +291,10 @@ pri_img_t *pri_img_load_fp (FILE *fp, unsigned type)
 
 	case PRI_FORMAT_TC:
 		img = pri_load_tc (fp);
+		break;
+
+	case PRI_FORMAT_WOZ:
+		img = pri_load_woz (fp);
 		break;
 	}
 
@@ -319,6 +330,9 @@ int pri_img_save_fp (FILE *fp, const pri_img_t *img, unsigned type)
 
 	case PRI_FORMAT_TC:
 		return (pri_save_tc (fp, img));
+
+	case PRI_FORMAT_WOZ:
+		return (pri_save_woz (fp, img));
 	}
 
 	return (1);
@@ -331,7 +345,7 @@ int pri_img_save (const char *fname, const pri_img_t *img, unsigned type)
 
 	type = pri_get_type (type, fname);
 
-	if ((fp = fopen (fname, "wb")) == NULL) {
+	if ((fp = fopen (fname, "w+b")) == NULL) {
 		return (1);
 	}
 
@@ -354,6 +368,10 @@ unsigned pri_probe_fp (FILE *fp)
 
 	if (pri_probe_tc_fp (fp)) {
 		return (PRI_FORMAT_TC);
+	}
+
+	if (pri_probe_woz_fp (fp)) {
+		return (PRI_FORMAT_WOZ);
 	}
 
 	return (PRI_FORMAT_NONE);

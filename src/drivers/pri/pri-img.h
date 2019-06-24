@@ -33,6 +33,7 @@
 #define PRI_FORMAT_PBIT 1
 #define PRI_FORMAT_PRI  2
 #define PRI_FORMAT_TC   3
+#define PRI_FORMAT_WOZ  4
 
 
 unsigned pri_get_uint16_be (const void *buf, unsigned idx);

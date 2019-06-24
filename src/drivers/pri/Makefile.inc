@@ -12,6 +12,7 @@ DRV_PRI_BAS := \
 	pri-img-pbit \
 	pri-img-pri \
 	pri-img-tc \
+	pri-img-woz \
 	pri-img \
 	pri
 
@@ -29,6 +30,7 @@ $(rel)/pri-enc-mfm.o:  $(rel)/pri-enc-mfm.c
 $(rel)/pri-img-pbit.o: $(rel)/pri-img-pbit.c
 $(rel)/pri-img-pri.o:  $(rel)/pri-img-pri.c
 $(rel)/pri-img-tc.o:   $(rel)/pri-img-tc.c
+$(rel)/pri-img-woz.o:  $(rel)/pri-img-woz.c
 $(rel)/pri-img.o:      $(rel)/pri-img.c
 $(rel)/pri.o:          $(rel)/pri.c
 

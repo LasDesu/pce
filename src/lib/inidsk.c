@@ -356,6 +356,9 @@ int ini_get_disk (ini_sct_t *sct, disk_t **ret)
 		else if (strcmp (type, "teledisk") == 0) {
 			dsk = dsk_psi_open (path, PSI_FORMAT_TD0, ro);
 		}
+		else if (strcmp (type, "woz") == 0) {
+			dsk = dsk_pri_open (path, PRI_FORMAT_WOZ, ro);
+		}
 
 		if (dsk != NULL) {
 			break;
