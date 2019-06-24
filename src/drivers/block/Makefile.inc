@@ -11,6 +11,7 @@ DRV_BLK_BAS := \
 	blkpart \
 	blkpbi \
 	blkpce \
+	blkpri \
 	blkpsi \
 	blkqed \
 	blkram \
@@ -30,6 +31,7 @@ $(rel)/blkdosem.o:	$(rel)/blkdosem.c
 $(rel)/blkpart.o:	$(rel)/blkpart.c
 $(rel)/blkpbi.o:	$(rel)/blkpbi.c
 $(rel)/blkpce.o:	$(rel)/blkpce.c
+$(rel)/blkpri.o:	$(rel)/blkpri.c
 $(rel)/blkpsi.o:	$(rel)/blkpsi.c
 $(rel)/blkqed.o:	$(rel)/blkqed.c
 $(rel)/blkram.o:	$(rel)/blkram.c

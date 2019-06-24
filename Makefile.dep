@@ -1189,6 +1189,7 @@ src/arch/rc759/cmd.o: src/arch/rc759/cmd.c \
 	src/lib/console.h \
 	src/lib/log.h \
 	src/lib/monitor.h \
+	src/lib/msgdsk.h \
 	src/lib/sysdep.h \
 	src/libini/libini.h
 
@@ -1289,6 +1290,7 @@ src/arch/rc759/msg.o: src/arch/rc759/msg.c \
 	src/lib/log.h \
 	src/lib/monitor.h \
 	src/lib/msg.h \
+	src/lib/msgdsk.h \
 	src/lib/sysdep.h \
 	src/libini/libini.h
 
@@ -2276,6 +2278,13 @@ src/drivers/block/blkpce.o: src/drivers/block/blkpce.c \
 	src/drivers/block/blkpce.h \
 	src/drivers/block/block.h
 
+src/drivers/block/blkpri.o: src/drivers/block/blkpri.c \
+	src/config.h \
+	src/drivers/block/blkpri.h \
+	src/drivers/block/block.h \
+	src/drivers/pri/pri-img.h \
+	src/drivers/pri/pri.h
+
 src/drivers/block/blkpsi.o: src/drivers/block/blkpsi.c \
 	src/config.h \
 	src/drivers/block/blkpsi.h \
@@ -2303,10 +2312,13 @@ src/drivers/block/block.o: src/drivers/block/block.c \
 	src/drivers/block/blkdosem.h \
 	src/drivers/block/blkpbi.h \
 	src/drivers/block/blkpce.h \
+	src/drivers/block/blkpri.h \
 	src/drivers/block/blkpsi.h \
 	src/drivers/block/blkqed.h \
 	src/drivers/block/blkraw.h \
 	src/drivers/block/block.h \
+	src/drivers/pri/pri-img.h \
+	src/drivers/pri/pri.h \
 	src/drivers/psi/psi-img.h \
 	src/drivers/psi/psi.h
 
@@ -2667,11 +2679,14 @@ src/lib/inidsk.o: src/lib/inidsk.c \
 	src/drivers/block/blkpart.h \
 	src/drivers/block/blkpbi.h \
 	src/drivers/block/blkpce.h \
+	src/drivers/block/blkpri.h \
 	src/drivers/block/blkpsi.h \
 	src/drivers/block/blkqed.h \
 	src/drivers/block/blkram.h \
 	src/drivers/block/blkraw.h \
 	src/drivers/block/block.h \
+	src/drivers/pri/pri-img.h \
+	src/drivers/pri/pri.h \
 	src/drivers/psi/psi-img.h \
 	src/drivers/psi/psi.h \
 	src/lib/inidsk.h \

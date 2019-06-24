@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/lib/inidsk.c                                             *
  * Created:     2004-12-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2013 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -34,10 +34,12 @@
 #include <drivers/block/blkpart.h>
 #include <drivers/block/blkpbi.h>
 #include <drivers/block/blkpce.h>
+#include <drivers/block/blkpri.h>
 #include <drivers/block/blkpsi.h>
 #include <drivers/block/blkqed.h>
 #include <drivers/block/blkram.h>
 #include <drivers/block/blkraw.h>
+#include <drivers/pri/pri-img.h>
 #include <drivers/psi/psi-img.h>
 
 
@@ -342,8 +344,14 @@ int ini_get_disk (ini_sct_t *sct, disk_t **ret)
 		else if (strcmp (type, "pfdc-auto") == 0) {
 			dsk = dsk_psi_open (path, PSI_FORMAT_NONE, ro);
 		}
+		else if (strcmp (type, "pri") == 0) {
+			dsk = dsk_pri_open (path, PRI_FORMAT_PRI, ro);
+		}
 		else if (strcmp (type, "psi") == 0) {
 			dsk = dsk_psi_open (path, PSI_FORMAT_PSI, ro);
+		}
+		else if (strcmp (type, "tc") == 0) {
+			dsk = dsk_pri_open (path, PRI_FORMAT_TC, ro);
 		}
 		else if (strcmp (type, "teledisk") == 0) {
 			dsk = dsk_psi_open (path, PSI_FORMAT_TD0, ro);

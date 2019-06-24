@@ -57,6 +57,7 @@ PCE_SIMARM_OBJ_EXT := \
 	src/lib/sysdep.o \
 	$(CPU_ARM_OBJ) \
 	$(DRV_BLK_OBJ) \
+	$(DRV_PRI_OBJ) \
 	$(DRV_PSI_OBJ) \
 	$(DRV_CHR_OBJ) \
 	$(LIBINI_OBJ)

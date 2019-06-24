@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/block/block.h                                    *
  * Created:     2003-04-14 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -43,7 +43,8 @@ enum {
 	PCE_DISK_COW,
 	PCE_DISK_PSI,
 	PCE_DISK_QED,
-	PCE_DISK_PBI
+	PCE_DISK_PBI,
+	PCE_DISK_PRI
 };
 
 

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pce-img/pce-img.c                                  *
  * Created:     2005-11-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2005-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2005-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -152,6 +152,9 @@ const char *pce_get_type_name (unsigned type)
 
 	case PCE_DISK_PBI:
 		return ("pbi");
+
+	case PCE_DISK_PRI:
+		return ("pri");
 	}
 
 	return ("unknown");

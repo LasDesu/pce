@@ -96,6 +96,7 @@ PCE_IBMPC_OBJ_EXT := \
 	$(CPU_8086_OBJ) \
 	$(DEV_VID_OBJ) \
 	$(DRV_BLK_OBJ) \
+	$(DRV_PRI_OBJ) \
 	$(DRV_PSI_OBJ) \
 	$(DRV_CHR_OBJ) \
 	$(DRV_SND_OBJ) \

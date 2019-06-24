@@ -24,6 +24,7 @@ PCEIMG_OBJ_EXT := \
 	src/lib/getopt.o \
 	src/lib/sysdep.o \
 	$(DRV_BLK_OBJ) \
+	$(DRV_PRI_OBJ) \
 	$(DRV_PSI_OBJ)
 
 BIN  += $(PCEIMG_BIN)
