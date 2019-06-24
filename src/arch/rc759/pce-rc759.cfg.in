@@ -217,15 +217,11 @@ speaker {
 
 # The floppy disk controller
 fdc {
-	# The PBIT file attached to the first floppy disk drive.
-	# If this option is not set, or the file can't be read,
-	# the disk with ID 0 is used instead.
-	file0 = "fd0.pbit"
+	# The disk id used for drive 0.
+	id0 = 0
 
-	# The PBIT file attached to the second floppy disk drive.
-	# If this option is not set, or the file can't be read,
-	# the disk with ID 1 is used instead.
-	file1 = "fd1.pbit"
+	# The disk id used for drive 1.
+	id1 = 1
 }
 
 
@@ -234,8 +230,9 @@ disk {
 	drive    = 0
 	optional = 1
 	type     = "auto"
+	file     = "fd0.pri"
 	file     = "fd0.img"
-	file     = "fd0.pfdc"
+	file     = "fd0.psi"
 }
 
 # The second floppy drive
@@ -243,6 +240,7 @@ disk {
 	drive    = 1
 	optional = 1
 	type     = "auto"
+	file     = "fd1.pri"
 	file     = "fd1.img"
-	file     = "fd1.pfdc"
+	file     = "fd1.psi"
 }

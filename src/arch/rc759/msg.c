@@ -48,30 +48,13 @@ typedef struct {
 static
 int rc759_set_msg_disk_eject (rc759_t *sim, const char *msg, const char *val)
 {
-	unsigned drv;
-	disk_t   *dsk;
-
-	while (*val != 0) {
-		if (msg_get_prefix_uint (&val, &drv, ":", " \t")) {
-			pce_log (MSG_ERR,
-				"*** disk eject error: bad drive (%s)\n",
-				val
-			);
-
-			return (1);
-		}
-
-		pce_log (MSG_INF, "ejecting drive %lu\n", drv);
-
-		rc759_fdc_save (&sim->fdc, drv);
-		rc759_fdc_set_fname (&sim->fdc, drv, NULL);
-
-		dsk = dsks_get_disk (sim->dsks, drv);
-		dsks_rmv_disk (sim->dsks, dsk);
-		dsk_del (dsk);
-
-		rc759_fdc_load (&sim->fdc, drv);
+	if (msg_dsk_get_disk_id (val, &sim->disk_id)) {
+		return (1);
 	}
+
+	rc759_fdc_eject_disk (&sim->fdc, sim->disk_id);
+
+	msg_dsk_emu_disk_eject (val, sim->dsks, &sim->disk_id);
 
 	return (0);
 }
@@ -79,44 +62,15 @@ int rc759_set_msg_disk_eject (rc759_t *sim, const char *msg, const char *val)
 static
 int rc759_set_msg_disk_insert (rc759_t *sim, const char *msg, const char *val)
 {
-	unsigned   i;
-	unsigned   drv;
-	const char *str, *ext;
+	if (dsks_get_disk (sim->dsks, sim->disk_id) != NULL) {
+		rc759_fdc_eject_disk (&sim->fdc, sim->disk_id);
+	}
 
-	str = val;
-
-	if (msg_get_prefix_uint (&str, &drv, ":", " \t")) {
-		pce_log (MSG_ERR,
-			"*** disk eject error: bad drive (%s)\n",
-			val
-		);
-
+	if (msg_dsk_emu_disk_insert (val, sim->dsks, sim->disk_id)) {
 		return (1);
 	}
 
-	i = 0;
-	ext = str;
-
-	while (str[i] != 0) {
-		if (str[i] == '.') {
-			ext = str + i;
-		}
-
-		i += 1;
-	}
-
-	rc759_fdc_save (&sim->fdc, drv);
-
-	if (strcasecmp (ext, ".pbit") == 0) {
-		rc759_fdc_set_fname (&sim->fdc, drv, str);
-	}
-	else {
-		if (dsk_insert (sim->dsks, val, 1)) {
-			return (1);
-		}
-	}
-
-	rc759_fdc_load (&sim->fdc, drv);
+	rc759_fdc_insert_disk (&sim->fdc, sim->disk_id);
 
 	return (0);
 }

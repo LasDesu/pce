@@ -1200,6 +1200,7 @@ src/arch/rc759/fdc.o: src/arch/rc759/fdc.c \
 	src/arch/rc759/main.h \
 	src/chipset/wd179x.h \
 	src/config.h \
+	src/drivers/block/blkpri.h \
 	src/drivers/block/blkpsi.h \
 	src/drivers/block/block.h \
 	src/drivers/pri/pri-enc-mfm.h \

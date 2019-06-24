@@ -921,19 +921,15 @@ void rc759_setup_rtc (rc759_t *sim, ini_sct_t *ini)
 static
 void rc759_setup_fdc (rc759_t *sim, ini_sct_t *ini)
 {
-	const char *fname0, *fname1;
-	ini_sct_t  *sct;
+	unsigned  id0, id1;
+	ini_sct_t *sct;
 
 	sct = ini_next_sct (ini, NULL, "fdc");
 
-	ini_get_string (sct, "file0", &fname0, NULL);
-	ini_get_string (sct, "file1", &fname1, NULL);
+	ini_get_uint16 (sct, "id0", &id0, 0);
+	ini_get_uint16 (sct, "id1", &id1, 1);
 
-	pce_log_tag (MSG_INF, "FDC:",
-		"file0=%s file1=%s\n",
-		(fname0 != NULL) ? fname0 : "<none>",
-		(fname1 != NULL) ? fname1 : "<none>"
-	);
+	pce_log_tag (MSG_INF, "FDC:", "drive0=%u drive1=%u\n", id0, id1);
 
 	rc759_fdc_init (&sim->fdc);
 
@@ -945,11 +941,8 @@ void rc759_setup_fdc (rc759_t *sim, ini_sct_t *ini)
 
 	rc759_fdc_set_disks (&sim->fdc, sim->dsks);
 
-	rc759_fdc_set_fname (&sim->fdc, 0, fname0);
-	rc759_fdc_set_fname (&sim->fdc, 1, fname1);
-
-	rc759_fdc_set_disk_id (&sim->fdc, 0, 0);
-	rc759_fdc_set_disk_id (&sim->fdc, 1, 1);
+	rc759_fdc_set_disk_id (&sim->fdc, 0, id0);
+	rc759_fdc_set_disk_id (&sim->fdc, 1, id1);
 
 	rc759_fdc_load (&sim->fdc, 0);
 	rc759_fdc_load (&sim->fdc, 1);
