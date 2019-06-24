@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/main.h                                         *
  * Created:     2012-01-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -57,6 +57,7 @@ extern unsigned long par_weak_i2;
 extern unsigned long par_clock_tolerance;
 
 extern unsigned      par_fold_mode;
+extern unsigned      par_fold_window;
 extern unsigned long par_fold_max;
 
 

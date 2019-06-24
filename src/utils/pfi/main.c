@@ -73,6 +73,7 @@ unsigned long par_weak_i2 = 0;
 unsigned long par_clock_tolerance = 40;
 
 unsigned      par_fold_mode = PFI_FOLD_MAXRUN;
+unsigned      par_fold_window = 32;
 unsigned long par_fold_max = 16384;
 
 
@@ -548,6 +549,9 @@ int pfi_set_parameter (const char *name, const char *val)
 		else {
 			return (1);
 		}
+	}
+	else if (strcmp (name, "fold-window") == 0) {
+		par_fold_window = strtoul (val, NULL, 0);
 	}
 	else if (strcmp (name, "pfi-clock") == 0) {
 		par_pfi_clock = strtoul (val, NULL, 0);

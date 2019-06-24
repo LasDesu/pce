@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/decode.c                                       *
  * Created:     2012-01-20 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -53,6 +53,7 @@ struct decode_pri_s {
 	unsigned long *rate;
 
 	unsigned      fold_mode;
+	unsigned      fold_window;
 	unsigned long max_compare;
 };
 
@@ -242,7 +243,7 @@ unsigned long pfi_bit_diff (const unsigned char *p1, unsigned long i1, const uns
 }
 
 static
-int pfi_dec_fold_mindiff (pfi_dec_t *bit, unsigned long max, unsigned c, unsigned h)
+int pfi_dec_fold_mindiff (pfi_dec_t *bit, unsigned window, unsigned long max, unsigned c, unsigned h)
 {
 	unsigned      i;
 	unsigned long val, pos, cnt;
@@ -257,7 +258,7 @@ int pfi_dec_fold_mindiff (pfi_dec_t *bit, unsigned long max, unsigned c, unsigne
 	min_pos = bit->index;
 	min_cnt = min_pos;
 
-	for (i = 1; i < 32; i++) {
+	for (i = 1; i < window; i++) {
 		pos = (i & 1) ? (bit->index - i / 2) : (bit->index + i / 2);
 
 		cnt = bit->cnt - pos;
@@ -336,7 +337,7 @@ unsigned long pfi_bit_run (const unsigned char *p1, unsigned long i1, const unsi
 }
 
 static
-int pfi_dec_fold_maxrun (pfi_dec_t *bit, unsigned long max, unsigned c, unsigned h)
+int pfi_dec_fold_maxrun (pfi_dec_t *bit, unsigned window, unsigned long max, unsigned c, unsigned h)
 {
 	unsigned      i;
 	unsigned long val, pos, cnt;
@@ -350,7 +351,7 @@ int pfi_dec_fold_maxrun (pfi_dec_t *bit, unsigned long max, unsigned c, unsigned
 	max_val = 0;
 	max_pos = bit->index;
 
-	for (i = 1; i < 32; i++) {
+	for (i = 1; i < window; i++) {
 		pos = (i & 1) ? (bit->index - i / 2) : (bit->index + i / 2);
 
 		cnt = bit->cnt - pos;
@@ -515,11 +516,11 @@ int pfi_decode_pri_trk_cb (pfi_img_t *img, pfi_trk_t *strk, unsigned long c, uns
 
 	switch (par->fold_mode) {
 	case PFI_FOLD_MAXRUN:
-		pfi_dec_fold_maxrun (&bit, par->max_compare, c, h);
+		pfi_dec_fold_maxrun (&bit, par->fold_window, par->max_compare, c, h);
 		break;
 
 	case PFI_FOLD_MINDIFF:
-		pfi_dec_fold_mindiff (&bit, par->max_compare, c, h);
+		pfi_dec_fold_mindiff (&bit, par->fold_window, par->max_compare, c, h);
 		break;
 
 	default:
@@ -580,6 +581,7 @@ pri_img_t *pfi_decode_pri (pfi_img_t *img, unsigned mode, unsigned long rate)
 	}
 
 	par.fold_mode = par_fold_mode;
+	par.fold_window = par_fold_window;
 	par.max_compare = par_fold_max;
 
 	if (pfi_for_all_tracks (img, pfi_decode_pri_trk_cb, &par)) {
