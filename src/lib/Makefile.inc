@@ -20,6 +20,7 @@ LIBPCE_BAS := \
 	log \
 	monitor \
 	msg \
+	msgdsk \
 	path \
 	srec \
 	string \
@@ -52,6 +53,7 @@ $(rel)/initerm.o:	$(rel)/initerm.c
 $(rel)/log.o:		$(rel)/log.c
 $(rel)/monitor.o:	$(rel)/monitor.c
 $(rel)/msg.o:		$(rel)/msg.c
+$(rel)/msgdsk.o:	$(rel)/msgdsk.c
 $(rel)/path.o:		$(rel)/path.c
 $(rel)/tun.o:		$(rel)/tun.c
 $(rel)/srec.o:		$(rel)/srec.c

@@ -10,7 +10,6 @@ will eject the first floppy disk. Message prefixes can be omitted, as long
 as the message name is unambiguous (except where noted). The following
 commands are equivalent:
 
--m emu.disk.eject 0
 -m disk.eject 0
 -m eject 0
 
@@ -271,6 +270,30 @@ emu.stop
 
 emu.video.brightness <brightness>
 	Set the video brightness in the range of 0 - 1000.
+
+
+Disk messages
+==============================================================================
+
+disk.commit [<id> | "all"]
+	Commit changes to drives that have copy-on-write enabled.
+
+disk.eject [<id>]
+	Eject the disk <id> and set the current disk id to <id>.
+
+disk.id <id>
+	Set the current disk id to <id>.
+
+disk.insert <fname>
+	Insert a new disk into the current drive. The disk image type
+	is "auto". If a disk already inserted in the current drive it is
+	ejected first.
+
+disk.ro <id>
+	Set the read-only flag for the disk in drive <id>.
+
+disk.rw <id>
+	Clear the read-only flag for the disk in drive <id>.
 
 
 Terminal messages
