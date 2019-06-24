@@ -7,6 +7,7 @@ DIST += $(rel)/Makefile.inc
 
 DEV_PFI_BAS := \
 	decode-bits \
+	pfi-a2r \
 	pfi-io \
 	pfi-kryo \
 	pfi-pfi \
@@ -23,6 +24,7 @@ CLN  += $(DEV_PFI_ARC) $(DEV_PFI_OBJ)
 DIST += $(DEV_PFI_SRC) $(DEV_PFI_HDR)
 
 $(rel)/decode-bits.o: $(rel)/decode-bits.c
+$(rel)/pfi-a2r.o:     $(rel)/pfi-a2r.c
 $(rel)/pfi-io.o:      $(rel)/pfi-io.c
 $(rel)/pfi-kryo.o:    $(rel)/pfi-kryo.c
 $(rel)/pfi-pfi.o:     $(rel)/pfi-pfi.c

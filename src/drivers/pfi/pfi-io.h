@@ -31,6 +31,7 @@
 #define PFI_FORMAT_PFI      1
 #define PFI_FORMAT_KRYOFLUX 2
 #define PFI_FORMAT_SCP      3
+#define PFI_FORMAT_A2R      4
 
 
 unsigned pfi_get_uint16_be (const void *buf, unsigned idx);

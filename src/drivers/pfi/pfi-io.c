@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "pfi-io.h"
+#include "pfi-a2r.h"
 #include "pfi-pfi.h"
 #include "pfi-kryo.h"
 #include "pfi-scp.h"
@@ -233,6 +234,9 @@ unsigned pfi_get_type (unsigned type, const char *fname)
 	else if (strcasecmp (ext, ".scp") == 0) {
 		return (PFI_FORMAT_SCP);
 	}
+	else if (strcasecmp (ext, ".a2r") == 0) {
+		return (PFI_FORMAT_A2R);
+	}
 
 	return (PFI_FORMAT_PFI);
 }
@@ -255,6 +259,10 @@ pfi_img_t *pfi_img_load_fp (FILE *fp, unsigned type)
 
 	case PFI_FORMAT_SCP:
 		img = pfi_load_scp (fp);
+		break;
+
+	case PFI_FORMAT_A2R:
+		img = pfi_load_a2r (fp);
 		break;
 	}
 
