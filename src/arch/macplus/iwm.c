@@ -90,6 +90,9 @@ int iwm_drv_init (mac_iwm_drive_t *drv, unsigned drive)
 	drv->cur_track_pos = 0;
 	drv->cur_track_len = 0;
 
+	drv->evt = NULL;
+	drv->weak_mask = 0;
+
 	drv->pwm_pos = 0;
 	drv->pwm_len = 65000;
 
@@ -192,6 +195,17 @@ void iwm_drv_select_track (mac_iwm_drive_t *drv, unsigned c, unsigned h)
 	if (drv->cur_track_pos >= drv->cur_track_len) {
 		drv->cur_track_pos = 0;
 	}
+
+	drv->read_pos = drv->cur_track_pos;
+	drv->write_pos = drv->cur_track_pos;
+
+	drv->evt = trk->evt;
+
+	while ((drv->evt != NULL) && (drv->evt->pos < drv->cur_track_pos)) {
+		drv->evt = drv->evt->next;
+	}
+
+	drv->weak_mask = 0;
 }
 
 static
@@ -541,6 +555,7 @@ void iwm_drv_set_eject (mac_iwm_drive_t *drv)
 	drv->img_del = 0;
 
 	drv->cur_track = NULL;
+	drv->evt = NULL;
 }
 
 void mac_iwm_init (mac_iwm_t *iwm)
@@ -566,6 +581,8 @@ void mac_iwm_init (mac_iwm_t *iwm)
 
 	iwm->pwm_val = 0;
 
+	iwm->rand = 1;
+
 	for (i = 0; i < MAC_IWM_DRIVES; i++) {
 		iwm_drv_init (&iwm->drv[i], i);
 	}
@@ -584,6 +601,19 @@ void mac_iwm_free (mac_iwm_t *iwm)
 	for (i = 0; i < MAC_IWM_DRIVES; i++) {
 		iwm_drv_free (&iwm->drv[i]);
 	}
+}
+
+static
+int iwm_get_random (mac_iwm_t *iwm)
+{
+	if (iwm->rand & 1) {
+		iwm->rand = (iwm->rand >> 1) ^ 0x80000057;
+	}
+	else {
+		iwm->rand = iwm->rand >> 1;
+	}
+
+	return (iwm->rand & 1);
 }
 
 void mac_iwm_set_motor_fct (mac_iwm_t *iwm, void *ext, void *fct)
@@ -1133,6 +1163,14 @@ void mac_iwm_read (mac_iwm_t *iwm, mac_iwm_drive_t *drv)
 	data = drv->cur_track->data;
 
 	while (drv->read_pos != drv->cur_track_pos) {
+		while ((drv->evt != NULL) && (drv->evt->pos == drv->read_pos)) {
+			if (drv->evt->type == PRI_EVENT_WEAK) {
+				drv->weak_mask |= drv->evt->val & 0xffffffff;
+			}
+
+			drv->evt = drv->evt->next;
+		}
+
 		iwm->shift = (iwm->shift << 1) | ((data[p] & m) != 0);
 
 		if (iwm->shift & 1) {
@@ -1140,12 +1178,18 @@ void mac_iwm_read (mac_iwm_t *iwm, mac_iwm_drive_t *drv)
 		}
 		else {
 			iwm->read_zero_cnt += 1;
+		}
 
-			if (iwm->read_zero_cnt >= 8) {
-				iwm->read_zero_cnt = 0;
+		if ((drv->weak_mask & 0x80000000) || (iwm->read_zero_cnt > 3)) {
+			if (iwm_get_random (iwm)) {
 				iwm->shift |= 1;
 			}
+			else {
+				iwm->shift &= ~1U;
+			}
 		}
+
+		drv->weak_mask <<= 1;
 
 		drv->read_pos += 1;
 
@@ -1153,6 +1197,7 @@ void mac_iwm_read (mac_iwm_t *iwm, mac_iwm_drive_t *drv)
 			drv->read_pos = 0;
 			p = 0;
 			m = 0x80;
+			drv->evt = drv->cur_track->evt;
 		}
 		else if (m == 1) {
 			m = 0x80;

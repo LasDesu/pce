@@ -61,6 +61,9 @@ typedef struct {
 	unsigned long   cur_track_pos;
 	unsigned long   cur_track_len;
 
+	pri_evt_t       *evt;
+	unsigned long   weak_mask;
+
 	unsigned long   pwm_pos;
 	unsigned long   pwm_len;
 
@@ -98,6 +101,8 @@ typedef struct {
 	unsigned        read_zero_cnt;
 
 	unsigned long   pwm_val;
+
+	unsigned long   rand;
 
 	mac_iwm_drive_t drv[MAC_IWM_DRIVES];
 	mac_iwm_drive_t *curdrv;
