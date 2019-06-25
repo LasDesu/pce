@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/main.c                                         *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -194,7 +194,7 @@ void print_help (void)
 		"  ibm-mfm, ibm-mfm-dd-300, ibm-mfm-hd-300, ibm-mfm-hd-360\n"
 		"\n"
 		"file formats are:\n"
-		"  pri, tc\n"
+		"  pri, tc, woz\n"
 		"\n"
 		"track attributes are:\n"
 		"  clock, data, size\n",
