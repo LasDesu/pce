@@ -142,7 +142,7 @@ void print_help (void)
 		"  pri\n"
 		"\n"
 		"file formats are:\n"
-		"  pfi, raw, scp\n",
+		"  a2r, pfi, raw, scp\n",
 		stdout
 	);
 
