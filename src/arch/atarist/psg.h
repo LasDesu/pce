@@ -24,6 +24,9 @@
 #define PCE_ATARIST_PSG_H 1
 
 
+#include <stdint.h>
+#include <stdio.h>
+
 #include <drivers/sound/sound.h>
 
 

@@ -31,7 +31,7 @@
 #include <drivers/pri/pri.h>
 #include <drivers/pri/pri-img.h>
 
-#include <inttypes.h>
+#include <stdint.h>
 #include <stdio.h>
 
 

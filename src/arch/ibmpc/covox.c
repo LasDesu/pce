@@ -23,6 +23,7 @@
 #include "main.h"
 #include "covox.h"
 
+#include <stdint.h>
 #include <stdlib.h>
 
 #include <drivers/sound/sound.h>

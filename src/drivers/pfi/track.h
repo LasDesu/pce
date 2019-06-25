@@ -24,7 +24,7 @@
 #define PFI_TRACK_H 1
 
 
-#include <inttypes.h>
+#include <stdint.h>
 
 
 typedef struct {

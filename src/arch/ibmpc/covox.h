@@ -24,8 +24,9 @@
 #define PCE_IBMPC_COVOX_H 1
 
 
-#include <drivers/sound/sound.h>
+#include <stdint.h>
 
+#include <drivers/sound/sound.h>
 
 #define PC_COVOX_BUF  2048
 #define PC_COVOX_FIFO 16

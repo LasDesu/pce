@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/atarist/psg_vol.h                                   *
  * Created:     2015-05-20 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2015 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2015-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -18,6 +18,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
  * Public License for more details.                                          *
  *****************************************************************************/
+
+
+#include <stdint.h>
+
 
 /*
  * Sixteen level by Three voice YM2149 voltab16[C][B][A]
