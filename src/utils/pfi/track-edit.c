@@ -244,9 +244,14 @@ int pfi_set_rpm (pfi_img_t *img, double rpm)
 static
 int pfi_set_rpm_mac_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
 {
+	unsigned      speed;
 	unsigned long clk, len;
 	double        rpm, rat;
 	unsigned long mul, div;
+
+	static double rpmtab_490[] = {
+		393.5641, 429.3426, 472.2769, 524.7521, 590.3461
+	};
 
 	static double rpmtab_500[] = {
 		401.9241, 438.4626, 482.3089, 535.8988, 602.8861
@@ -256,7 +261,14 @@ int pfi_set_rpm_mac_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 		return (0);
 	}
 
-	rpm = rpmtab_500[(c < 80) ? (c / 16) : 4];
+	speed = *(unsigned *) opaque;
+
+	if (speed == 1) {
+		rpm = rpmtab_490[(c < 80) ? (c / 16) : 4];
+	}
+	else {
+		rpm = rpmtab_500[(c < 80) ? (c / 16) : 4];
+	}
 
 	clk = pfi_trk_get_clock (trk);
 	len = trk->index[trk->index_cnt - 1] - trk->index[0];
@@ -283,9 +295,22 @@ int pfi_set_rpm_mac_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 	return (0);
 }
 
-int pfi_set_rpm_mac (pfi_img_t *img)
+int pfi_set_rpm_mac_490 (pfi_img_t *img)
 {
-	return (pfi_for_all_tracks (img, pfi_set_rpm_mac_cb, NULL));
+	unsigned speed;
+
+	speed = 1;
+
+	return (pfi_for_all_tracks (img, pfi_set_rpm_mac_cb, &speed));
+}
+
+int pfi_set_rpm_mac_500 (pfi_img_t *img)
+{
+	unsigned speed;
+
+	speed = 2;
+
+	return (pfi_for_all_tracks (img, pfi_set_rpm_mac_cb, &speed));
 }
 
 

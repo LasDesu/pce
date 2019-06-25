@@ -129,7 +129,9 @@ void print_help (void)
 		"  scale <factor>         Scale tracks by factor\n"
 		"  set-clock <clock>      Set the clock rate\n"
 		"  set-rpm <rpm>          Set average RPM\n"
-		"  set-rpm-mac            Set Macintosh RPMs\n"
+		"  set-rpm-mac            Set Macintosh RPMs at 500 kbit/s\n"
+		"  set-rpm-mac-490        Set Macintosh RPMs at 489.6 kbit/s\n"
+		"  set-rpm-mac-500        Set Macintosh RPMs at 500 kbit/s\n"
 		"  shift-index <offset>   Shift the index by offset clock cycles\n"
 		"\n"
 		"parameters are:\n"
@@ -415,7 +417,13 @@ int pfi_operation (pfi_img_t **img, const char *op, int argc, char **argv)
 		r = pfi_set_rpm (*img, rpm);
 	}
 	else if (strcmp (op, "set-rpm-mac") == 0) {
-		r = pfi_set_rpm_mac (*img);
+		r = pfi_set_rpm_mac_500 (*img);
+	}
+	else if (strcmp (op, "set-rpm-mac-490") == 0) {
+		r = pfi_set_rpm_mac_490 (*img);
+	}
+	else if (strcmp (op, "set-rpm-mac-500") == 0) {
+		r = pfi_set_rpm_mac_500 (*img);
 	}
 	else if (strcmp (op, "set-clock") == 0) {
 		unsigned long clk;

@@ -91,7 +91,8 @@ int pfi_slack (pfi_img_t *img, const char *str);
 int pfi_scale_tracks (pfi_img_t *img, double factor);
 int pfi_set_clock (pfi_img_t *img, unsigned long clock);
 int pfi_set_rpm (pfi_img_t *img, double rpm);
-int pfi_set_rpm_mac (pfi_img_t *img);
+int pfi_set_rpm_mac_490 (pfi_img_t *img);
+int pfi_set_rpm_mac_500 (pfi_img_t *img);
 int pfi_shift_index (pfi_img_t *img, long ofs);
 
 
