@@ -83,7 +83,7 @@ static const unsigned char gcr_dec_tab[256] = {
 unsigned long pri_get_mac_gcr_track_length (unsigned c)
 {
 	static unsigned long tab[5] = {
-		76142, 69930, 63559, 57142, 50847
+		74640, 68240, 62200, 55980, 49760
 	};
 
 	if (c < 80) {

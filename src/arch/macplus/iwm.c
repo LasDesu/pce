@@ -122,21 +122,11 @@ void iwm_drv_free (mac_iwm_drive_t *drv)
 	}
 }
 
-/*
- * CLK = (0x4000000/x)*8
- * BIT = CLK/ICLK*500000
- * BIT = 8*(0x4000000/x)/ICLK*500000
- * tracks  0-15: [0x11e9 0x1135]  [74734 77788]  76261
- * tracks 16-31: [0x138a 0x12c6]  [68505 71298]  69902
- * tracks 32-47: [0x157f 0x14a7]  [62265 64813]  63539
- * tracks 48-63: [0x17e2 0x16f2]  [56046 58333]  57190
- * tracks 64-79: [0x1ade 0x19d0]  [49821 51854]  50838
-*/
 static
 unsigned long iwm_drv_get_track_length (unsigned cyl)
 {
 	static unsigned long length_tab[5] = {
-		76262, 69902, 63540, 57190, 50838
+		74640, 68240, 62200, 55980, 49760
 	};
 
 	if (cyl > 79) {

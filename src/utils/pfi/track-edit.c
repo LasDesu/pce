@@ -247,15 +247,16 @@ int pfi_set_rpm_mac_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 	unsigned long clk, len;
 	double        rpm, rat;
 	unsigned long mul, div;
-	static double rpmtab[] = {
-		393.38, 429.17, 472.14, 524.57, 590.11
+
+	static double rpmtab_500[] = {
+		401.9241, 438.4626, 482.3089, 535.8988, 602.8861
 	};
 
 	if (trk->index_cnt < 2) {
 		return (0);
 	}
 
-	rpm = rpmtab[(c < 80) ? (c / 16) : 4];
+	rpm = rpmtab_500[(c < 80) ? (c / 16) : 4];
 
 	clk = pfi_trk_get_clock (trk);
 	len = trk->index[trk->index_cnt - 1] - trk->index[0];

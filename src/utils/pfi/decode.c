@@ -547,19 +547,13 @@ int pfi_decode_pri_trk_cb (pfi_img_t *img, pfi_trk_t *strk, unsigned long c, uns
 static
 pri_img_t *pfi_decode_pri (pfi_img_t *img, unsigned mode, unsigned long rate)
 {
+	unsigned            i;
 	struct decode_pri_s par;
+	unsigned long       rate_mac[80];
 
-	static unsigned long rate_mac[80] = {
-		381310, 381310, 381310, 381310, 381310, 381310, 381310, 381310,
-		381310, 381310, 381310, 381310, 381310, 381310, 381310, 381310,
-		349510, 349510, 349510, 349510, 349510, 349510, 349510, 349510,
-		349510, 349510, 349510, 349510, 349510, 349510, 349510, 349510,
-		317700, 317700, 317700, 317700, 317700, 317700, 317700, 317700,
-		317700, 317700, 317700, 317700, 317700, 317700, 317700, 317700,
-		285950, 285950, 285950, 285950, 285950, 285950, 285950, 285950,
-		285950, 285950, 285950, 285950, 285950, 285950, 285950, 285950,
-		254190, 254190, 254190, 254190, 254190, 254190, 254190, 254190,
-		254190, 254190, 254190, 254190, 254190, 254190, 254190, 254190,
+	static unsigned long rate_mac_500[] = {
+		373205, 342104, 311004, 279904, 248803
+
 	};
 
 	if ((par.img = pri_img_new()) == NULL) {
@@ -570,6 +564,10 @@ pri_img_t *pfi_decode_pri (pfi_img_t *img, unsigned mode, unsigned long rate)
 	par.revolution = par_revolution;
 
 	if (mode == MODE_MAC_DD) {
+		for (i = 0; i < 80; i++) {
+			rate_mac[i] = rate_mac_500[i / 16];
+		}
+
 		par.rate_cnt = 80;
 		par.rate = rate_mac;
 	}
