@@ -3,7 +3,7 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * File name:   src/utils/pfi/export.c                                       *
+ * File name:   src/utils/pfi/text.c                                         *
  * Created:     2012-01-20 by Hampa Hug <hampa@hampa.ch>                     *
  * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
@@ -22,16 +22,18 @@
 
 #include "main.h"
 
-#include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <drivers/pfi/pfi.h>
 
 
 static
-int pfi_export_track_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
+int pfi_decode_text_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
 {
+	unsigned col, idx;
 	uint32_t val, ofs;
 	FILE     *fp;
 
@@ -42,20 +44,47 @@ int pfi_export_track_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsign
 
 	pfi_trk_rewind (trk);
 
+	col = 0;
+	idx = 0;
+
 	while (pfi_trk_get_pulse (trk, &val, &ofs) == 0) {
 		if ((val == 0) || (ofs < val)) {
-			fprintf (fp, "INDEX %lu\n", (unsigned long) ofs);
+			if (col > 0) {
+				fputc ('\n', fp);
+				col = 0;
+			}
+
+			idx += 1;
+
+			if (trk->index_cnt > idx) {
+				fprintf (fp, "\n# Revolution %u", idx);
+			}
+
+			fprintf (fp, "\nINDEX %lu\n\n", (unsigned long) ofs);
 		}
 
 		if (val > 0) {
-			fprintf (fp, "%3lu\n", (unsigned long) val);
+			if (col > 0) {
+				fputc (' ', fp);
+			}
+
+			fprintf (fp, "%3lu", (unsigned long) val);
+
+			if (++col >= 16) {
+				fputc ('\n', fp);
+				col = 0;
+			}
 		}
+	}
+
+	if (col > 0) {
+		fputc ('\n', fp);
 	}
 
 	return (0);
 }
 
-int pfi_export_tracks (pfi_img_t *img, const char *fname)
+int pfi_decode_text (pfi_img_t *img, const char *fname)
 {
 	int  r;
 	FILE *fp;
@@ -64,7 +93,7 @@ int pfi_export_tracks (pfi_img_t *img, const char *fname)
 		return (1);
 	}
 
-	r = pfi_for_all_tracks (img, pfi_export_track_cb, fp);
+	r = pfi_for_all_tracks (img, pfi_decode_text_cb, fp);
 
 	fclose (fp);
 
@@ -171,7 +200,7 @@ int pfi_parse_ulong (FILE *fp, unsigned long *val, int first)
 }
 
 static
-int pfi_import_tracks_fp (pfi_img_t *img, FILE *fp)
+int pfi_encode_text_fp (pfi_img_t *img, FILE *fp)
 {
 	int           c;
 	unsigned long tc, th, val, pos;
@@ -225,6 +254,9 @@ int pfi_import_tracks_fp (pfi_img_t *img, FILE *fp)
 					pfi_trk_set_clock (trk, val);
 				}
 			}
+			else if (strcasecmp (str, "END") == 0) {
+				return (0);
+			}
 			else if (strcasecmp (str, "INDEX") == 0) {
 				if (pfi_parse_ulong (fp, &val, 0)) {
 					return (1);
@@ -237,6 +269,9 @@ int pfi_import_tracks_fp (pfi_img_t *img, FILE *fp)
 				if (pfi_trk_add_index (trk, pos + val)) {
 					return (1);
 				}
+			}
+			else {
+				fprintf (stderr, "mark: %s\n", str);
 			}
 		}
 		else if ((c >= '0') && (c <= '9')) {
@@ -257,7 +292,7 @@ int pfi_import_tracks_fp (pfi_img_t *img, FILE *fp)
 	}
 }
 
-int pfi_import_tracks (pfi_img_t *img, const char *fname)
+int pfi_encode_text (pfi_img_t *img, const char *fname)
 {
 	int  r;
 	FILE *fp;
@@ -266,7 +301,7 @@ int pfi_import_tracks (pfi_img_t *img, const char *fname)
 		return (1);
 	}
 
-	r = pfi_import_tracks_fp (img, fp);
+	r = pfi_encode_text_fp (img, fp);
 
 	fclose (fp);
 

@@ -127,6 +127,9 @@ int pfi_encode (pfi_img_t *img, const char *type, const char *fname)
 	if (strcmp (type, "pri") == 0) {
 		return (pfi_encode_pri (img, fname));
 	}
+	else if (strcmp (type, "text") == 0) {
+		return (pfi_encode_text (img, fname));
+	}
 
 	return (1);
 }

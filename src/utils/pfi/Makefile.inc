@@ -10,8 +10,8 @@ PFI_UTIL_BAS := \
 	decode \
 	delete \
 	encode \
-	export \
 	info \
+	text \
 	track-edit \
 	main
 
@@ -36,8 +36,8 @@ $(rel)/comment.o:    $(rel)/comment.c
 $(rel)/decode.o:     $(rel)/decode.c
 $(rel)/delete.o:     $(rel)/delete.c
 $(rel)/encode.o:     $(rel)/encode.c
-$(rel)/export.o:     $(rel)/export.c
 $(rel)/info.o:       $(rel)/info.c
+$(rel)/text.o:       $(rel)/text.c
 $(rel)/track-edit.o: $(rel)/track-edit.c
 $(rel)/main.o:       $(rel)/main.c
 

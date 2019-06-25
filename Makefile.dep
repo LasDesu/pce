@@ -2923,12 +2923,6 @@ src/utils/pfi/encode.o: src/utils/pfi/encode.c \
 	src/drivers/pri/pri.h \
 	src/utils/pfi/main.h
 
-src/utils/pfi/export.o: src/utils/pfi/export.c \
-	src/config.h \
-	src/drivers/pfi/pfi.h \
-	src/drivers/pfi/track.h \
-	src/utils/pfi/main.h
-
 src/utils/pfi/info.o: src/utils/pfi/info.c \
 	src/config.h \
 	src/drivers/pfi/pfi.h \
@@ -2945,6 +2939,12 @@ src/utils/pfi/main.o: src/utils/pfi/main.c \
 	src/drivers/psi/psi-img-psi.h \
 	src/drivers/psi/psi.h \
 	src/lib/getopt.h \
+	src/utils/pfi/main.h
+
+src/utils/pfi/text.o: src/utils/pfi/text.c \
+	src/config.h \
+	src/drivers/pfi/pfi.h \
+	src/drivers/pfi/track.h \
 	src/utils/pfi/main.h
 
 src/utils/pfi/track-edit.o: src/utils/pfi/track-edit.c \

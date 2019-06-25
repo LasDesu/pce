@@ -86,6 +86,9 @@ int pfi_import_tracks (pfi_img_t *img, const char *fname);
 int pfi_print_info (pfi_img_t *img);
 int pfi_list_tracks (pfi_img_t *img, int verb);
 
+int pfi_decode_text (pfi_img_t *img, const char *fname);
+int pfi_encode_text (pfi_img_t *img, const char *fname);
+
 int pfi_revolutions (pfi_img_t *img, const char *str);
 int pfi_slack (pfi_img_t *img, const char *str);
 int pfi_scale_tracks (pfi_img_t *img, double factor);

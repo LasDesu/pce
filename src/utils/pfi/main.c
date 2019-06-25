@@ -369,20 +369,6 @@ int pfi_operation (pfi_img_t **img, const char *op, int argc, char **argv)
 
 		r = pfi_encode (*img, optarg1[0], optarg2[0]);
 	}
-	else if (strcmp (op, "export") == 0) {
-		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {
-			return (1);
-		}
-
-		r = pfi_export_tracks (*img, optarg1[0]);
-	}
-	else if (strcmp (op, "import") == 0) {
-		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {
-			return (1);
-		}
-
-		r = pfi_import_tracks (*img, optarg1[0]);
-	}
 	else if (strcmp (op, "info") == 0) {
 		r = pfi_print_info (*img);
 	}

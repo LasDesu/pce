@@ -660,6 +660,9 @@ int pfi_decode (pfi_img_t *img, const char *type, unsigned long rate, const char
 	else if (strcmp (type, "raw") == 0) {
 		return (pfi_decode_bits (img, type, rate, fname));
 	}
+	else if (strcmp (type, "text") == 0) {
+		return (pfi_decode_text (img, fname));
+	}
 
 	return (1);
 }
