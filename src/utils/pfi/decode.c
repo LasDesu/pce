@@ -33,8 +33,9 @@
 #include <drivers/pri/pri-img.h>
 
 
-#define MODE_NONE   0
-#define MODE_MAC_DD 1
+#define MODE_NONE       0
+#define MODE_MAC_DD_490 1
+#define MODE_MAC_DD_500 2
 
 
 struct decode_bits_s {
@@ -551,6 +552,10 @@ pri_img_t *pfi_decode_pri (pfi_img_t *img, unsigned mode, unsigned long rate)
 	struct decode_pri_s par;
 	unsigned long       rate_mac[80];
 
+	static unsigned long rate_mac_490[] = {
+		381132, 349371, 317610, 285849, 254088
+	};
+
 	static unsigned long rate_mac_500[] = {
 		373205, 342104, 311004, 279904, 248803
 
@@ -563,7 +568,15 @@ pri_img_t *pfi_decode_pri (pfi_img_t *img, unsigned mode, unsigned long rate)
 	par.default_rate = rate;
 	par.revolution = par_revolution;
 
-	if (mode == MODE_MAC_DD) {
+	if (mode == MODE_MAC_DD_490) {
+		for (i = 0; i < 80; i++) {
+			rate_mac[i] = rate_mac_490[i / 16];
+		}
+
+		par.rate_cnt = 80;
+		par.rate = rate_mac;
+	}
+	else if (mode == MODE_MAC_DD_500) {
 		for (i = 0; i < 80; i++) {
 			rate_mac[i] = rate_mac_500[i / 16];
 		}
@@ -630,7 +643,13 @@ int pfi_decode (pfi_img_t *img, const char *type, unsigned long rate, const char
 		return (pfi_decode_bits_pri (img, MODE_NONE, rate, fname));
 	}
 	else if (strcmp (type, "pri-mac") == 0) {
-		return (pfi_decode_bits_pri (img, MODE_MAC_DD, rate, fname));
+		return (pfi_decode_bits_pri (img, MODE_MAC_DD_500, rate, fname));
+	}
+	else if (strcmp (type, "pri-mac-490") == 0) {
+		return (pfi_decode_bits_pri (img, MODE_MAC_DD_490, rate, fname));
+	}
+	else if (strcmp (type, "pri-mac-500") == 0) {
+		return (pfi_decode_bits_pri (img, MODE_MAC_DD_500, rate, fname));
 	}
 	else if (strcmp (type, "mfm-raw") == 0) {
 		return (pfi_decode_bits (img, type, rate, fname));

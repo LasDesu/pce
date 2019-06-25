@@ -107,9 +107,17 @@ Valid decode types are:
 Save the decoded image as a PRI image.
 .TP
 .B pri-mac
+This is synonymous with \fBpri-mac-500\fR.
+.TP
+.B pri-mac-490
 Save the decoded image as a PRI image. This decode type also overrides
 the bitrate set with the \fB-r\fR option with the apporpriate variable
-bitrates used by Macintosh double density disk drives.
+bitrates used by Macintosh double density disk drives at 489.6 kbit/s.
+.TP
+.B pri-mac-500
+Save the decoded image as a PRI image. This decode type also overrides
+the bitrate set with the \fB-r\fR option with the apporpriate variable
+bitrates used by Macintosh double density disk drives at 500 kbit/s.
 .RE
 .TP
 .B "delete"
