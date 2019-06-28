@@ -796,6 +796,9 @@ int txt_encode_pri0 (pri_text_t *ctx)
 		else if (feof (ctx->fp)) {
 			break;
 		}
+		else {
+			return (1);
+		}
 	}
 
 	if (txt_enc_track_finish (ctx)) {

@@ -661,7 +661,7 @@ int mac_enc_check (pri_text_t *ctx)
 		return (mac_enc_check_stop (ctx, 3));
 	}
 
-	return (0);
+	return (1);
 }
 
 static
