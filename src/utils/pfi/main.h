@@ -104,6 +104,7 @@ int pfi_set_rpm (pfi_img_t *img, double rpm);
 int pfi_set_rpm_mac_490 (pfi_img_t *img);
 int pfi_set_rpm_mac_500 (pfi_img_t *img);
 int pfi_shift_index (pfi_img_t *img, long ofs);
+int pfi_wpcom (pfi_img_t *img);
 
 
 #endif

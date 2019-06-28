@@ -330,3 +330,45 @@ int pfi_shift_index (pfi_img_t *img, long ofs)
 {
 	return (pfi_for_all_tracks (img, pfi_shift_index_cb, &ofs));
 }
+
+
+static
+int pfi_wpcom_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
+{
+	unsigned long i, n;
+	uint32_t      p1, p2, p3;
+	uint32_t      dif;
+
+	if (trk->pulse_cnt < 2) {
+		return (0);
+	}
+
+	n = trk->pulse_cnt - 1;
+
+	for (i = 1; i < n; i++) {
+		p1 = trk->pulse[i - 1];
+		p2 = trk->pulse[i];
+		p3 = trk->pulse[i + 1];
+
+		if ((2 * p2) >= (p1 + p3)) {
+			continue;
+		}
+
+		dif = (p1 + p3 - 2 * p2) / 8;
+
+		if (dif >= p2) {
+			continue;
+		}
+
+		trk->pulse[i - 1] += dif / 2;
+		trk->pulse[i] -= dif;
+		trk->pulse[i + 1] += (dif + 1) / 2;
+	}
+
+	return (0);
+}
+
+int pfi_wpcom (pfi_img_t *img)
+{
+	return (pfi_for_all_tracks (img, pfi_wpcom_cb, NULL));
+}

@@ -133,6 +133,7 @@ void print_help (void)
 		"  set-rpm-mac-490        Set Macintosh RPMs at 489.6 kbit/s\n"
 		"  set-rpm-mac-500        Set Macintosh RPMs at 500 kbit/s\n"
 		"  shift-index <offset>   Shift the index by offset clock cycles\n"
+		"  wpcom                  Simulate write precompensation\n"
 		"\n"
 		"parameters are:\n"
 		"  clock-tolerance, fold-max, fold-mode, pfi-clock, slack1, slack2, weak-bits\n"
@@ -563,6 +564,9 @@ int pfi_operation (pfi_img_t **img, const char *op, int argc, char **argv)
 		}
 
 		r = pfi_slack (*img, optarg1[0]);
+	}
+	else if (strcmp (op, "wpcom") == 0) {
+		r = pfi_wpcom (*img);
 	}
 	else {
 		fprintf (stderr, "%s: unknown operation (%s)\n", arg0, op);
