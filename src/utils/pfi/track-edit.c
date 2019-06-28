@@ -121,7 +121,11 @@ int pfi_slack (pfi_img_t *img, const char *str)
 {
 	unsigned revs[2];
 
-	par_slack1 = strtoul (str, NULL, 0) % 100;
+	if (pfi_parse_uint (str, &par_slack1)) {
+		return (1);
+	}
+
+	par_slack1 %= 100;
 	par_slack2 = par_slack1;
 
 	revs[0] = 0;

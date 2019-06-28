@@ -102,7 +102,7 @@ int pfi_decode_text (pfi_img_t *img, const char *fname)
 
 
 static
-int pfi_skip_line (FILE *fp)
+int txt_skip_line (FILE *fp)
 {
 	int c;
 
@@ -120,7 +120,7 @@ int pfi_skip_line (FILE *fp)
 }
 
 static
-int pfi_skip_space (FILE *fp)
+int txt_skip_space (FILE *fp)
 {
 	int c;
 
@@ -137,7 +137,7 @@ int pfi_skip_space (FILE *fp)
 }
 
 static
-int pfi_parse_ident (FILE *fp, char *str, unsigned max, int first)
+int txt_parse_ident (FILE *fp, char *str, unsigned max, int first)
 {
 	int      c;
 	unsigned i;
@@ -172,12 +172,12 @@ int pfi_parse_ident (FILE *fp, char *str, unsigned max, int first)
 }
 
 static
-int pfi_parse_ulong (FILE *fp, unsigned long *val, int first)
+int txt_parse_ulong (FILE *fp, unsigned long *val, int first)
 {
 	int c;
 
 	if (first == 0) {
-		c = pfi_skip_space (fp);
+		c = txt_skip_space (fp);
 
 		if ((c < '0') || (c > '9')) {
 			return (1);
@@ -217,21 +217,21 @@ int pfi_encode_text_fp (pfi_img_t *img, FILE *fp)
 			return (0);
 		}
 		else if (c == '#') {
-			if (pfi_skip_line (fp)) {
+			if (txt_skip_line (fp)) {
 				return (1);
 			}
 		}
 		else if (((c >= 'a') && (c <= 'z')) || ((c >= 'A' && c <= 'Z'))) {
-			if (pfi_parse_ident (fp, str, 256, c)) {
+			if (txt_parse_ident (fp, str, 256, c)) {
 				return (1);
 			}
 
 			if (strcasecmp (str, "TRACK") == 0) {
-				if (pfi_parse_ulong (fp, &tc, 0)) {
+				if (txt_parse_ulong (fp, &tc, 0)) {
 					return (1);
 				}
 
-				if (pfi_parse_ulong (fp, &th, 0)) {
+				if (txt_parse_ulong (fp, &th, 0)) {
 					return (1);
 				}
 
@@ -246,7 +246,7 @@ int pfi_encode_text_fp (pfi_img_t *img, FILE *fp)
 				pos = 0;
 			}
 			else if (strcasecmp (str, "CLOCK") == 0) {
-				if (pfi_parse_ulong (fp, &val, 0)) {
+				if (txt_parse_ulong (fp, &val, 0)) {
 					return (1);
 				}
 
@@ -258,7 +258,7 @@ int pfi_encode_text_fp (pfi_img_t *img, FILE *fp)
 				return (0);
 			}
 			else if (strcasecmp (str, "INDEX") == 0) {
-				if (pfi_parse_ulong (fp, &val, 0)) {
+				if (txt_parse_ulong (fp, &val, 0)) {
 					return (1);
 				}
 
@@ -271,11 +271,11 @@ int pfi_encode_text_fp (pfi_img_t *img, FILE *fp)
 				}
 			}
 			else {
-				fprintf (stderr, "mark: %s\n", str);
+				return (1);
 			}
 		}
 		else if ((c >= '0') && (c <= '9')) {
-			if (pfi_parse_ulong (fp, &val, c)) {
+			if (txt_parse_ulong (fp, &val, c)) {
 				return (1);
 			}
 

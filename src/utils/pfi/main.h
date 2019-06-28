@@ -61,6 +61,13 @@ extern unsigned      par_fold_window;
 extern unsigned long par_fold_max;
 
 
+int pfi_parse_double (const char *str, double *val);
+int pfi_parse_long (const char *str, long *val);
+int pfi_parse_ulong (const char *str, unsigned long *val);
+int pfi_parse_uint (const char *str, unsigned *val);
+int pfi_parse_bool (const char *str, int *val);
+int pfi_parse_rate (const char *str, unsigned long *val);
+
 int pfi_for_all_tracks (pfi_img_t *img, pfi_trk_cb fct, void *opaque);
 int pfi_parse_range (const char *str, unsigned long *v1, unsigned long *v2, char *all, char *inv);
 

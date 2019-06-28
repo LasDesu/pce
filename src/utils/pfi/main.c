@@ -165,6 +165,122 @@ void print_version (void)
 	fflush (stdout);
 }
 
+int pfi_parse_double (const char *str, double *val)
+{
+	char *end;
+
+	if ((str == NULL) || (*str == 0)) {
+		fprintf (stderr, "%s: bad value (%s)\n", arg0, str);
+		return (1);
+	}
+
+	*val = strtod (str, &end);
+
+	if ((end != NULL) && (*end == 0)) {
+		fprintf (stderr, "%s: bad value (%s)\n", arg0, str);
+		return (0);
+	}
+
+	return (1);
+}
+
+int pfi_parse_long (const char *str, long *val)
+{
+	char *end;
+
+	if ((str == NULL) || (*str == 0)) {
+		fprintf (stderr, "%s: bad value (%s)\n", arg0, str);
+		return (1);
+	}
+
+	*val = strtol (str, &end, 0);
+
+	if ((end != NULL) && (*end == 0)) {
+		return (0);
+	}
+
+	fprintf (stderr, "%s: bad value (%s)\n", arg0, str);
+
+	return (1);
+}
+
+int pfi_parse_ulong (const char *str, unsigned long *val)
+{
+	char *end;
+
+	if ((str == NULL) || (*str == 0)) {
+		fprintf (stderr, "%s: bad value (%s)\n", arg0, str);
+		return (1);
+	}
+
+	*val = strtoul (str, &end, 0);
+
+	if ((end != NULL) && (*end == 0)) {
+		return (0);
+	}
+
+	fprintf (stderr, "%s: bad value (%s)\n", arg0, str);
+
+	return (1);
+}
+
+int pfi_parse_uint (const char *str, unsigned *val)
+{
+	unsigned long tmp;
+
+	if (pfi_parse_ulong (str, &tmp)) {
+		return (1);
+	}
+
+	*val = tmp;
+
+	return (0);
+}
+
+int pfi_parse_bool (const char *str, int *val)
+{
+	unsigned long tmp;
+
+	if (pfi_parse_ulong (str, &tmp)) {
+		return (1);
+	}
+
+	*val = tmp != 0;
+
+	return (0);
+}
+
+int pfi_parse_rate (const char *str, unsigned long *val)
+{
+	char *end;
+
+	if ((str == NULL) || (*str == 0)) {
+		fprintf (stderr, "%s: bad value (%s)\n", arg0, str);
+		return (1);
+	}
+
+	*val = strtoul (str, &end, 0);
+
+	if ((end == NULL) || (*end == 0)) {
+		return (0);
+	}
+
+	if ((*end == 'k') || (*end == 'K')) {
+		*val *= 1000;
+		end += 1;
+	}
+	else if ((*end == 'm') || (*end == 'M')) {
+		*val *= 1000000;
+		end += 1;
+	}
+
+	if (*end != 0) {
+		fprintf (stderr, "%s: bad value (%s)\n", arg0, str);
+		return (1);
+	}
+
+	return (0);
+}
 
 int pfi_parse_range (const char *str, unsigned long *v1, unsigned long *v2, char *all, char *inv)
 {
@@ -387,7 +503,9 @@ int pfi_operation (pfi_img_t **img, const char *op, int argc, char **argv)
 			return (1);
 		}
 
-		factor = strtod (optarg1[0], NULL);
+		if (pfi_parse_double (optarg1[0], &factor)) {
+			return (1);
+		}
 
 		r = pfi_scale_tracks (*img, factor);
 	}
@@ -398,7 +516,9 @@ int pfi_operation (pfi_img_t **img, const char *op, int argc, char **argv)
 			return (1);
 		}
 
-		rpm = strtod (optarg1[0], NULL);
+		if (pfi_parse_double (optarg1[0], &rpm)) {
+			return (1);
+		}
 
 		r = pfi_set_rpm (*img, rpm);
 	}
@@ -418,7 +538,9 @@ int pfi_operation (pfi_img_t **img, const char *op, int argc, char **argv)
 			return (1);
 		}
 
-		clk = strtoul (optarg1[0], NULL, 0);
+		if (pfi_parse_rate (optarg1[0], &clk)) {
+			return (1);
+		}
 
 		r = pfi_set_clock (*img, clk);
 	}
@@ -429,7 +551,9 @@ int pfi_operation (pfi_img_t **img, const char *op, int argc, char **argv)
 			return (1);
 		}
 
-		ofs = strtol (optarg1[0], NULL, 0);
+		if (pfi_parse_long (optarg1[0], &ofs)) {
+			return (1);
+		}
 
 		r = pfi_shift_index (*img, ofs);
 	}
@@ -526,10 +650,14 @@ static
 int pfi_set_parameter (const char *name, const char *val)
 {
 	if (strcmp (name, "clock-tolerance") == 0) {
-		par_clock_tolerance = strtoul (val, NULL, 0);
+		if (pfi_parse_ulong (val, &par_clock_tolerance)) {
+			return (1);
+		}
 	}
 	else if (strcmp (name, "fold-max") == 0) {
-		par_fold_max = strtoul (val, NULL, 0);
+		if (pfi_parse_ulong (val, &par_fold_max)) {
+			return (1);
+		}
 	}
 	else if (strcmp (name, "fold-mode") == 0) {
 		if (strcmp (val, "none") == 0) {
@@ -546,33 +674,58 @@ int pfi_set_parameter (const char *name, const char *val)
 		}
 	}
 	else if (strcmp (name, "fold-window") == 0) {
-		par_fold_window = strtoul (val, NULL, 0);
+		if (pfi_parse_uint (val, &par_fold_window)) {
+			return (1);
+		}
 	}
 	else if (strcmp (name, "pfi-clock") == 0) {
-		par_pfi_clock = strtoul (val, NULL, 0);
+		if (pfi_parse_rate (val, &par_pfi_clock)) {
+			return (1);
+		}
 	}
 	else if (strcmp (name, "slack") == 0) {
-		par_slack1 = strtoul (val, NULL, 0) % 100;
+		if (pfi_parse_uint (val, &par_slack1)) {
+			return (1);
+		}
+
+		par_slack1 %= 100;
 		par_slack2 = par_slack1;
 	}
 	else if (strcmp (name, "slack1") == 0) {
-		par_slack1 = strtoul (val, NULL, 0) % 100;
+		if (pfi_parse_uint (val, &par_slack1)) {
+			return (1);
+		}
+
+		par_slack1 %= 100;
 	}
 	else if (strcmp (name, "slack2") == 0) {
-		par_slack2 = strtoul (val, NULL, 0) % 100;
+		if (pfi_parse_uint (val, &par_slack2)) {
+			return (1);
+		}
+
+		par_slack2 %= 100;
 	}
 	else if (strcmp (name, "weak-bits") == 0) {
-		par_weak_bits = (strtoul (val, NULL, 0) != 0);
+		if (pfi_parse_bool (val, &par_weak_bits)) {
+			return (1);
+		}
 	}
 	else if (strcmp (name, "weak-bits-margin") == 0) {
-		par_weak_i1 = strtoul (val, NULL, 0);
+		if (pfi_parse_ulong (val, &par_weak_i1)) {
+			return (1);
+		}
+
 		par_weak_i2 = par_weak_i1;
 	}
 	else if (strcmp (name, "weak-bits-i1") == 0) {
-		par_weak_i1 = strtoul (val, NULL, 0);
+		if (pfi_parse_ulong (val, &par_weak_i1)) {
+			return (1);
+		}
 	}
 	else if (strcmp (name, "weak-bits-i2") == 0) {
-		par_weak_i2 = strtoul (val, NULL, 0);
+		if (pfi_parse_ulong (val, &par_weak_i2)) {
+			return (1);
+		}
 	}
 	else {
 		return (1);
@@ -712,15 +865,15 @@ int main (int argc, char **argv)
 			break;
 
 		case 'r':
-			par_data_rate = strtoul (optarg[0], NULL, 0);
-
-			if (par_data_rate <= 1000) {
-				par_data_rate *= 1000;
+			if (pfi_parse_rate (optarg[0], &par_data_rate)) {
+				return (1);
 			}
 			break;
 
 		case 'R':
-			par_revolution = strtoul (optarg[0], NULL, 0);
+			if (pfi_parse_uint (optarg[0], &par_revolution)) {
+				return (1);
+			}
 			break;
 
 		case 's':
