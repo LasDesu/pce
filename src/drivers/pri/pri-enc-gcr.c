@@ -136,51 +136,46 @@ void gcr_fill_track (pri_trk_t *trk)
 
 }
 
-static
-int gcr_checksum (unsigned char *dst, const unsigned char *src, int enc)
+int pri_mac_gcr_checksum (unsigned char *dst, const unsigned char *src, int enc)
 {
 	unsigned i;
-	unsigned chk[3], tmp, val;
+	unsigned mskenc, mskdec;
+	unsigned chk[4], val;
 
 	chk[0] = 0;
 	chk[1] = 0;
 	chk[2] = 0;
 
+	mskenc = enc ? 0xff : 0x00;
+	mskdec = ~mskenc & 0xff;
+
 	for (i = 0; i < 524; i++) {
 		if ((i % 3) == 0) {
-			chk[0] = ((chk[0] << 1) & 0x1fe) | ((chk[0] >> 7) & 0x01);
+			chk[2] = ((chk[2] << 1) & 0x1fe) | ((chk[2] >> 7) & 0x01);
 		}
 
-		val = src[i];
+		val = src[i] ^ (chk[2] & mskdec);
 
-		if (!enc) {
-			val ^= chk[0];
-		}
+		chk[0] += (val & 0xff) + ((chk[2] >> 8) & 1);
+		chk[2] &= 0xff;
 
-		chk[2] += (val & 0xff) + ((chk[0] >> 8) & 1);
-		chk[0] &= 0xff;
+		dst[i] = (val ^ (chk[2] & mskenc)) & 0xff;
 
-		if (enc) {
-			val ^= chk[0];
-		}
-
-		dst[i] = val & 0xff;
-
-		tmp = chk[2];
-		chk[2] = chk[1];
-		chk[1] = chk[0];
-		chk[0] = tmp;
+		chk[3] = chk[0];
+		chk[0] = chk[1];
+		chk[1] = chk[2];
+		chk[2] = chk[3];
 	}
 
-	chk[0] &= 0xff;
+	chk[2] &= 0xff;
 
 	if (enc) {
 		dst[524] = chk[1];
-		dst[525] = chk[0];
-		dst[526] = chk[2];
+		dst[525] = chk[2];
+		dst[526] = chk[0];
 	}
 	else {
-		if ((src[524] != chk[1]) || (src[525] != chk[0]) || (src[526] != chk[2])) {
+		if ((src[524] != chk[1]) || (src[525] != chk[2]) || (src[526] != chk[0])) {
 			return (1);
 		}
 	}
@@ -243,7 +238,7 @@ int gcr_decode_data (pri_trk_t *trk, unsigned char *dst)
 	buf[525] = (gcr_decode_byte (trk, 1) & 0x3f) | ((high << 2) & 0xc0);
 	buf[526] = (gcr_decode_byte (trk, 1) & 0x3f) | ((high << 4) & 0xc0);
 
-	if (gcr_checksum (dst, buf, 0)) {
+	if (pri_mac_gcr_checksum (dst, buf, 0)) {
 		return (1);
 	}
 
@@ -488,7 +483,7 @@ void pri_encode_gcr_sct (pri_trk_t *trk, unsigned char *src, unsigned c, unsigne
 	pri_trk_set_bits (trk, 0xd5aaad, 24);
 	pri_trk_set_bits (trk, gcr_enc_tab[s & 0x3f], 8);
 
-	gcr_checksum (buf, src, 1);
+	pri_mac_gcr_checksum (buf, src, 1);
 
 	p = buf;
 

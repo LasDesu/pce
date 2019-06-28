@@ -162,59 +162,6 @@ int mac_dec_event_occurred (pri_text_t *ctx, pri_evt_t *evt)
 	return (0);
 }
 
-static
-int gcr_checksum (unsigned char *dst, const unsigned char *src, int enc)
-{
-	unsigned i;
-	unsigned chk[3], tmp, val;
-
-	chk[0] = 0;
-	chk[1] = 0;
-	chk[2] = 0;
-
-	for (i = 0; i < 524; i++) {
-		if ((i % 3) == 0) {
-			chk[0] = ((chk[0] << 1) & 0x1fe) | ((chk[0] >> 7) & 0x01);
-		}
-
-		val = src[i];
-
-		if (!enc) {
-			val ^= chk[0];
-		}
-
-		chk[2] += (val & 0xff) + ((chk[0] >> 8) & 1);
-		chk[0] &= 0xff;
-
-		if (enc) {
-			val ^= chk[0];
-		}
-
-		dst[i] = val & 0xff;
-
-		tmp = chk[2];
-		chk[2] = chk[1];
-		chk[1] = chk[0];
-		chk[0] = tmp;
-	}
-
-	chk[0] &= 0xff;
-
-	if (enc) {
-		dst[524] = chk[1];
-		dst[525] = chk[0];
-		dst[526] = chk[2];
-	}
-	else {
-		if ((src[524] != chk[1]) || (src[525] != chk[0]) || (src[526] != chk[2])) {
-			return (1);
-		}
-	}
-
-	return (0);
-}
-
-
 int mac_decode_sync (pri_text_t *ctx)
 {
 	unsigned group_cnt, sync_cnt;
@@ -365,7 +312,7 @@ int mac_decode_data (pri_text_t *ctx)
 		return (0);
 	}
 
-	gcr_checksum (buf, buf, 0);
+	pri_mac_gcr_checksum (buf, buf, 0);
 
 	fprintf (ctx->fp, " %02X\n", s);
 	fprintf (ctx->fp, "CHECK START\n");

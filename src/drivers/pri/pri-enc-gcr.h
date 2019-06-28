@@ -29,6 +29,7 @@
 
 
 unsigned long pri_get_mac_gcr_track_length (unsigned c);
+int pri_mac_gcr_checksum (unsigned char *dst, const unsigned char *src, int enc);
 
 psi_trk_t *pri_decode_gcr_trk (pri_trk_t *trk, unsigned h);
 psi_img_t *pri_decode_gcr (pri_img_t *img);
