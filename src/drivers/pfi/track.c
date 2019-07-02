@@ -207,6 +207,12 @@ int pfi_trk_add_index (pfi_trk_t *trk, uint32_t clk)
 	unsigned i, max;
 	uint32_t *tmp;
 
+	for (i = 0; i < trk->index_cnt; i++) {
+		if (trk->index[i] == clk) {
+			return (0);
+		}
+	}
+
 	if ((trk->index_cnt + 1) > trk->index_max) {
 		max = (trk->index_max < 4) ? 4 : trk->index_max;
 
