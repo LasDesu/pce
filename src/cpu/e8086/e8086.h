@@ -160,6 +160,8 @@ typedef struct e8086_t {
 	unsigned short   int_cs;
 	unsigned short   int_ip;
 
+	unsigned short   reset_flags;
+
 	e86_opcode_f     op[256];
 
 	struct {

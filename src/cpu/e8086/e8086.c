@@ -90,6 +90,8 @@ void e86_init (e8086_t *c)
 	c->int_cs = 0;
 	c->int_ip = 0;
 
+	c->reset_flags = 0;
+
 	for (i = 0; i < 256; i++) {
 		c->op[i] = e86_opcodes[i];
 	}
@@ -461,7 +463,7 @@ void e86_reset (e8086_t *c)
 
 	e86_set_cs (c, 0xf000);
 	e86_set_ip (c, 0xfff0);
-	e86_set_flags (c, 0x0000);
+	e86_set_flags (c, c->reset_flags);
 
 	c->trap_flag = 0;
 
