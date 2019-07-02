@@ -37,6 +37,11 @@ system {
 	#   1: 512K, 640K, 832K
 	alt_mem_size = 0
 
+	# Fast boot
+	#
+	# If this option is set, the POST is skipped.
+	fastboot = 0
+
 	# The NVM backing file
 	#
 	# The NVM contents are read from and written back to this file.

@@ -708,6 +708,7 @@ static
 void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
 {
 	int           mem2;
+	int           fastboot;
 	unsigned long clock;
 	ini_sct_t     *sct;
 
@@ -722,9 +723,11 @@ void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
 
 	ini_get_bool (sct, "alt_mem_size", &mem2, 0);
 	ini_get_uint32 (sct, "clock", &clock, 6000000);
+	ini_get_bool (sct, "fastboot", &fastboot, 0);
 
-	pce_log_tag (MSG_INF, "SYSTEM:", "model=rc759 clock=%lu alt_mem_size=%d\n",
-		clock, mem2
+	pce_log_tag (MSG_INF, "SYSTEM:",
+		"model=rc759 clock=%lu alt_mem_size=%d fastboot=%d\n",
+		clock, mem2, fastboot
 	);
 
 	sim->cpu_clock_frq = clock;
@@ -733,6 +736,8 @@ void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
 	if (mem2) {
 		sim->flags |= RC759_FLAG_MEM2;
 	}
+
+	sim->fastboot = (fastboot != 0);
 }
 
 static
@@ -783,6 +788,10 @@ void rc759_setup_cpu (rc759_t *sim, ini_sct_t *ini)
 	}
 	else {
 		e86_set_ram (sim->cpu, NULL, 0);
+	}
+
+	if (sim->fastboot) {
+		sim->cpu->reset_flags = E86_FLG_C;
 	}
 }
 
