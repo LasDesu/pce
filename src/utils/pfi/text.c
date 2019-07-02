@@ -189,6 +189,39 @@ int txt_parse_ident (FILE *fp, char *str, unsigned max, int first)
 }
 
 static
+int txt_parse_hex (FILE *fp, unsigned long *val)
+{
+	int      c, r;
+	unsigned d;
+
+	r = 1;
+	*val = 0;
+
+	while (1) {
+		if ((c = fgetc (fp)) == EOF) {
+			return (r);
+		}
+
+		if ((c >= '0') && (c <= '9')) {
+			d = c - '0';
+		}
+		else if ((c >= 'A') && (c <= 'F')) {
+			d = c - 'A' + 10;
+		}
+		else if ((c >= 'a') && (c <= 'f')) {
+			d = c - 'a' + 10;
+		}
+		else {
+			ungetc (c, fp);
+			return (r);
+		}
+
+		*val = 16 * *val + d;
+		r = 0;
+	}
+}
+
+static
 int txt_parse_ulong (FILE *fp, unsigned long *val, int first)
 {
 	int c;
@@ -206,6 +239,10 @@ int txt_parse_ulong (FILE *fp, unsigned long *val, int first)
 	*val = first - '0';
 
 	c = fgetc (fp);
+
+	if ((c == 'x') || (c == 'X')) {
+		return (txt_parse_hex (fp, val));
+	}
 
 	while ((c >= '0') && (c <= '9')) {
 		*val = 10 * *val + (c - '0');
@@ -290,6 +327,21 @@ int pfi_encode_text_fp (pfi_img_t *img, FILE *fp)
 			else {
 				return (1);
 			}
+		}
+		else if (c == '$') {
+			if (txt_parse_hex (fp, &val)) {
+				return (1);
+			}
+
+			if (trk == NULL) {
+				return (1);
+			}
+
+			if (pfi_trk_add_pulse (trk, val)) {
+				return (1);
+			}
+
+			pos += val;
 		}
 		else if ((c >= '0') && (c <= '9')) {
 			if (txt_parse_ulong (fp, &val, c)) {
