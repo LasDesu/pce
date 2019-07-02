@@ -33,9 +33,10 @@
 static
 int pfi_decode_text_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
 {
-	unsigned col, idx;
-	uint32_t val, ofs;
-	FILE     *fp;
+	unsigned      col, row, idx;
+	uint32_t      val, ofs;
+	unsigned long total, index;
+	FILE          *fp;
 
 	fp = opaque;
 
@@ -45,7 +46,11 @@ int pfi_decode_text_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 	pfi_trk_rewind (trk);
 
 	col = 0;
+	row = 0;
 	idx = 0;
+
+	total = 0;
+	index = 0;
 
 	while (pfi_trk_get_pulse (trk, &val, &ofs) == 0) {
 		if ((val == 0) || (ofs < val)) {
@@ -55,15 +60,21 @@ int pfi_decode_text_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 			}
 
 			idx += 1;
+			row = 0;
 
 			if (trk->index_cnt > idx) {
 				fprintf (fp, "\n# Revolution %u", idx);
 			}
 
+			fprintf (fp, "\n# %lu + %lu", total, (unsigned long) ofs);
 			fprintf (fp, "\nINDEX %lu\n\n", (unsigned long) ofs);
+
+			index = total + ofs;
 		}
 
 		if (val > 0) {
+			total += val;
+
 			if (col > 0) {
 				fputc (' ', fp);
 			}
@@ -71,6 +82,12 @@ int pfi_decode_text_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 			fprintf (fp, "%3lu", (unsigned long) val);
 
 			if (++col >= 16) {
+				if (++row >= 8) {
+					fprintf (fp, "\t\t# %lu + %lu",
+						index, total - index
+					);
+					row = 0;
+				}
 				fputc ('\n', fp);
 				col = 0;
 			}
