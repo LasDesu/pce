@@ -309,6 +309,9 @@ int pfi_img_save_fp (FILE *fp, pfi_img_t *img, unsigned type)
 
 	case PFI_FORMAT_SCP:
 		return (pfi_save_scp (fp, img));
+
+	case PFI_FORMAT_A2R:
+		return (pfi_save_a2r (fp, img));
 	}
 
 	return (1);

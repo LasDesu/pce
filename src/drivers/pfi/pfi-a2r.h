@@ -29,7 +29,7 @@
 
 pfi_img_t *pfi_load_a2r (FILE *fp);
 
-int pfi_save_a2r (FILE *fp, const pfi_img_t *img);
+int pfi_save_a2r (FILE *fp, pfi_img_t *img);
 
 int pfi_probe_a2r_fp (FILE *fp);
 int pfi_probe_a2r (const char *fname);

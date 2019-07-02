@@ -20,6 +20,8 @@
  *****************************************************************************/
 
 
+#include <config.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -59,6 +61,19 @@ typedef struct {
 	char          creator[33];
 } a2r_load_t;
 
+typedef struct {
+	FILE          *fp;
+	pfi_img_t     *img;
+	pfi_trk_t     *trk;
+	unsigned long ofs;
+	unsigned char location;
+	unsigned char disk_type;
+
+	unsigned long buf_cnt;
+	unsigned long buf_max;
+	unsigned char *buf;
+} a2r_save_t;
+
 
 static
 void a2r_get_string (char *dst, const unsigned char *src, unsigned max)
@@ -76,6 +91,21 @@ void a2r_get_string (char *dst, const unsigned char *src, unsigned max)
 	}
 
 	dst[i] = 0;
+}
+
+static
+void a2r_set_string (unsigned char *dst, const char *src, unsigned max)
+{
+	unsigned i;
+
+	for (i = 0; i < max; i++) {
+		if (*src == 0) {
+			dst[i] = 0x20;
+		}
+		else {
+			dst[i] = *(src++);
+		}
+	}
 }
 
 static
@@ -384,6 +414,297 @@ pfi_img_t *pfi_load_a2r (FILE *fp)
 	}
 
 	return (a2r.img);
+}
+
+
+static
+int a2r_get_disk_type (a2r_save_t *a2r)
+{
+	unsigned c;
+
+	if (a2r->img->cyl_cnt < 90) {
+		a2r->disk_type = 2;
+		return (0);
+	}
+
+	for (c = 0; c < 80; c++) {
+		if (pfi_img_get_track_const (a2r->img, c, 1) != NULL) {
+			a2r->disk_type = 2;
+			return (0);
+		}
+	}
+
+	a2r->disk_type = 1;
+
+	return (0);
+}
+
+static
+int a2r_save_header (a2r_save_t *a2r)
+{
+	unsigned char buf[8];
+
+	pfi_set_uint32_le (buf, 0, A2R_MAGIC_A2R2);
+	pfi_set_uint32_le (buf, 4, A2R_MAGIC_2);
+
+	if (pfi_write_ofs (a2r->fp, a2r->ofs, buf, 8)) {
+		return (1);
+	}
+
+	a2r->ofs += 8;
+
+	return (0);
+}
+
+static
+int a2r_save_info (a2r_save_t *a2r)
+{
+	unsigned char buf[44];
+
+	pfi_set_uint32_le (buf, 0, A2R_MAGIC_INFO);
+	pfi_set_uint32_le (buf, 4, 36);
+
+	/* version */
+	buf[8] = 1;
+
+	a2r_set_string (buf + 9, PCE_VERSION_STR, 32);
+
+	buf[41] = a2r->disk_type;
+	buf[42] = 1; /* write protected */
+	buf[43] = 1; /* cross track sync */
+
+	if (pfi_write_ofs (a2r->fp, a2r->ofs, buf, 44)) {
+		return (1);
+	}
+
+	a2r->ofs += 44;
+
+	return (0);
+}
+
+static
+int a2r_add_byte (a2r_save_t *a2r, unsigned val)
+{
+	unsigned long max;
+	unsigned char *tmp;
+
+	if (a2r->buf_cnt >= a2r->buf_max) {
+		max = (a2r->buf_max < 4096) ? 4096 : a2r->buf_max;
+
+		while (max <= a2r->buf_cnt) {
+			max *= 2;
+		}
+
+		if ((tmp = realloc (a2r->buf, max)) == NULL) {
+			return (1);
+		}
+
+		a2r->buf = tmp;
+		a2r->buf_max = max;
+	}
+
+	a2r->buf[a2r->buf_cnt++] = val;
+
+	return (0);
+}
+
+static
+int a2r_save_track (a2r_save_t *a2r)
+{
+	uint32_t           pulse, idx;
+	unsigned           index;
+	unsigned long      loop;
+	unsigned long      rem;
+	unsigned long long tmp;
+	unsigned char      buf[10];
+	pfi_trk_t          *trk;
+
+	trk = a2r->trk;
+
+	pfi_trk_rewind (trk);
+
+	a2r->buf_cnt = 0;
+
+	index = 0;
+	loop = 0;
+	rem = 0;
+
+	while (pfi_trk_get_pulse (trk, &pulse, &idx) == 0) {
+		if ((pulse == 0) || (idx < pulse)) {
+			index += 1;
+		}
+
+		if ((index < 1) || (pulse == 0)) {
+			continue;
+		}
+
+		tmp = (unsigned long long) A2R_CLOCK * pulse + rem;
+		rem = tmp % trk->clock;
+		pulse = tmp / trk->clock;
+
+		if (index == 1) {
+			loop += pulse;
+		}
+
+		while (pulse >= 255) {
+			if (a2r_add_byte (a2r, 255)) {
+				return (1);
+			}
+
+			pulse -= 255;
+		}
+
+		if (a2r_add_byte (a2r, pulse)) {
+			return (1);
+		}
+	}
+
+	buf[0] = a2r->location;
+	buf[1] = (index > 2) ? 3 : 1;
+
+	pfi_set_uint32_le (buf, 2, a2r->buf_cnt);
+	pfi_set_uint32_le (buf, 6, loop);
+
+	if (pfi_write_ofs (a2r->fp, a2r->ofs, buf, 10)) {
+		return (1);
+	}
+
+	a2r->ofs += 10;
+
+	if (pfi_write_ofs (a2r->fp, a2r->ofs, a2r->buf, a2r->buf_cnt)) {
+		return (1);
+	}
+
+	a2r->ofs += a2r->buf_cnt;
+
+	return (0);
+}
+
+static
+int a2r_save_strm (a2r_save_t *a2r)
+{
+	unsigned      i, c, h;
+	unsigned long ofs;
+	unsigned char buf[8];
+
+	ofs = a2r->ofs;
+
+	a2r->ofs += 8;
+
+	for (i = 0; i < 256; i++) {
+		if (a2r->disk_type == 1) {
+			c = i;
+			h = 0;
+		}
+		else {
+			c = i >> 1;
+			h = i & 1;
+		}
+
+		a2r->trk = pfi_img_get_track (a2r->img, c, h, 0);
+
+		if (a2r->trk  == NULL) {
+			continue;
+		}
+
+		a2r->location = i;
+
+		if (a2r_save_track (a2r)) {
+			return (1);
+		}
+	}
+
+	buf[0] = 0xff;
+
+	if (pfi_write_ofs (a2r->fp, a2r->ofs, buf, 1)) {
+		return (1);
+	}
+
+	a2r->ofs += 1;
+
+	pfi_set_uint32_le (buf, 0, A2R_MAGIC_STRM);
+	pfi_set_uint32_le (buf, 4, a2r->ofs - ofs - 8);
+
+	if (pfi_write_ofs (a2r->fp, ofs, buf, 8)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
+int a2r_save_meta (a2r_save_t *a2r)
+{
+	unsigned long size;
+	unsigned char buf[8];
+
+	size = a2r->img->comment_size;
+
+	if (size == 0) {
+		return (0);
+	}
+
+	pfi_set_uint32_le (buf, 0, A2R_MAGIC_META);
+	pfi_set_uint32_le (buf, 4, size);
+
+	if (pfi_write_ofs (a2r->fp, a2r->ofs, buf, 8)) {
+		return (1);
+	}
+
+	if (pfi_write (a2r->fp, a2r->img->comment, size)) {
+		return (1);
+	}
+
+	a2r->ofs += 8 + size;
+
+	return (0);
+}
+
+static
+int a2r_save_img (a2r_save_t *a2r)
+{
+	if (a2r_get_disk_type (a2r)) {
+		return (1);
+	}
+
+	a2r->ofs = 0;
+
+	if (a2r_save_header (a2r)) {
+		return (1);
+	}
+
+	if (a2r_save_info (a2r)) {
+		return (1);
+	}
+
+	if (a2r_save_strm (a2r)) {
+		return (1);
+	}
+
+	if (a2r_save_meta (a2r)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+int pfi_save_a2r (FILE *fp, pfi_img_t *img)
+{
+	int        r;
+	a2r_save_t a2r;
+
+	a2r.fp = fp;
+	a2r.img = img;
+	a2r.ofs = 0;
+	a2r.buf_cnt = 0;
+	a2r.buf_max = 0;
+	a2r.buf = NULL;
+
+	r = a2r_save_img (&a2r);
+
+	free (a2r.buf);
+
+	return (r);
 }
 
 int pfi_probe_a2r_fp (FILE *fp)

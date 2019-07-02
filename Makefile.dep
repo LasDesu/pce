@@ -2395,6 +2395,7 @@ src/drivers/pfi/decode-bits.o: src/drivers/pfi/decode-bits.c \
 	src/drivers/pfi/track.h
 
 src/drivers/pfi/pfi-a2r.o: src/drivers/pfi/pfi-a2r.c \
+	src/config.h \
 	src/drivers/pfi/pfi-a2r.h \
 	src/drivers/pfi/pfi-io.h \
 	src/drivers/pfi/pfi.h \
