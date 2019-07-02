@@ -91,7 +91,10 @@ int iwm_drv_init (mac_iwm_drive_t *drv, unsigned drive)
 	drv->cur_track_len = 0;
 
 	drv->evt = NULL;
+
 	drv->weak_mask = 0;
+	drv->weak_run = 0;
+	drv->weak_val = 0;
 
 	drv->pwm_pos = 0;
 	drv->pwm_len = 65000;
@@ -225,8 +228,11 @@ void iwm_drv_select_track (mac_iwm_drive_t *drv, unsigned c, unsigned h)
 		drv->evt = drv->evt->next;
 	}
 
-	drv->track_dirty = 0;
 	drv->weak_mask = 0;
+	drv->weak_run = 0;
+	drv->weak_val = 0;
+
+	drv->track_dirty = 0;
 
 	iwm_drv_print_status (drv);
 }
@@ -1204,16 +1210,32 @@ void mac_iwm_read (mac_iwm_t *iwm, mac_iwm_drive_t *drv)
 			iwm->read_zero_cnt += 1;
 		}
 
-		if ((drv->weak_mask & 0x80000000) || (iwm->read_zero_cnt > 3)) {
-			if (iwm_get_random (iwm)) {
-				iwm->shift |= 1;
-			}
-			else {
+		if ((drv->weak_run != 0) || (drv->weak_mask != 0)) {
+			if (drv->weak_run > 0) {
 				iwm->shift &= ~1U;
+				iwm->shift |= drv->weak_val & 1;
+				drv->weak_val >>= 1;
+				drv->weak_run -= 1;
 			}
-		}
+			else if (drv->weak_mask & 0x80000000) {
+				iwm->shift &= ~1U;
+				iwm->shift |= iwm_get_random (iwm) & 1;
+			}
 
-		drv->weak_mask <<= 1;
+			if ((drv->weak_mask & 0xf0000000) == 0x60000000) {
+				drv->weak_run = 2;
+				drv->weak_val = 1;
+				drv->weak_val <<= iwm_get_random (iwm) & 1;
+			}
+			else if ((drv->weak_mask & 0xf8000000) == 0x70000000) {
+				drv->weak_run = 3;
+				drv->weak_val = 1;
+				drv->weak_val <<= iwm_get_random (iwm) & 1;
+				drv->weak_val <<= iwm_get_random (iwm) & 1;
+			}
+
+			drv->weak_mask = (drv->weak_mask << 1) & 0xffffffff;
+		}
 
 		drv->read_pos += 1;
 

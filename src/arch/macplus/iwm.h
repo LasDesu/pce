@@ -62,7 +62,10 @@ typedef struct {
 	unsigned long   cur_track_len;
 
 	pri_evt_t       *evt;
+
 	unsigned long   weak_mask;
+	unsigned        weak_run;
+	unsigned long   weak_val;
 
 	unsigned long   pwm_pos;
 	unsigned long   pwm_len;
