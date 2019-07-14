@@ -124,11 +124,12 @@ int chr_stdio_init (char_stdio_t *drv, const char *name)
 
 	drv->fname = drv_get_option (name, "file");
 	drv->flush = drv_get_option_bool (name, "flush", 1);
-	drv->reopen = drv_get_option_bool (name, "reopen", 1);
+	drv->reopen = drv_get_option_bool (name, "reopen", 0);
 
 	if (drv->fname != NULL) {
 		if (strcmp (drv->fname, "-") == 0) {
 			drv->fp = stdout;
+			drv->reopen = 0;
 		}
 		else {
 			drv->fp = fopen (drv->fname, "wb");
