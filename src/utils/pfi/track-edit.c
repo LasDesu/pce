@@ -30,6 +30,59 @@
 
 
 static
+int pfi_rectify_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
+{
+	unsigned      idx;
+	unsigned      cnt;
+	unsigned long i;
+	unsigned long rate, cell;
+	uint32_t      val1, val2;
+	uint32_t      total1, total2, index;
+
+	rate = *(unsigned long *) opaque;
+
+	cell = (trk->clock + rate / 2) / rate;
+
+	idx = 0;
+	total1 = 0;
+	total2 = 0;
+
+	index = (trk->index_cnt < 1) ? 0 : trk->index[0];
+
+	for (i = 0; i < trk->pulse_cnt; i++) {
+		val1 = trk->pulse[i];
+
+		if ((idx < trk->index_cnt) && (total1 <= index) && ((total1 + val1) > index)) {
+			trk->index[idx] = (trk->index[idx] - total1) + total2;
+			idx += 1;
+
+			index = (trk->index_cnt < 1) ? 0 : trk->index[0];
+		}
+
+		cnt = (val1 + cell / 2) / cell;
+
+		if (cnt == 0) {
+			cnt = 1;
+		}
+
+		val2 = cnt * cell;
+
+		total1 += val1;
+		total2 += val2;
+
+		trk->pulse[i] = val2;
+	}
+
+	return (0);
+}
+
+int pfi_rectify (pfi_img_t *img, unsigned long rate)
+{
+	return (pfi_for_all_tracks (img, pfi_rectify_cb, &rate));
+}
+
+
+static
 int pfi_revolutions_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
 {
 	unsigned      rev1, rev2;

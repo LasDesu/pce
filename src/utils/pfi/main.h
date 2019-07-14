@@ -97,6 +97,7 @@ int pfi_decode_text (pfi_img_t *img, const char *fname);
 int pfi_encode_text (pfi_img_t *img, const char *fname);
 
 int pfi_revolutions (pfi_img_t *img, const char *str);
+int pfi_rectify (pfi_img_t *img, unsigned long rate);
 int pfi_slack (pfi_img_t *img, const char *str);
 int pfi_scale_tracks (pfi_img_t *img, double factor);
 int pfi_set_clock (pfi_img_t *img, unsigned long clock);

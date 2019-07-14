@@ -461,6 +461,19 @@ int pfi_operation (pfi_img_t **img, const char *op, int argc, char **argv)
 	else if (strcmp (op, "info") == 0) {
 		r = pfi_print_info (*img);
 	}
+	else if (strcmp (op, "rectify") == 0) {
+		unsigned long rate;
+
+		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {
+			return (1);
+		}
+
+		if (pfi_parse_rate (optarg1[0], &rate)) {
+			return (1);
+		}
+
+		r = pfi_rectify (*img, rate);
+	}
 	else if (strcmp (op, "revolutions") == 0) {
 		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {
 			fprintf (stderr, "%s: missing revolutions\n", arg0);

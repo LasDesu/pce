@@ -151,6 +151,10 @@ Encode a textual representation of the image produced by decode text.
 .B "info"
 Print information about the image.
 .TP
+.BI "rectify " "rate"
+Adjust all pulse widths to even multiples of \fIrate\fR. This may change
+the track lengths.
+.TP
 .BI "revolutions " "rev1[-rev2]"
 Extract revolutions \fIrev1\fR to \fIrev2\fR on all selected tracks.
 Revolutions not within the selected range are deleted.
