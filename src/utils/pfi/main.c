@@ -178,9 +178,10 @@ int pfi_parse_double (const char *str, double *val)
 	*val = strtod (str, &end);
 
 	if ((end != NULL) && (*end == 0)) {
-		fprintf (stderr, "%s: bad value (%s)\n", arg0, str);
 		return (0);
 	}
+
+	fprintf (stderr, "%s: bad value (%s)\n", arg0, str);
 
 	return (1);
 }
