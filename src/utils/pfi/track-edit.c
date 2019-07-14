@@ -98,11 +98,11 @@ int pfi_revolutions_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 
 int pfi_revolutions (pfi_img_t *img, const char *str)
 {
-	char          all, inv;
+	char          all;
 	unsigned long r1, r2;
 	unsigned      revs[2];
 
-	if (pfi_parse_range (str, &r1, &r2, &all, &inv)) {
+	if (pfi_parse_range (str, &r1, &r2, &all)) {
 		return (1);
 	}
 

@@ -69,7 +69,7 @@ int pfi_parse_bool (const char *str, int *val);
 int pfi_parse_rate (const char *str, unsigned long *val);
 
 int pfi_for_all_tracks (pfi_img_t *img, pfi_trk_cb fct, void *opaque);
-int pfi_parse_range (const char *str, unsigned long *v1, unsigned long *v2, char *all, char *inv);
+int pfi_parse_range (const char *str, unsigned long *v1, unsigned long *v2, char *all);
 
 
 int pfi_comment_add (pfi_img_t *img, const char *str);

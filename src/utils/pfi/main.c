@@ -49,6 +49,8 @@ int           par_print_info = 0;
 unsigned      par_fmt_inp = PFI_FORMAT_NONE;
 unsigned      par_fmt_out = PFI_FORMAT_NONE;
 
+char          par_invert = 0;
+
 char          par_cyl_all = 1;
 char          par_cyl_inv = 0;
 unsigned long par_cyl[2];
@@ -95,6 +97,7 @@ static pce_option_t opts[] = {
 	{ 't', 2, "track", "c h", "Select tracks [all]" },
 	{ 'v', 0, "verbose", NULL, "Verbose operation [no]" },
 	{ 'V', 0, "version", NULL, "Print version information" },
+	{ 'x', 0, "invert", NULL, "Invert the selection [no]" },
 	{ 'z', 0, "clear", NULL, "Clear the selection" },
 	{  -1, 0, NULL, NULL, NULL }
 };
@@ -284,17 +287,11 @@ int pfi_parse_rate (const char *str, unsigned long *val)
 	return (0);
 }
 
-int pfi_parse_range (const char *str, unsigned long *v1, unsigned long *v2, char *all, char *inv)
+int pfi_parse_range (const char *str, unsigned long *v1, unsigned long *v2, char *all)
 {
 	*v1 = 0;
 	*v2 = 0;
 	*all = 0;
-	*inv = 0;
-
-	if (*str == '^') {
-		str += 1;
-		*inv = 1;
-	}
 
 	if (strcmp (str, "all") == 0) {
 		*all = 1;
@@ -334,41 +331,15 @@ int pfi_parse_range (const char *str, unsigned long *v1, unsigned long *v2, char
 static
 int pfi_sel_match_track (unsigned c, unsigned h)
 {
-	if (par_cyl_all && par_cyl_inv) {
-		return (0);
+	if (!par_cyl_all && ((c < par_cyl[0]) || (c > par_cyl[1]))) {
+		return (par_invert);
 	}
 
-	if (par_cyl_all == 0) {
-		if (par_cyl_inv) {
-			if ((c >= par_cyl[0]) && (c <= par_cyl[1])) {
-				return (0);
-			}
-		}
-		else {
-			if ((c < par_cyl[0]) || (c > par_cyl[1])) {
-				return (0);
-			}
-		}
+	if (!par_trk_all && ((h < par_trk[0]) || (h > par_trk[1]))) {
+		return (par_invert);
 	}
 
-	if (par_trk_all && par_trk_inv) {
-		return (0);
-	}
-
-	if (par_trk_all == 0) {
-		if (par_trk_inv) {
-			if ((h >= par_trk[0]) && (h <= par_trk[1])) {
-				return (0);
-			}
-		}
-		else {
-			if ((h < par_trk[0]) || (h > par_trk[1])) {
-				return (0);
-			}
-		}
-	}
-
-	return (1);
+	return (!par_invert);
 }
 
 int pfi_for_all_tracks (pfi_img_t *img, pfi_trk_cb fct, void *opaque)
@@ -793,7 +764,7 @@ int main (int argc, char **argv)
 			return (0);
 
 		case 'c':
-			if (pfi_parse_range (optarg[0], &par_cyl[0], &par_cyl[1], &par_cyl_all, &par_cyl_inv)) {
+			if (pfi_parse_range (optarg[0], &par_cyl[0], &par_cyl[1], &par_cyl_all)) {
 				return (1);
 			}
 			break;
@@ -808,7 +779,7 @@ int main (int argc, char **argv)
 			break;
 
 		case 'h':
-			if (pfi_parse_range (optarg[0], &par_trk[0], &par_trk[1], &par_trk_all, &par_trk_inv)) {
+			if (pfi_parse_range (optarg[0], &par_trk[0], &par_trk[1], &par_trk_all)) {
 				return (1);
 			}
 			break;
@@ -891,16 +862,20 @@ int main (int argc, char **argv)
 			break;
 
 		case 't':
-			if (pfi_parse_range (optarg[0], &par_cyl[0], &par_cyl[1], &par_cyl_all, &par_cyl_inv)) {
+			if (pfi_parse_range (optarg[0], &par_cyl[0], &par_cyl[1], &par_cyl_all)) {
 				return (1);
 			}
-			if (pfi_parse_range (optarg[1], &par_trk[0], &par_trk[1], &par_trk_all, &par_trk_inv)) {
+			if (pfi_parse_range (optarg[1], &par_trk[0], &par_trk[1], &par_trk_all)) {
 				return (1);
 			}
 			break;
 
 		case 'v':
 			par_verbose = 1;
+			break;
+
+		case 'x':
+			par_invert = !par_invert;
 			break;
 
 		case 'z':
