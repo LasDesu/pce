@@ -287,6 +287,17 @@ int pfi_trk_add_pulse (pfi_trk_t *trk, uint32_t val)
 	return (pfi_trk_add_pulses (trk, &val, 1));
 }
 
+int pfi_trk_inc_pulse (pfi_trk_t *trk, uint32_t val)
+{
+	if (trk->pulse_cnt == 0) {
+		return (1);
+	}
+
+	trk->pulse[trk->pulse_cnt - 1] += val;
+
+	return (0);
+}
+
 void pfi_trk_rewind (pfi_trk_t *trk)
 {
 	trk->cur_pos = 0;

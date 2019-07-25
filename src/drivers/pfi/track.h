@@ -64,6 +64,7 @@ int pfi_trk_get_index (const pfi_trk_t *trk, unsigned idx, unsigned long *pos, u
 int pfi_trk_add_index (pfi_trk_t *trk, uint32_t clk);
 int pfi_trk_add_pulses (pfi_trk_t *trk, const uint32_t *buf, unsigned long cnt);
 int pfi_trk_add_pulse (pfi_trk_t *trk, uint32_t val);
+int pfi_trk_inc_pulse (pfi_trk_t *trk, uint32_t val);
 
 void pfi_trk_rewind (pfi_trk_t *trk);
 int pfi_trk_get_pulse (pfi_trk_t *trk, uint32_t *val, uint32_t *idx);
