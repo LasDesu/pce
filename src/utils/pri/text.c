@@ -204,6 +204,8 @@ void txt_dec_init (pri_text_t *ctx, FILE *fp, pri_img_t *img, pri_trk_t *trk, un
 	ctx->c = c;
 	ctx->h = h;
 	ctx->first_track = 1;
+
+	ctx->mac_no_slip = par_mac_no_slip;
 }
 
 static

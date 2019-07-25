@@ -64,6 +64,8 @@ pri_enc_fm_t  par_enc_fm;
 pri_dec_mfm_t par_dec_mfm;
 pri_enc_mfm_t par_enc_mfm;
 
+char          par_mac_no_slip = 0;
+
 
 static pce_option_t opts[] = {
 	{ '?', 0, "help", NULL, "Print usage information" },
@@ -692,7 +694,10 @@ int pri_save_image (const char *fname, pri_img_t **img)
 static
 int pri_set_parameter (const char *name, const char *val)
 {
-	if (strcmp (name, "mfm-auto-gap3") == 0) {
+	if (strcmp (name, "mac-no-slip") == 0) {
+		par_mac_no_slip = (strtoul (val, NULL, 0) != 0);
+	}
+	else if (strcmp (name, "mfm-auto-gap3") == 0) {
 		par_enc_mfm.auto_gap3 = (strtoul (val, NULL, 0) != 0);
 	}
 	else if (strcmp (name, "mfm-clock") == 0) {
@@ -741,6 +746,7 @@ int pri_set_parameter (const char *name, const char *val)
 		par_enc_fm.track_size = strtoul (val, NULL, 0);
 	}
 	else {
+		fprintf (stderr, "%s: unknown parameter (%s)\n", arg0, name);
 		return (1);
 	}
 

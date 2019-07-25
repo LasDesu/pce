@@ -53,6 +53,8 @@ extern unsigned long par_trk[2];
 
 extern unsigned long par_data_rate;
 
+extern char          par_mac_no_slip;
+
 
 typedef int (*pri_trk_cb) (pri_img_t *img, pri_trk_t *trk,
 	unsigned long c, unsigned long h, void *opaque

@@ -401,7 +401,7 @@ int txt_mac_dec_track (pri_text_t *ctx)
 			buf[2] = 0;
 		}
 
-		if (ctx->shift & 0x80) {
+		if ((ctx->shift & 0x80) || ctx->mac_no_slip) {
 			if (ctx->shift_cnt > 8) {
 				txt_dec_bits (ctx, ctx->shift_cnt - 8);
 			}
