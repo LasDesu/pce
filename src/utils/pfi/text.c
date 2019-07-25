@@ -257,9 +257,12 @@ static
 int pfi_encode_text_fp (pfi_img_t *img, FILE *fp)
 {
 	int           c;
+	int           add;
 	unsigned long tc, th, val, pos;
 	char          str[256];
-	pfi_trk_t   *trk;
+	pfi_trk_t     *trk;
+
+	add = 0;
 
 	pos = 0;
 	trk = NULL;
@@ -328,6 +331,9 @@ int pfi_encode_text_fp (pfi_img_t *img, FILE *fp)
 				return (1);
 			}
 		}
+		else if (c == '+') {
+			add = 1;
+		}
 		else if (c == '$') {
 			if (txt_parse_hex (fp, &val)) {
 				return (1);
@@ -337,10 +343,18 @@ int pfi_encode_text_fp (pfi_img_t *img, FILE *fp)
 				return (1);
 			}
 
-			if (pfi_trk_add_pulse (trk, val)) {
-				return (1);
+			if (add) {
+				if (pfi_trk_inc_pulse (trk, val)) {
+					return (1);
+				}
+			}
+			else {
+				if (pfi_trk_add_pulse (trk, val)) {
+					return (1);
+				}
 			}
 
+			add = 0;
 			pos += val;
 		}
 		else if ((c >= '0') && (c <= '9')) {
@@ -352,10 +366,18 @@ int pfi_encode_text_fp (pfi_img_t *img, FILE *fp)
 				return (1);
 			}
 
-			if (pfi_trk_add_pulse (trk, val)) {
-				return (1);
+			if (add) {
+				if (pfi_trk_inc_pulse (trk, val)) {
+					return (1);
+				}
+			}
+			else {
+				if (pfi_trk_add_pulse (trk, val)) {
+					return (1);
+				}
 			}
 
+			add = 0;
 			pos += val;
 		}
 	}
