@@ -47,16 +47,17 @@ int pfi_rectify_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned lo
 	total1 = 0;
 	total2 = 0;
 
-	index = (trk->index_cnt < 1) ? 0 : trk->index[0];
+	index = (idx < trk->index_cnt) ? trk->index[idx] : 0;
 
 	for (i = 0; i < trk->pulse_cnt; i++) {
 		val1 = trk->pulse[i];
 
 		if ((idx < trk->index_cnt) && (total1 <= index) && ((total1 + val1) > index)) {
 			trk->index[idx] = (trk->index[idx] - total1) + total2;
+
 			idx += 1;
 
-			index = (trk->index_cnt < 1) ? 0 : trk->index[0];
+			index = (idx < trk->index_cnt) ? trk->index[idx] : 0;
 		}
 
 		cnt = (val1 + cell / 2) / cell;
