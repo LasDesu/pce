@@ -108,6 +108,7 @@ int pri_decode_text (pri_img_t *img, const char *fname, unsigned enc);
 int pri_weak_clean (pri_img_t *img);
 int pri_weak_close (pri_img_t *img, unsigned cnt);
 int pri_weak_detect (pri_img_t *img, unsigned long cnt);
+int pri_weak_expand (pri_img_t *img, unsigned long left, unsigned long right);
 int pri_weak_open (pri_img_t *img, unsigned long cnt);
 int pri_weak_flip (pri_img_t *img, int random);
 int pri_weak_load (pri_img_t *img, const char *fname);

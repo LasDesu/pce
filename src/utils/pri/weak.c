@@ -195,6 +195,71 @@ int pri_weak_detect (pri_img_t *img, unsigned long cnt)
 }
 
 static
+int pri_weak_expand_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
+{
+	unsigned long i, n;
+	unsigned      j;
+	unsigned long pos, p1, p2;
+	unsigned long *val;
+	unsigned char *buf1, *buf2;;
+
+	val = opaque;
+
+	if (pri_trk_get_weak_mask (trk, &buf1, &n)) {
+		return (1);
+	}
+
+	if (pri_trk_get_weak_mask (trk, &buf2, &n)) {
+		free (buf1);
+		return (1);
+	}
+
+	for (i = 0; i < n; i++) {
+		if (buf1[i] == 0) {
+			continue;
+		}
+
+		for (j = 0; j < 8; j++) {
+			if ((buf1[i] & (0x80 >> j)) == 0) {
+				continue;
+			}
+
+			pos = 8 * i + j;
+
+			p1 = (pos < val[0]) ? 0 : (pos - val[0]);
+			p2 = pos + val[1];
+
+			if (p2 >= trk->size) {
+				p2 = trk->size - 1;
+			}
+
+			set_bits (buf2, p1, p2);
+		}
+	}
+
+	free (buf1);
+
+	if (pri_trk_set_weak_mask (trk, buf2, n)) {
+		free (buf2);
+		return (1);
+	}
+
+	free (buf2);
+
+	return (0);
+}
+
+int pri_weak_expand (pri_img_t *img, unsigned long left, unsigned long right)
+{
+	unsigned long val[2];
+
+	val[0] = left;
+	val[1] = right;
+
+	return (pri_for_all_tracks (img, pri_weak_expand_cb, val));
+}
+
+static
 int pri_weak_open_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
 {
 	unsigned long i, n;

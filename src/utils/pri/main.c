@@ -120,6 +120,7 @@ static struct {
 	{ "weak-clean", "", "Clean up weak bit events" },
 	{ "weak-close", "max", "Fill gaps up to <max> bits between weak bits" },
 	{ "weak-detect", "max", "Autodetect weak bits after <max> zero bits" },
+	{ "weak-expand", "left right", "Expand runs of weak bits" },
 	{ "weak-load", "file", "Load the weak bit mask" },
 	{ "weak-open", "max", "Remove runs of weak bits up to <max> bits long" },
 	{ "weak-save", "file", "Save the weak bit mask" },
@@ -483,6 +484,25 @@ int pri_operation (pri_img_t **img, const char *op, int argc, char **argv)
 		max = strtoul (optarg1[0], NULL, 0);
 
 		r = pri_weak_detect (*img, max);
+	}
+	else if ((strcmp (op, "weak-expand") == 0)) {
+		unsigned long left, right;
+
+		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {
+			fprintf (stderr, "%s: value\n", arg0);
+			return (1);
+		}
+
+		left = strtoul (optarg1[0], NULL, 0);
+
+		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {
+			fprintf (stderr, "%s: value\n", arg0);
+			return (1);
+		}
+
+		right = strtoul (optarg1[0], NULL, 0);
+
+		r = pri_weak_expand (*img, left, right);
 	}
 	else if (strcmp (op, "weak-load") == 0) {
 		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {

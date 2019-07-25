@@ -231,8 +231,12 @@ If two weak bits are separated by up to \fImax\fR non-weak bits, turn all
 non-weak bits in between into weak bits.
 .TP
 .BI "weak-detect " max
-Detect weak bits. All zero bits that are preceded by at laset \fImax\fR zero
+Detect weak bits. All zero bits that are preceded by at least \fImax\fR zero
 bits are mared as weak.
+.TP
+.BI "weak-expand " "left right"
+Expand runs of weak bits by adding \fIleft\fR weak bits before every weak
+bit and \fIright\fR weak bits after every weak bit.
 .TP
 .BI "weak-load " filename
 Load the weak bit mask of all selected tracks from \fIfilename\fR. The weak
@@ -246,7 +250,7 @@ Save the weak bit mask of all selected tracks to \fIfilename\fR. The weak
 bit masks are of the same size as the track data.
 .TP
 .BI "weak-set " "val"
-Set bits that are mared as weak to \fIval\fR which can be one of the
+Set bits that are marked as weak to \fIval\fR which can be one of the
 following:
 .RS
 .TP
