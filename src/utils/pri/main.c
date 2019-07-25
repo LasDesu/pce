@@ -121,6 +121,7 @@ static struct {
 	{ "weak-close", "max", "Fill gaps up to <max> bits between weak bits" },
 	{ "weak-detect", "max", "Autodetect weak bits after <max> zero bits" },
 	{ "weak-load", "file", "Load the weak bit mask" },
+	{ "weak-open", "max", "Remove runs of weak bits up to <max> bits long" },
 	{ "weak-save", "file", "Save the weak bit mask" },
 	{ "weak-set", "val", "Set weak bits (0|1|flip|random)" },
 	{ NULL, NULL, NULL }
@@ -490,6 +491,18 @@ int pri_operation (pri_img_t **img, const char *op, int argc, char **argv)
 		}
 
 		r = pri_weak_load (*img, optarg1[0]);
+	}
+	else if (strcmp (op, "weak-open") == 0) {
+		unsigned cnt;
+
+		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {
+			fprintf (stderr, "%s: missing window size\n", arg0);
+			return (1);
+		}
+
+		cnt = strtoul (optarg1[0], NULL, 0);
+
+		r = pri_weak_open (*img, cnt);
 	}
 	else if (strcmp (op, "weak-save") == 0) {
 		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {
