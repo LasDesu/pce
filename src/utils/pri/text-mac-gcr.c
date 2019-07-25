@@ -257,6 +257,33 @@ int mac_check_data (const unsigned char *buf, unsigned size)
 }
 
 static
+int mac_decode_end (pri_text_t *ctx)
+{
+	unsigned i;
+
+	if (txt_dec_match (ctx, "\xde\xaa", 16)) {
+		return (0);
+	}
+
+	mac_put_nl (ctx, 0);
+	mac_put_byte (ctx, 0xde);
+	mac_put_byte (ctx, 0xaa);
+
+	for (i = 0; i < 2; i++) {
+		if (txt_dec_match (ctx, "\xff", 8)) {
+			break;
+		}
+
+		mac_put_byte (ctx, 0xff);
+		mac_put_nl (ctx, 0);
+	}
+
+	mac_put_nl (ctx, 1);
+
+	return (0);
+}
+
+static
 int mac_decode_data (pri_text_t *ctx)
 {
 	unsigned       i, j;
@@ -417,6 +444,7 @@ int txt_mac_dec_track (pri_text_t *ctx)
 			}
 			else if ((buf[0] == 0xd5) && (buf[1] == 0xaa) && (buf[2] == 0xad)) {
 				mac_decode_data (ctx);
+				mac_decode_end (ctx);
 			}
 			else if ((buf[0] == 0xde) && (buf[1] == 0xaa) && (buf[2] == 0xff)) {
 				mac_put_nl (ctx, 0);
