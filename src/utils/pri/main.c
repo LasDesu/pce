@@ -118,6 +118,7 @@ static struct {
 	{ "rotate", "bits", "Rotate tracks left" },
 	{ "save", "filename", "Save raw tracks" },
 	{ "weak-clean", "", "Clean up weak bit events" },
+	{ "weak-close", "max", "Fill gaps up to <max> bits between weak bits" },
 	{ "weak-detect", "max", "Autodetect weak bits after <max> zero bits" },
 	{ "weak-load", "file", "Load the weak bit mask" },
 	{ "weak-save", "file", "Save the weak bit mask" },
@@ -457,6 +458,18 @@ int pri_operation (pri_img_t **img, const char *op, int argc, char **argv)
 	}
 	else if ((strcmp (op, "weak-clean") == 0)) {
 		r = pri_weak_clean (*img);
+	}
+	else if ((strcmp (op, "weak-close") == 0)) {
+		unsigned cnt;
+
+		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {
+			fprintf (stderr, "%s: missing window size\n", arg0);
+			return (1);
+		}
+
+		cnt = strtoul (optarg1[0], NULL, 0);
+
+		r = pri_weak_close (*img, cnt);
 	}
 	else if ((strcmp (op, "weak-detect") == 0)) {
 		unsigned long max;

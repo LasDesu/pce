@@ -30,6 +30,15 @@
 
 
 static
+void set_bits (unsigned char *buf, unsigned long p1, unsigned long p2)
+{
+	while (p1 <= p2) {
+		buf[p1 >> 3] |= 0x80 >> (p1 & 7);
+		p1 += 1;
+	}
+}
+
+static
 int pri_weak_clean_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
 {
 	unsigned long cnt;
@@ -52,6 +61,67 @@ int pri_weak_clean_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned
 int pri_weak_clean (pri_img_t *img)
 {
 	return (pri_for_all_tracks (img, pri_weak_clean_cb, NULL));
+}
+
+static
+int pri_weak_close_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
+{
+	unsigned long i, n;
+	unsigned      j;
+	unsigned      cnt;
+	int           have1;
+	unsigned long last1, next1;
+	unsigned char *buf;
+
+	cnt = *(unsigned *)opaque;
+
+	if (cnt == 0) {
+		return (0);
+	}
+
+	if (pri_trk_get_weak_mask (trk, &buf, &n)) {
+		return (1);
+	}
+
+	have1 = 0;
+	last1 = 0;
+
+	for (i = 0; i < n; i++) {
+		if (buf[i] == 0) {
+			continue;
+		}
+
+		for (j = 0; j < 8; j++) {
+			if ((buf[i] & (0x80 >> j)) == 0) {
+				continue;
+			}
+
+			next1 = 8 * i + j;
+
+			if (have1) {
+				if ((next1 - last1 - 1) <= cnt) {
+					set_bits (buf, last1, next1);
+				}
+			}
+
+			have1 = 1;
+			last1 = next1;
+		}
+	}
+
+	if (pri_trk_set_weak_mask (trk, buf, n)) {
+		free (buf);
+		return (1);
+	}
+
+	free (buf);
+
+	return (0);
+}
+
+int pri_weak_close (pri_img_t *img, unsigned cnt)
+{
+	return (pri_for_all_tracks (img, pri_weak_close_cb, &cnt));
 }
 
 /*
