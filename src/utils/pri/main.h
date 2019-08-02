@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/main.h                                         *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -79,7 +79,7 @@ int pri_decode (pri_img_t *img, const char *type, const char *fname);
 int pri_delete_tracks (pri_img_t *img);
 int pri_double_step (pri_img_t *img, int even);
 
-int pri_edit_tracks (pri_img_t *img, const char *what, const char *val);
+int pri_edit (pri_img_t *img, const char *what, const char *val);
 
 int pri_encode (pri_img_t **img, const char *type, const char *fname);
 

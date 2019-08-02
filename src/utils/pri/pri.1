@@ -1,4 +1,4 @@
-.TH PRI 1 "2019-06-25" "HH" "pce"
+.TH PRI 1 "2019-08-02" "HH" "pce"
 \
 .SH NAME
 pri \- convert and modify PCE raw image files
@@ -29,8 +29,17 @@ The bit clock rate.
 .B data
 Initialize the track using \fIval\fR.
 .TP
+.B readonly
+Set the read-only attribute for the image.
+.TP
 .B size
 Set the track size in bits.
+.TP
+.B woz-cleaned
+Set the cleaned attribute for WOZ images.
+.TP
+.B woz-track-sync
+Set the track sync attribute for WOZ images.
 .RE
 \
 .TP

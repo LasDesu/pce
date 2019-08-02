@@ -70,7 +70,7 @@ char          par_mac_no_slip = 0;
 static pce_option_t opts[] = {
 	{ '?', 0, "help", NULL, "Print usage information" },
 	{ 'c', 1, "cylinder", "c", "Select cylinders [all]" },
-	{ 'e', 2, "edit", "what val", "Edit selected track attributes" },
+	{ 'e', 2, "edit", "what val", "Edit image and track attributes" },
 	{ 'f', 0, "info", NULL, "Print image information [no]" },
 	{ 'h', 1, "head", "h", "Select heads [all]" },
 	{ 'i', 1, "input", "filename", "Load an input file" },
@@ -200,6 +200,9 @@ void print_help (void)
 		"\n"
 		"file formats are:\n"
 		"  pri, tc, woz\n"
+		"\n"
+		"image attributes are:\n"
+		"  readonly, woz-cleaned, woz-track-sync\n"
 		"\n"
 		"track attributes are:\n"
 		"  clock, data, size\n",
@@ -819,7 +822,7 @@ int main (int argc, char **argv)
 
 		case 'e':
 			if (img != NULL) {
-				if (pri_edit_tracks (img, optarg[0], optarg[1])) {
+				if (pri_edit (img, optarg[0], optarg[1])) {
 					return (1);
 				}
 			}
