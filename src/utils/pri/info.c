@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/info.c                                         *
  * Created:     2013-12-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2013-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -28,10 +28,13 @@
 #include <drivers/pri/pri.h>
 
 
+#define TAG "%-16s"
+
+
 static
 void pri_print_range (const char *str1, unsigned long v1, unsigned long v2, const char *str2)
 {
-	fputs (str1, stdout);
+	printf (TAG, str1);
 
 	if (v1 == v2) {
 		printf ("%lu", v1);
@@ -46,7 +49,7 @@ void pri_print_range (const char *str1, unsigned long v1, unsigned long v2, cons
 static
 void pri_print_range_float (const char *str1, double v1, double v2, const char *str2)
 {
-	fputs (str1, stdout);
+	printf (TAG, str1);
 
 	if (v1 == v2) {
 		printf ("%.4f", v1);
@@ -62,7 +65,7 @@ int pri_print_info (pri_img_t *img)
 {
 	unsigned long c, h, cn, hn, tn;
 	unsigned long h1, h2;
-	unsigned long len;
+	unsigned long len, len1, len2;
 	unsigned long clk, clk1, clk2;
 	double        rpm, rpm1, rpm2;
 	pri_cyl_t     *cyl;
@@ -76,6 +79,9 @@ int pri_print_info (pri_img_t *img)
 
 	clk1 = 0;
 	clk2 = 0;
+
+	len1 = 0;
+	len2 = 0;
 
 	rpm1 = 0.0;
 	rpm2 = 0.0;
@@ -119,6 +125,9 @@ int pri_print_info (pri_img_t *img)
 			clk1 = ((tn == 0) || (clk < clk1)) ? clk : clk1;
 			clk2 = ((tn == 0) || (clk > clk2)) ? clk : clk2;
 
+			len1 = ((tn == 0) || (len < len1)) ? len : len1;
+			len2 = ((tn == 0) || (len > len2)) ? len : len2;
+
 			rpm1 = ((tn == 0) || (rpm < rpm1)) ? rpm : rpm1;
 			rpm2 = ((tn == 0) || (rpm > rpm2)) ? rpm : rpm2;
 
@@ -126,11 +135,15 @@ int pri_print_info (pri_img_t *img)
 		}
 	}
 
-	printf ("cylinders: %lu\n", cn);
-	pri_print_range ("heads:     ", h1, h2, "\n");
-	printf ("tracks:    %lu\n", tn);
-	pri_print_range ("clock:     ", clk1, clk2, "\n");
-	pri_print_range_float ("rpm:       ", rpm1, rpm2, "\n");
+	printf (TAG "%lu\n", "cylinders:", cn);
+	pri_print_range ("heads:", h1, h2, "\n");
+	printf (TAG "%lu\n", "tracks:", tn);
+	pri_print_range ("clock:", clk1, clk2, "\n");
+	pri_print_range ("track length:", len1, len2, "\n");
+	pri_print_range_float ("rpm:", rpm1, rpm2, "\n");
+	printf (TAG "%d\n", "read-only:", img->readonly != 0);
+	printf (TAG "%d\n", "woz-cleaned:", img->woz_cleaned != 0);
+	printf (TAG "%d\n", "woz-track-sync:", img->woz_track_sync != 0);
 
 	if (img->comment_size > 0) {
 		fputs ("\n", stdout);
