@@ -66,6 +66,9 @@ typedef struct {
 	unsigned char *comment;
 
 	char          readonly;
+
+	char          woz_track_sync;
+	char          woz_cleaned;
 } pri_img_t;
 
 

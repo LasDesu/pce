@@ -1081,6 +1081,9 @@ pri_img_t *pri_img_new (void)
 
 	img->readonly = 0;
 
+	img->woz_track_sync = 0;
+	img->woz_cleaned = 0;
+
 	return (img);
 }
 
