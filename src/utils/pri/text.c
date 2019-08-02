@@ -163,17 +163,27 @@ void txt_dec_event (pri_text_t *ctx, unsigned long type, unsigned long val)
 }
 
 static
+void txt_dec_init (pri_text_t *ctx, FILE *fp, pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h)
+{
+	memset (ctx, 0, sizeof (pri_text_t));
+
+	ctx->fp = fp;
+	ctx->img = img;
+	ctx->trk = trk;
+	ctx->c = c;
+	ctx->h = h;
+	ctx->first_track = 1;
+
+	ctx->mac_no_slip = par_mac_no_slip;
+}
+
+static
 int pri_decode_text_auto_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
 {
-	unsigned enc;
-
+	unsigned   enc;
 	pri_text_t ctx;
 
-	ctx.fp = opaque;
-	ctx.img = img;
-	ctx.trk = trk;
-	ctx.c = c;
-	ctx.h = h;
+	txt_dec_init (&ctx, opaque, img, trk, c, h);
 
 	enc = txt_guess_encoding (trk);
 
@@ -191,21 +201,6 @@ int pri_decode_text_auto_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, un
 	}
 
 	return (0);
-}
-
-static
-void txt_dec_init (pri_text_t *ctx, FILE *fp, pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h)
-{
-	memset (ctx, 0, sizeof (pri_text_t));
-
-	ctx->fp = fp;
-	ctx->img = img;
-	ctx->trk = trk;
-	ctx->c = c;
-	ctx->h = h;
-	ctx->first_track = 1;
-
-	ctx->mac_no_slip = par_mac_no_slip;
 }
 
 static
