@@ -1079,6 +1079,8 @@ pri_img_t *pri_img_new (void)
 	img->comment_size = 0;
 	img->comment = NULL;
 
+	img->readonly = 0;
+
 	return (img);
 }
 

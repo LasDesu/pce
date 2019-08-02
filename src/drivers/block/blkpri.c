@@ -57,6 +57,8 @@ int dsk_pri_save (disk_pri_t *dp)
 		return (1);
 	}
 
+	dp->img->readonly = 0;
+
 	if (pri_img_save (dp->dsk.fname, dp->img, dp->type)) {
 		return (1);
 	}
@@ -140,6 +142,10 @@ disk_t *dsk_pri_open_fp (FILE *fp, unsigned type, int ro)
 	if (dp->img == NULL) {
 		dsk_pri_del (dsk);
 		return (NULL);
+	}
+
+	if (dp->img->readonly) {
+		dsk_set_readonly (dsk, 1);
 	}
 
 	return (dsk);

@@ -54,16 +54,18 @@ typedef struct {
 
 typedef struct {
 	unsigned long trk_cnt;
-	pri_trk_t    **trk;
+	pri_trk_t     **trk;
 } pri_cyl_t;
 
 
 typedef struct {
 	unsigned long cyl_cnt;
-	pri_cyl_t    **cyl;
+	pri_cyl_t     **cyl;
 
 	unsigned long comment_size;
 	unsigned char *comment;
+
+	char          readonly;
 } pri_img_t;
 
 

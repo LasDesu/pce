@@ -277,6 +277,8 @@ int woz_load_info (woz_load_t *woz, unsigned long size)
 		woz->clock = 500000;
 	}
 
+	woz->img->readonly = (p[2] != 0);
+
 	woz_get_string (woz->creator, p + 5, 32);
 
 #if DEBUG_WOZ >= 1
@@ -636,7 +638,7 @@ int woz_save_info (woz_save_t *woz)
 
 	buf[8] = 2;	/* version */
 	buf[9] = woz->disk_type;
-	buf[10] = 1;	/* write protected */
+	buf[10] = (woz->img->readonly != 0);
 	buf[11] = 1;	/* cross track sync */
 	buf[12] = 1;	/* cleaned */
 
