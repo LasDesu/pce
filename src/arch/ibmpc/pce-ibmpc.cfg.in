@@ -495,14 +495,15 @@ cassette {
 
 	# The data format
 	#
-	# 1: Read and write cassette data as 8 bit signed PCM at
-	#    44100 HZ.
-	#
+	# 1: Read and write cassette data as 8 bit signed PCM.
 	# 0: Read and write cassette data as binary.
 	#
 	# If pcm is not defined, PCM mode is set if the file name ends
 	# with ".pcm", binary mode otherwise.
 	#pcm = 1
+
+	# Set the sample rate used in PCM mode.
+	srate = 44100
 
 	# The initial cassette mode (load or save). The default
 	# is "load".

@@ -60,6 +60,8 @@ typedef struct {
 	unsigned long clk_out;
 	unsigned long clk_inp;
 
+	unsigned long srate;
+
 	char          close;
 	char          *fname;
 	FILE          *fp;
@@ -101,6 +103,18 @@ int pc_cas_get_pcm (const pc_cassette_t *cas);
  * @param pcm If true set pcm mode, otherwise set binary mode
  *****************************************************************************/
 void pc_cas_set_pcm (pc_cassette_t *cas, int pcm);
+
+/*!***************************************************************************
+ * @short  Get the pcm sample rate
+ * @return The sample rate in Hz
+ *****************************************************************************/
+unsigned long pc_cas_get_srate (const pc_cassette_t *cas);
+
+/*!***************************************************************************
+ * @short Set the pcm sample rate
+ * @param pcm The sample rate in Hz
+ *****************************************************************************/
+void pc_cas_set_srate (pc_cassette_t *cas, unsigned long srate);
 
 /*!***************************************************************************
  * @short Rewind the cassette

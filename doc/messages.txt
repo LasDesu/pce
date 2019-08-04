@@ -143,6 +143,9 @@ emu.tape.save [<position> | "end"]
 	position to <position>. If "end" is specified, move the save
 	position to the end of the cassette file.
 
+emu.tape.srate <rate>
+	Set the PCM sample rate to <rate>.
+
 emu.tape.state
 	Print the cassette state. Prints the current mode (load/save)
 	and the current position.

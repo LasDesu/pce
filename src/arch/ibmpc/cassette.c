@@ -30,8 +30,7 @@
 #include <lib/console.h>
 
 
-#define CAS_CLK   1193182
-#define CAS_SRATE 44100
+#define CAS_CLK 1193182
 
 
 static void pc_cas_reset (pc_cassette_t *cas);
@@ -68,6 +67,8 @@ void pc_cas_init (pc_cassette_t *cas)
 
 	cas->clk_out = 0;
 	cas->clk_inp = 0;
+
+	cas->srate = 44100;
 
 	cas->close = 0;
 	cas->fname = NULL;
@@ -246,6 +247,18 @@ void pc_cas_set_pcm (pc_cassette_t *cas, int pcm)
 	pc_cas_reset (cas);
 }
 
+unsigned long pc_cas_get_srate (const pc_cassette_t *cas)
+{
+	return (cas->srate);
+}
+
+void pc_cas_set_srate (pc_cassette_t *cas, unsigned long srate)
+{
+	cas->srate = srate;
+
+	pc_cas_reset (cas);
+}
+
 void pc_cas_rewind (pc_cassette_t *cas)
 {
 	if (cas->fp != NULL) {
@@ -402,7 +415,7 @@ void pc_cas_set_motor (pc_cassette_t *cas, unsigned char val)
 	}
 
 	if ((val == 0) && cas->save && cas->pcm) {
-		for (i = 0; i < (CAS_SRATE / 16); i++) {
+		for (i = 0; i < (cas->srate / 16); i++) {
 			pc_cas_write_smp (cas, 0);
 		}
 	}
@@ -478,7 +491,7 @@ void pc_cas_print_state (const pc_cassette_t *cas)
 	pce_printf ("%s %s %lu %s %lu\n",
 		(cas->fname != NULL) ? cas->fname : "<none>",
 		cas->pcm ? "pcm" : "cas",
-		(unsigned long) CAS_SRATE,
+		cas->srate,
 		cas->save ? "save" : "load",
 		cas->position
 	);
@@ -490,7 +503,7 @@ void pc_cas_clock_pcm (pc_cassette_t *cas, unsigned long cnt)
 	unsigned long i, n;
 	int           v;
 
-	n = CAS_SRATE * cnt + cas->clk_pcm;
+	n = cas->srate * cnt + cas->clk_pcm;
 
 	cas->clk_pcm = n % CAS_CLK;
 

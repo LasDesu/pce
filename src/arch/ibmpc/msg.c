@@ -399,6 +399,25 @@ int pc_set_msg_emu_tape_save (ibmpc_t *pc, const char *msg, const char *val)
 }
 
 static
+int pc_set_msg_emu_tape_srate (ibmpc_t *pc, const char *msg, const char *val)
+{
+	unsigned long v;
+
+	if (pc->cas == NULL) {
+		return (1);
+	}
+
+	if (msg_get_ulng (val, &v)) {
+		return (1);
+	}
+
+	pc_cas_set_srate (pc->cas, v);
+	pc_cas_print_state (pc->cas);
+
+	return (0);
+}
+
+static
 int pc_set_msg_emu_tape_state (ibmpc_t *pc, const char *msg, const char *val)
 {
 	if (pc->cas == NULL) {
@@ -460,6 +479,7 @@ static pc_msg_list_t set_msg_list[] = {
 	{ "emu.tape.read", pc_set_msg_emu_tape_read },
 	{ "emu.tape.rewind", pc_set_msg_emu_tape_rewind },
 	{ "emu.tape.save", pc_set_msg_emu_tape_save },
+	{ "emu.tape.srate", pc_set_msg_emu_tape_srate },
 	{ "emu.tape.state", pc_set_msg_emu_tape_state },
 	{ "emu.tape.write", pc_set_msg_emu_tape_write },
 	{ NULL, NULL }
