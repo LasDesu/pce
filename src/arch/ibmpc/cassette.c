@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/cassette.c                                    *
  * Created:     2008-11-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2008-2010 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2008-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -251,7 +251,7 @@ void pc_cas_reset (pc_cassette_t *cas)
 	pc_cas_iir2_set_lowpass (&cas->pcm_inp_iir, 3000, CAS_SRATE);
 }
 
-int pc_cas_get_mode (pc_cassette_t *cas)
+int pc_cas_get_mode (const pc_cassette_t *cas)
 {
 	return (cas->save);
 }
@@ -284,7 +284,7 @@ void pc_cas_set_mode (pc_cassette_t *cas, int save)
 	pc_cas_reset (cas);
 }
 
-int pc_cas_get_pcm (pc_cassette_t *cas)
+int pc_cas_get_pcm (const pc_cassette_t *cas)
 {
 	return (cas->pcm);
 }
@@ -335,7 +335,7 @@ void pc_cas_append (pc_cassette_t *cas)
 	pc_cas_reset (cas);
 }
 
-unsigned long pc_cas_get_position (pc_cassette_t *cas)
+unsigned long pc_cas_get_position (const pc_cassette_t *cas)
 {
 	return (cas->position);
 }
@@ -485,7 +485,7 @@ void pc_cas_write_smp (pc_cassette_t *cas, int val)
 	cas->position += 1;
 }
 
-unsigned char pc_cas_get_inp (pc_cassette_t *cas)
+unsigned char pc_cas_get_inp (const pc_cassette_t *cas)
 {
 	return (cas->data_inp);
 }
@@ -534,7 +534,7 @@ void pc_cas_set_out (pc_cassette_t *cas, unsigned char val)
 	}
 }
 
-void pc_cas_print_state (pc_cassette_t *cas)
+void pc_cas_print_state (const pc_cassette_t *cas)
 {
 	const char *mode;
 

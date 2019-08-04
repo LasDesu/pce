@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/ibmpc/cassette.h                                         *
  * Created:     2008-11-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2008-2010 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2008-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -92,7 +92,7 @@ int pc_cas_set_fname (pc_cassette_t *cas, const char *fname);
  * @short  Get the cassette mode
  * @return True if in save mode, false if in load mode
  *****************************************************************************/
-int pc_cas_get_mode (pc_cassette_t *cas);
+int pc_cas_get_mode (const pc_cassette_t *cas);
 
 /*!***************************************************************************
  * @short Set the cassette mode
@@ -104,7 +104,7 @@ void pc_cas_set_mode (pc_cassette_t *cas, int save);
  * @short  Get the cassette pcm mode
  * @return True if in pcm mode, false if in binary mode
  *****************************************************************************/
-int pc_cas_get_pcm (pc_cassette_t *cas);
+int pc_cas_get_pcm (const pc_cassette_t *cas);
 
 /*!***************************************************************************
  * @short Set the cassette pcm mode
@@ -137,20 +137,29 @@ void pc_cas_append (pc_cassette_t *cas);
 /*!***************************************************************************
  * @short Get the current load/save position
  *****************************************************************************/
-unsigned long pc_cas_get_position (pc_cassette_t *cas);
+unsigned long pc_cas_get_position (const pc_cassette_t *cas);
 
 /*!***************************************************************************
  * @short Set the current load/save position
  *****************************************************************************/
 int pc_cas_set_position (pc_cassette_t *cas, unsigned long pos);
 
+/*!***************************************************************************
+ * @short Set the cassette motor status
+ *****************************************************************************/
 void pc_cas_set_motor (pc_cassette_t *cas, unsigned char val);
 
-unsigned char pc_cas_get_inp (pc_cassette_t *cas);
+/*!***************************************************************************
+ * @short Get the current input from the cassette
+ *****************************************************************************/
+unsigned char pc_cas_get_inp (const pc_cassette_t *cas);
 
+/*!***************************************************************************
+ * @short Set the current output to the cassette
+ *****************************************************************************/
 void pc_cas_set_out (pc_cassette_t *cas, unsigned char val);
 
-void pc_cas_print_state (pc_cassette_t *cas);
+void pc_cas_print_state (const pc_cassette_t *cas);
 
 void pc_cas_clock (pc_cassette_t *cas, unsigned long cnt);
 
