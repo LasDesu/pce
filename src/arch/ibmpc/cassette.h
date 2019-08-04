@@ -28,17 +28,8 @@
 
 
 typedef struct {
-	long a[3];
-	long b[3];
-	long x[3];
-	long y[3];
-} pc_cas_iir2_t;
-
-
-typedef struct {
 	char          save;
 	char          pcm;
-	char          filter;
 
 	unsigned char motor;
 
@@ -51,10 +42,7 @@ typedef struct {
 	unsigned char data_inp;
 
 	int           pcm_out_vol;
-	long          pcm_out_val;
-
-	pc_cas_iir2_t pcm_out_iir;
-	pc_cas_iir2_t pcm_inp_iir;
+	int           pcm_out_val;
 
 	unsigned      cas_out_cnt;
 	unsigned char cas_out_buf;
@@ -62,6 +50,8 @@ typedef struct {
 	unsigned      cas_inp_cnt;
 	unsigned char cas_inp_buf;
 	unsigned char cas_inp_bit;
+
+	int           pcm_inp_fir[3];
 
 	unsigned long clk;
 
@@ -111,18 +101,6 @@ int pc_cas_get_pcm (const pc_cassette_t *cas);
  * @param pcm If true set pcm mode, otherwise set binary mode
  *****************************************************************************/
 void pc_cas_set_pcm (pc_cassette_t *cas, int pcm);
-
-/*!***************************************************************************
- * @short  Get the cassette pcm filter mode
- * @return True if in filtered pcm mode, false if in raw pcm mode
- *****************************************************************************/
-int pc_cas_get_filter (pc_cassette_t *cas);
-
-/*!***************************************************************************
- * @short Set the cassette pcm filter mode
- * @param pcm If true set filtered pcm mode, otherwise set raw pcm mode
- *****************************************************************************/
-void pc_cas_set_filter (pc_cassette_t *cas, int filter);
 
 /*!***************************************************************************
  * @short Rewind the cassette

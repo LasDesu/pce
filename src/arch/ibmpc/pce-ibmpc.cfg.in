@@ -504,15 +504,6 @@ cassette {
 	# with ".pcm", binary mode otherwise.
 	#pcm = 1
 
-	# PCM filtering
-	#
-	# 1: Apply a low-pass filter to the PCM data written to the
-	#    cassette file.
-	#
-	# 0: The PCM data written to the cassette file is a
-	#    square wave.
-	filter = 1
-
 	# The initial cassette mode (load or save). The default
 	# is "load".
 	mode = "load"
