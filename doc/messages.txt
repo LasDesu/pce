@@ -121,9 +121,6 @@ emu.tape.file <filename>
 	disabled. In all other cases the current PCM mode is not
 	changed.
 
-emu.tape.filter "0" | "1"
-	Disable or enable PCM output filtering.
-
 emu.tape.load [<position> | "end"]
 	Switch to load mode. If <position> is given, move the load
 	position to <position>. If "end" is specified, move the load
