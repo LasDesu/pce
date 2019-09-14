@@ -72,7 +72,59 @@ int pri_half_rate (pri_img_t *img)
 
 
 static
-int pri_align_gcr_track_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
+int pri_mac_gcr_align_sector_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
+{
+	unsigned      rev;
+	unsigned      min_sct, sct;
+	unsigned long min_pos;
+	unsigned long bit, buf1, buf2;
+
+	pri_trk_set_pos (trk, 0);
+
+	buf1 = 0;
+	buf2 = 0;
+
+	min_pos = 0;
+	min_sct = -1;
+
+	rev = 0;
+
+	while (rev < 2) {
+		pri_trk_get_bits (trk, &bit, 1);
+
+		buf1 = ((buf1 << 1) & 0xffffffff) | ((buf2 >> 31) & 1);
+		buf2 = ((buf2 << 1) & 0xffffffff) | (bit & 1);
+
+		if ((buf1 & 0xffffff00) == 0xd5aa9600) {
+			sct = (buf2 >> 24) & 0xff;
+
+			if (sct < min_sct) {
+				min_sct = sct;
+				min_pos = trk->idx - 64;
+			}
+		}
+
+		if (trk->wrap) {
+			rev += 1;
+			trk->wrap = 0;
+		}
+	}
+
+	if (min_pos != 0) {
+		pri_trk_rotate (trk, min_pos);
+	}
+
+	return (0);
+}
+
+int pri_mac_gcr_align_sector (pri_img_t *img)
+{
+	return (pri_for_all_tracks (img, pri_mac_gcr_align_sector_cb, NULL));
+}
+
+
+static
+int pri_mac_gcr_align_sync_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
 {
 	unsigned      val, run;
 	unsigned long bit;
@@ -127,9 +179,9 @@ int pri_align_gcr_track_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, uns
 	return (0);
 }
 
-int pri_align_gcr_tracks (pri_img_t *img)
+int pri_mac_gcr_align_sync (pri_img_t *img)
 {
-	return (pri_for_all_tracks (img, pri_align_gcr_track_cb, NULL));
+	return (pri_for_all_tracks (img, pri_mac_gcr_align_sync_cb, NULL));
 }
 
 

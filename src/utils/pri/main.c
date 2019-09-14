@@ -97,7 +97,6 @@ static struct {
 	const char *opts;
 	const char *desc;
 } ops[] = {
-	{ "auto-align-gcr", "", "Automatically align GCR tracks to the index" },
 	{ "comment-add", "text", "Add to the image comment" },
 	{ "comment-load", "filename", "Load the image comment from a file" },
 	{ "comment-print", "", "Print the image comment" },
@@ -115,6 +114,9 @@ static struct {
 	{ "half-rate", "", "Half the data rate by removing odd numbered bits" },
 	{ "half-step", "", "Duplicate all tracks" },
 	{ "info", "", "Print image information" },
+	{ "mac-align", "", "Align the lowest sector with the index" },
+	{ "mac-align-sector", "", "Align the lowest sector with the index" },
+	{ "mac-align-sync", "", "Align the longest sync sequence with the index" },
 	{ "mfm-align-am", "what number pos", "Align an address mark with pos" },
 	{ "new", "", "Create new tracks" },
 	{ "rotate", "bits", "Rotate tracks left" },
@@ -345,7 +347,7 @@ int pri_operation (pri_img_t **img, const char *op, int argc, char **argv)
 	r = 1;
 
 	if (strcmp (op, "auto-align-gcr") == 0) {
-		r = pri_align_gcr_tracks (*img);
+		r = pri_mac_gcr_align_sync (*img);
 	}
 	else if (strcmp (op, "comment-add") == 0) {
 		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {
@@ -462,6 +464,15 @@ int pri_operation (pri_img_t **img, const char *op, int argc, char **argv)
 		}
 
 		r = pri_event_list (*img, optarg1[0], optarg2[0]);
+	}
+	else if (strcmp (op, "mac-align") == 0) {
+		r = pri_mac_gcr_align_sector (*img);
+	}
+	else if (strcmp (op, "mac-align-sector") == 0) {
+		r = pri_mac_gcr_align_sector (*img);
+	}
+	else if (strcmp (op, "mac-align-sync") == 0) {
+		r = pri_mac_gcr_align_sync (*img);
 	}
 	else if ((strcmp (op, "weak-clean") == 0)) {
 		r = pri_weak_clean (*img);

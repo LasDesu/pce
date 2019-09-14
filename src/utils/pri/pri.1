@@ -1,4 +1,4 @@
-.TH PRI 1 "2019-08-02" "HH" "pce"
+.TH PRI 1 "2019-09-14" "HH" "pce"
 \
 .SH NAME
 pri \- convert and modify PCE raw image files
@@ -108,9 +108,6 @@ for a list of valid formats.
 Perform an operation on the current image. Valid operations are:
 .RS
 .TP
-.B "auto-align-gcr"
-Automatically align Macintosh GCR tracks to the index.
-.TP
 .BI "comment-add " text
 Add \fItext\fR to the image comment.
 .TP
@@ -198,6 +195,15 @@ Duplicate all tracks. This is the reverse of double-step.
 .TP
 .B info
 Print information about the current image (same as \fB-f\fR).
+.TP
+.B "mac-align"
+This a synonym for \fBmac-align-sector\fR.
+.TP
+.B "mac-align-sector"
+Align the lowest numbered sector with the index.
+.TP
+.B "mac-align-sync"
+Align the longest sync sequence with the index.
 .TP
 .BI "mfm-align-am " "what pos"
 Rotate the track such that the first address mark of type \fIwhat\fR on
