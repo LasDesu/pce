@@ -457,6 +457,51 @@ int mfm_enc_hex (pri_text_t *ctx, unsigned val)
 }
 
 static
+int mfm_enc_iam (pri_text_t *ctx)
+{
+	unsigned long i;
+	unsigned long gap4a, gap1;
+
+	if (txt_match_uint (ctx, 10, &gap4a) == 0) {
+		return (1);
+	}
+
+	if (txt_match_uint (ctx, 10, &gap1) == 0) {
+		return (1);
+	}
+
+	for (i = 0; i < gap4a; i++) {
+		if (mfm_enc_byte (ctx, 0x4e, 0x00)) {
+			return (1);
+		}
+	}
+
+	for (i = 0; i < 12; i++) {
+		if (mfm_enc_byte (ctx, 0x00, 0x00)) {
+			return (1);
+		}
+	}
+
+	for (i = 0; i < 3; i++) {
+		if (mfm_enc_byte (ctx, 0xc2, 0x08)) {
+			return (1);
+		}
+	}
+
+	if (mfm_enc_byte (ctx, 0xfc, 0x00)) {
+		return (1);
+	}
+
+	for (i = 0; i < gap1; i++) {
+		if (mfm_enc_byte (ctx, 0x4e, 0x00)) {
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
+static
 int mfm_enc_rep (pri_text_t *ctx)
 {
 	unsigned long cnt;
@@ -592,6 +637,9 @@ int txt_encode_pri0_mfm (pri_text_t *ctx)
 	}
 	else if (txt_match (ctx, "FILL", 1)) {
 		return (mfm_enc_fill (ctx));
+	}
+	else if (txt_match (ctx, "IAM", 1)) {
+		return (mfm_enc_iam (ctx));
 	}
 	else if (txt_match (ctx, "REP", 1)) {
 		return (mfm_enc_rep (ctx));
