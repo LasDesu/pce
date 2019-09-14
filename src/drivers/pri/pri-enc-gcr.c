@@ -205,7 +205,15 @@ unsigned gcr_decode_byte (pri_trk_t *trk, int xlat)
 	}
 
 	if (xlat) {
-		val = gcr_dec_tab[val & 0xff];
+		val &= 0xff;
+
+		if (gcr_dec_tab[val] > 63) {
+			fprintf (stderr, "mac-gcr: bad nibble %02X at %lu\n",
+				val, trk->idx
+			);
+		}
+
+		val = gcr_dec_tab[val];
 	}
 
 	return (val);
