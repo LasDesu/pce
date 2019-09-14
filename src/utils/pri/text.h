@@ -49,6 +49,7 @@ typedef struct {
 	pri_trk_t      *trk;
 	unsigned long  c;
 	unsigned long  h;
+	unsigned       s;
 
 	char           first_track;
 

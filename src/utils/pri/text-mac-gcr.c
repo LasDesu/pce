@@ -234,6 +234,8 @@ int mac_decode_id (pri_text_t *ctx)
 		c, h, dec[1], dec[3]
 	);
 
+	ctx->s = dec[1];
+
 	ctx->column = 0;
 
 	return (0);
@@ -284,7 +286,64 @@ int mac_decode_end (pri_text_t *ctx)
 }
 
 static
-int mac_decode_data (pri_text_t *ctx)
+int mac_decode_data_nibbles (pri_text_t *ctx)
+{
+	unsigned       i, j;
+	unsigned long  val;
+	unsigned char  s;
+	unsigned char  buf[699];
+	unsigned char  chk[4];
+	pri_text_pos_t pos;
+
+	mac_dec_events (ctx);
+
+	txt_save_pos (ctx, &pos);
+
+	pri_trk_get_bits (ctx->trk, &val, 8);
+	s = val & 0xff;
+
+	for (i = 0; i < 699; i++) {
+		pri_trk_get_bits (ctx->trk, &val, 8);
+		buf[i] = val & 0xff;
+	}
+
+	for (i = 0; i < 4; i++) {
+		pri_trk_get_bits (ctx->trk, &val, 8);
+		chk[i] = val & 0xff;
+	}
+
+	if (mac_dec_event_occurred (ctx, pos.evt)) {
+		txt_restore_pos (ctx, &pos);
+		return (1);
+	}
+
+	fprintf (ctx->fp, " %02X\n", s);
+	fprintf (ctx->fp, "#CHECK START\n");
+
+	for (i = 0; i < 699; i++) {
+		j = i & 15;
+
+		if (j > 0) {
+			fputc (' ', ctx->fp);
+		}
+
+		fprintf (ctx->fp, "%02X", buf[i]);
+
+		if (j == 15) {
+			fputc ('\n', ctx->fp);
+		}
+	}
+
+	fprintf (ctx->fp, "\n#CHECK END\n");
+	fprintf (ctx->fp, "%02X %02X %02X %02X\n", chk[0], chk[1], chk[2], chk[3]);
+
+	ctx->column = 0;
+
+	return (0);
+}
+
+static
+int mac_decode_data_check (pri_text_t *ctx)
 {
 	unsigned       i, j;
 	unsigned long  val, high, dec;
@@ -307,8 +366,12 @@ int mac_decode_data (pri_text_t *ctx)
 			dec = mac_dec_tab[high & 0xff];
 
 			if (dec > 64) {
+				fprintf (stderr,
+					"bad nibble %02lX %lu/%lu/%u at %u\n",
+					high, ctx->c, ctx->h, ctx->s, i
+				);
 				txt_restore_pos (ctx, &pos);
-				return (0);
+				return (1);
 			}
 
 			high = (dec & 0x3f) << 2;
@@ -319,8 +382,11 @@ int mac_decode_data (pri_text_t *ctx)
 		dec = mac_dec_tab[val & 0xff];
 
 		if (dec > 64) {
+			fprintf (stderr, "bad nibble %02lX %lu/%lu/%u at %u\n",
+				val, ctx->c, ctx->h, ctx->s, i
+			);
 			txt_restore_pos (ctx, &pos);
-			return (0);
+			return (1);
 		}
 
 		val = (dec & 0x3f) | (high & 0xc0);
@@ -336,7 +402,7 @@ int mac_decode_data (pri_text_t *ctx)
 
 	if (mac_dec_event_occurred (ctx, pos.evt)) {
 		txt_restore_pos (ctx, &pos);
-		return (0);
+		return (1);
 	}
 
 	pri_mac_gcr_checksum (buf, buf, 0);
@@ -374,6 +440,20 @@ int mac_decode_data (pri_text_t *ctx)
 	fprintf (ctx->fp, "%02X %02X %02X %02X\n", chk[0], chk[1], chk[2], chk[3]);
 
 	ctx->column = 0;
+
+	return (0);
+}
+
+static
+int mac_decode_data (pri_text_t *ctx)
+{
+	if (mac_decode_data_check (ctx) == 0) {
+		return (0);
+	}
+
+	if (mac_decode_data_nibbles (ctx) == 0) {
+		return (0);
+	}
 
 	return (0);
 }
@@ -449,6 +529,7 @@ int txt_mac_dec_track (pri_text_t *ctx)
 			else if ((buf[0] == 0xd5) && (buf[1] == 0xaa) && (buf[2] == 0xad)) {
 				mac_decode_data (ctx);
 				mac_decode_end (ctx);
+				ctx->s = 0;
 			}
 			else if ((buf[0] == 0xde) && (buf[1] == 0xaa) && (buf[2] == 0xff)) {
 				mac_put_nl (ctx, 0);
