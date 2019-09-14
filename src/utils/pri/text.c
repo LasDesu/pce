@@ -103,7 +103,7 @@ int txt_dec_match (pri_text_t *ctx, const void *buf, unsigned cnt)
 		}
 	}
 
-	if ((i < cnt) || ctx->trk->wrap) {
+	if ((i < cnt) || (ctx->trk->wrap && ctx->trk->idx > 0)) {
 		txt_restore_pos (ctx, &pos);
 
 		return (1);

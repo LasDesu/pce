@@ -411,6 +411,10 @@ int txt_mac_dec_track (pri_text_t *ctx)
 			return (1);
 		}
 
+		if (ctx->trk->wrap) {
+			break;
+		}
+
 		mac_dec_events (ctx);
 
 		pri_trk_get_bits (ctx->trk, &bit, 1);
