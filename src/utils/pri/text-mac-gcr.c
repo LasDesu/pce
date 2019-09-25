@@ -261,8 +261,6 @@ int mac_check_data (const unsigned char *buf, unsigned size)
 static
 int mac_decode_end (pri_text_t *ctx)
 {
-	unsigned i;
-
 	if (txt_dec_match (ctx, "\xde\xaa", 16)) {
 		return (0);
 	}
@@ -271,11 +269,7 @@ int mac_decode_end (pri_text_t *ctx)
 	mac_put_byte (ctx, 0xde);
 	mac_put_byte (ctx, 0xaa);
 
-	for (i = 0; i < 2; i++) {
-		if (txt_dec_match (ctx, "\xff", 8)) {
-			break;
-		}
-
+	if (txt_dec_match (ctx, "\xff", 8) == 0) {
 		mac_put_byte (ctx, 0xff);
 		mac_put_nl (ctx, 0);
 	}
