@@ -468,13 +468,22 @@ void pri_encode_gcr_sync_group (pri_trk_t *trk, unsigned cnt)
 }
 
 static
-void pri_encode_gcr_sct (pri_trk_t *trk, unsigned char *src, unsigned c, unsigned h, unsigned s, unsigned fmt)
+void pri_encode_gcr_sct (pri_trk_t *trk, unsigned char *src, const psi_sct_t *sct, unsigned fmt)
 {
 	unsigned      i, v;
+	unsigned      c, h, s;
 	unsigned char buf[527];
 	unsigned char *p;
 
+	c = sct->c;
+	h = sct->h;
+	s = sct->s;
+
 	h = (h << 5) | ((c >> 6) & 0x1f);
+
+	if (sct->flags & PSI_FLAG_CRC_ID) {
+		fmt ^= 0xff;
+	}
 
 	pri_encode_gcr_sync_group (trk, 8);
 
@@ -492,6 +501,12 @@ void pri_encode_gcr_sct (pri_trk_t *trk, unsigned char *src, unsigned c, unsigne
 	pri_trk_set_bits (trk, gcr_enc_tab[s & 0x3f], 8);
 
 	pri_mac_gcr_checksum (buf, src, 1);
+
+	if (sct->flags & PSI_FLAG_CRC_DATA) {
+		buf[524] ^= 0xff;
+		buf[525] ^= 0xff;
+		buf[526] ^= 0xff;
+	}
 
 	p = buf;
 
@@ -546,7 +561,7 @@ int pri_encode_gcr_trk (pri_trk_t *dtrk, psi_trk_t *strk, unsigned fmt)
 
 		psi_sct_get_tags (sct, buf, 12);
 
-		pri_encode_gcr_sct (dtrk, buf, sct->c, sct->h, sct->s, f);
+		pri_encode_gcr_sct (dtrk, buf, sct, f);
 	}
 
 	if (dtrk->wrap) {
