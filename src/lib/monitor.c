@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/lib/monitor.c                                            *
  * Created:     2006-12-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2006-2013 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2006-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -39,6 +39,7 @@
 
 
 static mon_cmd_t par_cmd[] = {
+	{ "di", "name [drive] [ro] [rw]", "insert a disk" },
 	{ "d", "[addr [cnt]]", "dump memory" },
 	{ "e", "addr [val|string...]", "enter bytes into memory" },
 	{ "f", "addr cnt [val...]", "find bytes in memory" },
@@ -330,6 +331,67 @@ int mon_cmd_add (monitor_t *mon, const mon_cmd_t *cmd, unsigned cnt)
 int mon_cmd_add_bp (monitor_t *mon)
 {
 	return (mon_cmd_add (mon, par_cmd_bp, sizeof (par_cmd_bp) / sizeof (par_cmd_bp[0])));
+}
+
+/*
+ * di - disk insert
+ */
+static
+void mon_cmd_di (monitor_t *mon, cmd_t *cmd)
+{
+	int      have_drive, ro;
+	unsigned drive;
+	char     name[256], str[128];
+
+	if (mon->setmsg == NULL) {
+		cmd_error (cmd, "monitor: no message function\n");
+		return;
+	}
+
+	have_drive = 0;
+	ro = 0;
+
+	if (cmd_match_str (cmd, name, sizeof (name)) == 0) {
+		cmd_error (cmd, "need a file name\n");
+		return;
+	}
+
+	while (1) {
+		if (cmd_match (cmd, "ro")) {
+			ro = 1;
+		}
+		else if (cmd_match (cmd, "rw")) {
+			ro = 0;
+		}
+		else if (cmd_match_uint (cmd, &drive, 10)) {
+			have_drive = 1;
+		}
+		else {
+			break;
+		}
+	}
+
+	if (!cmd_match_end (cmd)) {
+		return;
+	}
+
+	if (have_drive) {
+		sprintf (str, "%u", drive);
+
+		if (mon->setmsg (mon->msgext, "disk.id", str)) {
+			return;
+		}
+	}
+
+	if (mon->setmsg (mon->msgext, "disk.insert", name)) {
+		return;
+	}
+
+	if (ro) {
+		if (mon->setmsg (mon->msgext, "disk.ro", NULL)) {
+			return;
+		}
+	}
 }
 
 /*
@@ -936,7 +998,10 @@ int mon_run (monitor_t *mon)
 		}
 
 		if (r != 0) {
-			if (cmd_match (&cmd, "d")) {
+			if (cmd_match (&cmd, "di")) {
+				mon_cmd_di (mon, &cmd);
+			}
+			else if (cmd_match (&cmd, "d")) {
 				mon_cmd_d (mon, &cmd);
 			}
 			else if (cmd_match (&cmd, "e")) {
