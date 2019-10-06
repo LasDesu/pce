@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/82xx/e8272.c                                     *
  * Created:     2005-03-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2005-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2005-2019 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -881,6 +881,10 @@ void cmd_read_clock (e8272_t *fdc, unsigned long cnt)
 
 	if (n == 0) {
 		cnt1 = fdc->cmd[8];
+
+		if ((cnt1 == 0) || (cnt1 > 128)) {
+			cnt1 = 128;
+		}
 	}
 	else {
 		cnt1 = 128 << n;
@@ -1436,6 +1440,10 @@ void cmd_write_clock (e8272_t *fdc, unsigned long cnt)
 
 	if (n == 0) {
 		fdc->buf_n = fdc->cmd[8];
+
+		if ((fdc->buf_n == 0) || (fdc->buf_n > 128)) {
+			fdc->buf_n = 128;
+		}
 	}
 	else {
 		fdc->buf_n = 128 << n;
