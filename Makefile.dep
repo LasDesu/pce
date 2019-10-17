@@ -2256,6 +2256,11 @@ src/devices/video/wy700.o: src/devices/video/wy700.c \
 src/devices/video/wy700_font.o: src/devices/video/wy700_font.c \
 	src/devices/video/wy700_font.h
 
+src/drivers/block/blkchd.o: src/drivers/block/blkchd.c \
+	src/config.h \
+	src/drivers/block/blkchd.h \
+	src/drivers/block/block.h
+
 src/drivers/block/blkcow.o: src/drivers/block/blkcow.c \
 	src/config.h \
 	src/drivers/block/blkcow.h \
@@ -2312,6 +2317,7 @@ src/drivers/block/blkraw.o: src/drivers/block/blkraw.c \
 
 src/drivers/block/block.o: src/drivers/block/block.c \
 	src/config.h \
+	src/drivers/block/blkchd.h \
 	src/drivers/block/blkdosem.h \
 	src/drivers/block/blkpbi.h \
 	src/drivers/block/blkpce.h \
@@ -2692,6 +2698,7 @@ src/lib/iniata.o: src/lib/iniata.c \
 
 src/lib/inidsk.o: src/lib/inidsk.c \
 	src/config.h \
+	src/drivers/block/blkchd.h \
 	src/drivers/block/blkcow.h \
 	src/drivers/block/blkdosem.h \
 	src/drivers/block/blkpart.h \
@@ -2874,6 +2881,7 @@ src/utils/pce-img/info.o: src/utils/pce-img/info.c \
 
 src/utils/pce-img/pce-img.o: src/utils/pce-img/pce-img.c \
 	src/config.h \
+	src/drivers/block/blkchd.h \
 	src/drivers/block/blkcow.h \
 	src/drivers/block/blkdosem.h \
 	src/drivers/block/blkpbi.h \

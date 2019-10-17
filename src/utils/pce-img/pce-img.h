@@ -36,7 +36,8 @@ enum {
 	DSK_DOSEMU,
 	DSK_PSI,
 	DSK_QED,
-	DSK_PBI
+	DSK_PBI,
+	DSK_CHD
 };
 
 

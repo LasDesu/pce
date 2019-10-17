@@ -6,6 +6,7 @@ DIRS += $(rel)
 DIST += $(rel)/Makefile.inc
 
 DRV_BLK_BAS := \
+	blkchd \
 	blkcow \
 	blkdosem \
 	blkpart \
@@ -26,6 +27,7 @@ DRV_BLK_ARC := $(rel)/block.a
 CLN  += $(DRV_BLK_ARC) $(DRV_BLK_OBJ)
 DIST += $(DRV_BLK_SRC) $(DRV_BLK_HDR)
 
+$(rel)/blkchd.o:	$(rel)/blkchd.c
 $(rel)/blkcow.o:	$(rel)/blkcow.c
 $(rel)/blkdosem.o:	$(rel)/blkdosem.c
 $(rel)/blkpart.o:	$(rel)/blkpart.c

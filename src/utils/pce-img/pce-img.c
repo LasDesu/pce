@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 #include <drivers/block/block.h>
+#include <drivers/block/blkchd.h>
 #include <drivers/block/blkcow.h>
 #include <drivers/block/blkraw.h>
 #include <drivers/block/blkpbi.h>
@@ -89,7 +90,7 @@ void print_help (void)
 		"  info     Show information about images\n"
 		"  rebase   Rebase images\n"
 		"\nformats:\n"
-		"  dosemu, img, pbi, pimg, psi, qed\n",
+		"  chd, dosemu, img, pbi, pimg, psi, qed\n",
 		stdout
 	);
 
@@ -101,7 +102,7 @@ void print_version (void)
 	fputs (
 		"pce-img version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2005-2018 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2005-2019 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -153,6 +154,9 @@ const char *pce_get_type_name (unsigned type)
 	case PCE_DISK_PBI:
 		return ("pbi");
 
+	case PCE_DISK_CHD:
+		return ("chd");
+
 	case PCE_DISK_PRI:
 		return ("pri");
 	}
@@ -185,6 +189,10 @@ unsigned pce_get_type (const char *str)
 
 	if (strcmp (str, "psi") == 0) {
 		return (DSK_PSI);
+	}
+
+	if (strcmp (str, "chd") == 0) {
+		return (DSK_CHD);
 	}
 
 	return (DSK_NONE);
@@ -558,6 +566,10 @@ int dsk_create (const char *name, unsigned type)
 		r = dsk_psi_create (name, PSI_FORMAT_NONE, par_c, par_h, par_s);
 		break;
 
+	case DSK_CHD:
+		r = dsk_chd_create (name, par_n, par_c, par_h, par_s);
+		break;
+
 	default:
 		r = dsk_pce_create (name, par_n, par_c, par_h, par_s, par_ofs & 0xffffffff);
 		break;
@@ -596,6 +608,10 @@ disk_t *dsk_open (const char *name, unsigned type, int ro)
 
 	case DSK_PSI:
 		dsk = dsk_psi_open (name, PSI_FORMAT_NONE, ro);
+		break;
+
+	case DSK_CHD:
+		dsk = dsk_chd_open (name, ro);
 		break;
 
 	default:

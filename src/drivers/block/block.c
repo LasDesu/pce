@@ -22,6 +22,7 @@
 
 #include <drivers/block/block.h>
 
+#include <drivers/block/blkchd.h>
 #include <drivers/block/blkdosem.h>
 #include <drivers/block/blkpbi.h>
 #include <drivers/block/blkpce.h>
@@ -760,6 +761,10 @@ disk_t *dsk_auto_open (const char *fname, uint64_t ofs, int ro)
 
 	if (dsk_qed_probe (fname)) {
 		return (dsk_qed_open (fname, ro));
+	}
+
+	if (dsk_chd_probe (fname)) {
+		return (dsk_chd_open (fname, ro));
 	}
 
 	if (dsk_dosemu_probe (fname)) {

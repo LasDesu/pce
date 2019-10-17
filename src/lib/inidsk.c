@@ -29,6 +29,7 @@
 #include <lib/log.h>
 #include <lib/path.h>
 
+#include <drivers/block/blkchd.h>
 #include <drivers/block/blkcow.h>
 #include <drivers/block/blkdosem.h>
 #include <drivers/block/blkpart.h>
@@ -319,6 +320,9 @@ int ini_get_disk (ini_sct_t *sct, disk_t **ret)
 		}
 		else if (strcmp (type, "qed") == 0) {
 			dsk = dsk_qed_open (path, ro);
+		}
+		else if (strcmp (type, "chd") == 0) {
+			dsk = dsk_chd_open (path, ro);
 		}
 		else if (strcmp (type, "partition") == 0) {
 			dsk = ini_get_disk_part (sct, c, h, s, ro);
