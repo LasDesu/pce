@@ -70,6 +70,8 @@ int st_video_init (st_video_t *vid, unsigned long addr, int mono)
 	vid->frame_skip = 0;
 	vid->frame_skip_max = 1;
 
+	vid->trm = NULL;
+
 	vid->hb_val = 0;
 	vid->hb_ext = NULL;
 	vid->set_hb = NULL;
