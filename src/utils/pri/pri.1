@@ -1,4 +1,4 @@
-.TH PRI 1 "2019-09-14" "HH" "pce"
+.TH PRI 1 "2019-11-30" "HH" "pce"
 \
 .SH NAME
 pri \- convert and modify PCE raw image files
@@ -232,6 +232,10 @@ Create new tracks.
 .TP
 .BI "rotate " cnt
 Rotate all selected tracks left by \fIcnt\fR bits. If \fIcnt\fR
+is negative, the track is rotated right.
+.TP
+.BI "rotate-angle " angle
+Rotate all selected tracks left by \fIangle\fR degrees. If \fIangle\fR
 is negative, the track is rotated right.
 .TP
 .BI "save " filename

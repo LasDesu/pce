@@ -119,6 +119,7 @@ static struct {
 	{ "mac-align-sync", "", "Align the longest sync sequence with the index" },
 	{ "mfm-align-am", "what number pos", "Align an address mark with pos" },
 	{ "new", "", "Create new tracks" },
+	{ "rotate-angle", "angle", "Rotate tracks by <angle> degrees" },
 	{ "rotate", "bits", "Rotate tracks left" },
 	{ "save", "filename", "Save raw tracks" },
 	{ "weak-clean", "", "Clean up weak bit events" },
@@ -602,6 +603,18 @@ int pri_operation (pri_img_t **img, const char *op, int argc, char **argv)
 	}
 	else if (strcmp (op, "new") == 0) {
 		r = pri_new (*img);
+	}
+	else if (strcmp (op, "rotate-angle") == 0) {
+		double val;
+
+		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {
+			fprintf (stderr, "%s: missing angle\n", arg0);
+			return (1);
+		}
+
+		val = strtod (optarg1[0], NULL);
+
+		r = pri_rotate_tracks_angle (*img, val);
 	}
 	else if (strcmp (op, "rotate") == 0) {
 		long ofs;
