@@ -387,6 +387,30 @@ int pfi_shift_index (pfi_img_t *img, long ofs)
 
 
 static
+int pfi_shift_index_us_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
+{
+	long us, ofs;
+
+	us = *(long *) opaque;
+
+	if (us == 0) {
+		return (0);
+	}
+
+	ofs = (us * (long long) pfi_trk_get_clock (trk)) / 1000000;
+
+	pfi_trk_shift_index (trk, ofs);
+
+	return (0);
+}
+
+int pfi_shift_index_us (pfi_img_t *img, long us)
+{
+	return (pfi_for_all_tracks (img, pfi_shift_index_us_cb, &us));
+}
+
+
+static
 int pfi_wpcom_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
 {
 	unsigned long i, n;

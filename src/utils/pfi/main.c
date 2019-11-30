@@ -136,6 +136,7 @@ void print_help (void)
 		"  set-rpm-mac-490        Set Macintosh RPMs at 489.6 kbit/s\n"
 		"  set-rpm-mac-500        Set Macintosh RPMs at 500 kbit/s\n"
 		"  shift-index <offset>   Shift the index by offset clock cycles\n"
+		"  shift-index-us <us>    Shift the index by us microseconds\n"
 		"  wpcom                  Simulate write precompensation\n"
 		"\n"
 		"parameters are:\n"
@@ -542,6 +543,19 @@ int pfi_operation (pfi_img_t **img, const char *op, int argc, char **argv)
 		}
 
 		r = pfi_shift_index (*img, ofs);
+	}
+	else if (strcmp (op, "shift-index-us") == 0) {
+		long us;
+
+		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {
+			return (1);
+		}
+
+		if (pfi_parse_long (optarg1[0], &us)) {
+			return (1);
+		}
+
+		r = pfi_shift_index_us (*img, us);
 	}
 	else if (strcmp (op, "slack") == 0) {
 		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {

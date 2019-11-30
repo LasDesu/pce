@@ -1,4 +1,4 @@
-.TH PFI 1 "2019-06-26" "HH" "pce"
+.TH PFI 1 "2019-11-30" "HH" "pce"
 \
 .SH NAME
 pfi \- convert and modify PFI flux images
@@ -185,6 +185,9 @@ Macintosh variable speed drive at 500 kbit/s.
 .BI "shift-index " "offset"
 Add \fIoffset\fR clock cycles to all index positions, thereby rotating
 the track data relative to the index.
+.TP
+.BI "shift-index-us " "us"
+Add \fIus\fR microseconds to all index positions.
 .TP
 .BI "slack " percentage
 Limit the slack data before the first and after the last index to at
