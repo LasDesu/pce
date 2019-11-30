@@ -508,7 +508,6 @@ int mfm_enc_hex (pri_text_t *ctx, unsigned val)
 static
 int mfm_enc_iam (pri_text_t *ctx)
 {
-	unsigned long i;
 	unsigned long gap4a, gap1;
 
 	if (txt_match_uint (ctx, 10, &gap4a) == 0) {
@@ -519,32 +518,24 @@ int mfm_enc_iam (pri_text_t *ctx)
 		return (1);
 	}
 
-	for (i = 0; i < gap4a; i++) {
-		if (mfm_enc_byte (ctx, 0x4e, 0x00)) {
-			return (1);
-		}
+	if (mfm_enc_bytes (ctx, 0x4e, 0x00, gap4a)) {
+		return (1);
 	}
 
-	for (i = 0; i < 12; i++) {
-		if (mfm_enc_byte (ctx, 0x00, 0x00)) {
-			return (1);
-		}
+	if (mfm_enc_bytes (ctx, 0x00, 0x00, 12)) {
+		return (1);
 	}
 
-	for (i = 0; i < 3; i++) {
-		if (mfm_enc_byte (ctx, 0xc2, 0x08)) {
-			return (1);
-		}
+	if (mfm_enc_bytes (ctx, 0xc2, 0x08, 3)) {
+		return (1);
 	}
 
 	if (mfm_enc_byte (ctx, 0xfc, 0x00)) {
 		return (1);
 	}
 
-	for (i = 0; i < gap1; i++) {
-		if (mfm_enc_byte (ctx, 0x4e, 0x00)) {
-			return (1);
-		}
+	if (mfm_enc_bytes (ctx, 0x4e, 0x00, gap1)) {
+		return (1);
 	}
 
 	return (0);

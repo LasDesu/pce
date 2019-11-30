@@ -426,6 +426,38 @@ int fm_enc_hex (pri_text_t *ctx, unsigned val)
 }
 
 static
+int fm_enc_iam (pri_text_t *ctx)
+{
+	unsigned long gap4a, gap1;
+
+	if (txt_match_uint (ctx, 10, &gap4a) == 0) {
+		return (1);
+	}
+
+	if (txt_match_uint (ctx, 10, &gap1) == 0) {
+		return (1);
+	}
+
+	if (fm_enc_bytes (ctx, 0xff, 0xff, gap4a)) {
+		return (1);
+	}
+
+	if (fm_enc_bytes (ctx, 0x00, 0xff, 6)) {
+		return (1);
+	}
+
+	if (fm_enc_byte (ctx, 0xfc, 0xd7)) {
+		return (1);
+	}
+
+	if (fm_enc_bytes (ctx, 0xff, 0xff, gap1)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
 int fm_enc_idam (pri_text_t *ctx)
 {
 	if (fm_enc_bytes (ctx, 0xff, 0x00, 6)) {
@@ -561,6 +593,9 @@ int txt_encode_pri0_fm (pri_text_t *ctx)
 	}
 	else if (txt_match (ctx, "GAP", 1)) {
 		return (fm_enc_gap (ctx));
+	}
+	else if (txt_match (ctx, "IAM", 1)) {
+		return (fm_enc_iam (ctx));
 	}
 	else if (txt_match (ctx, "IDAM", 1)) {
 		return (fm_enc_idam (ctx));
