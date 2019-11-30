@@ -37,6 +37,8 @@ CRC := CHECK SUM
 
 DAM := SYNC FB/C7
 
+EOT := FILL TRACK FF
+
 FILL <size> <val>[/<clock>]
 FILL TRACK <val>[/<clock>]
 
@@ -69,6 +71,8 @@ CRC := CHECK SUM
 
 DAM := SYNC AM FB
 
+EOT := FILL TRACK 4E
+
 FILL <size> <val>[/<clock>]
 FILL TRACK <val>[/<clock>]
 
@@ -96,7 +100,9 @@ CHECK START
 CHECK END
 CHECK SUM
 
-FILL TRACK
+EOT := FILL TRACK SYNC GROUP
+
+FILL TRACK <val>
 FILL <size> SYNC
 FILL <size> SYNC GROUP
 FILL <size> <val>

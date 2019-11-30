@@ -342,6 +342,27 @@ int fm_enc_dam (pri_text_t *ctx)
 }
 
 static
+int fm_enc_eot (pri_text_t *ctx)
+{
+	unsigned long max;
+
+	max = 50000;
+
+	if (ctx->bit_cnt < max) {
+		while (ctx->bit_cnt < max) {
+			if (fm_enc_byte (ctx, 0xff, 0xff)) {
+				return (1);
+			}
+		}
+
+		ctx->bit_cnt = max;
+		pri_trk_set_pos (ctx->trk, max);
+	}
+
+	return (0);
+}
+
+static
 int fm_enc_fill (pri_text_t *ctx)
 {
 	unsigned long max;
@@ -587,6 +608,9 @@ int txt_encode_pri0_fm (pri_text_t *ctx)
 	}
 	else if (txt_match (ctx, "DAM", 1)) {
 		return (fm_enc_dam (ctx));
+	}
+	else if (txt_match (ctx, "EOT", 1)) {
+		return (fm_enc_eot (ctx));
 	}
 	else if (txt_match (ctx, "FILL", 1)) {
 		return (fm_enc_fill (ctx));

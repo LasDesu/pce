@@ -772,36 +772,27 @@ int mac_enc_fill_sync_group (pri_text_t *ctx, unsigned long max)
 }
 
 static
-int mac_enc_fill_sync (pri_text_t *ctx, unsigned long max)
-{
-	if (txt_match (ctx, "GROUP", 1)) {
-		return (mac_enc_fill_sync_group (ctx, max));
-	}
-
-	if (mac_enc_fill_pattern (ctx, max, 0xff, 10)) {
-		return (1);
-	}
-
-	return (0);
-}
-
-static
 int mac_enc_fill (pri_text_t *ctx)
 {
 	unsigned long max, val;
 
 	if (txt_match (ctx, "TRACK", 1)) {
 		max = pri_get_mac_gcr_track_length (ctx->c);
-
-		return (mac_enc_fill_sync_group (ctx, max));
 	}
-
-	if (txt_match_uint (ctx, 10, &max) == 0) {
-		return (1);
+	else {
+		if (txt_match_uint (ctx, 10, &max) == 0) {
+			return (1);
+		}
 	}
 
 	if (txt_match (ctx, "SYNC", 1)) {
-		return (mac_enc_fill_sync (ctx, max));
+		if (txt_match (ctx, "GROUP", 1)) {
+			return (mac_enc_fill_sync_group (ctx, max));
+		}
+
+		if (mac_enc_fill_pattern (ctx, max, 0xff, 10)) {
+			return (1);
+		}
 	}
 
 	if (txt_match_uint (ctx, 16, &val) == 0) {
@@ -809,6 +800,20 @@ int mac_enc_fill (pri_text_t *ctx)
 	}
 
 	if (mac_enc_fill_pattern (ctx, max, val, 8)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
+int mac_enc_eot (pri_text_t *ctx)
+{
+	unsigned long max;
+
+	max = pri_get_mac_gcr_track_length (ctx->c);
+
+	if (mac_enc_fill_sync_group (ctx, max)) {
 		return (1);
 	}
 
@@ -1012,6 +1017,9 @@ int txt_encode_pri0_mac (pri_text_t *ctx)
 	}
 	else if (txt_match (ctx, "CHECK", 1)) {
 		return (mac_enc_check (ctx));
+	}
+	else if (txt_match (ctx, "EOT", 1)) {
+		return (mac_enc_eot (ctx));
 	}
 	else if (txt_match (ctx, "FILL", 1)) {
 		return (mac_enc_fill (ctx));
