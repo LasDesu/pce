@@ -303,24 +303,31 @@ int mfm_enc_bytes (pri_text_t *ctx, unsigned char data, unsigned char clock, uns
 }
 
 static
+int mfm_enc_address_mark (pri_text_t *ctx, unsigned val)
+{
+	ctx->crc = 0xffff;
+
+	if (mfm_enc_bytes (ctx, 0xa1, 0x04, 3)) {
+		return (1);
+	}
+
+	if (mfm_enc_byte (ctx, val, 0x00)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
 int mfm_enc_am (pri_text_t *ctx)
 {
-	unsigned      i;
 	unsigned long val;
 
 	if (txt_match_uint (ctx, 16, &val) == 0) {
 		return (1);
 	}
 
-	ctx->crc = 0xffff;
-
-	for (i = 0; i < 3; i++) {
-		if (mfm_enc_byte (ctx, 0xa1, 0x04)) {
-			return (1);
-		}
-	}
-
-	if (mfm_enc_byte (ctx, val, 0x00)) {
+	if (mfm_enc_address_mark (ctx, val & 0xff)) {
 		return (1);
 	}
 
@@ -390,6 +397,20 @@ int mfm_enc_check (pri_text_t *ctx)
 
 	if (txt_match (ctx, "SUM", 1)) {
 		return (mfm_enc_check_stop (ctx, 1));
+	}
+
+	return (0);
+}
+
+static
+int mfm_enc_dam (pri_text_t *ctx)
+{
+	if (mfm_enc_bytes (ctx, 0x00, 0x00, 12)) {
+		return (1);
+	}
+
+	if (mfm_enc_address_mark (ctx, 0xfb)) {
+		return (1);
 	}
 
 	return (0);
@@ -530,6 +551,20 @@ int mfm_enc_iam (pri_text_t *ctx)
 }
 
 static
+int mfm_enc_idam (pri_text_t *ctx)
+{
+	if (mfm_enc_bytes (ctx, 0x00, 0x00, 12)) {
+		return (1);
+	}
+
+	if (mfm_enc_address_mark (ctx, 0xfe)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
 int mfm_enc_rep (pri_text_t *ctx)
 {
 	unsigned long cnt;
@@ -663,6 +698,9 @@ int txt_encode_pri0_mfm (pri_text_t *ctx)
 	else if (txt_match (ctx, "CRC", 1)) {
 		return (mfm_enc_check_stop (ctx, 1));
 	}
+	else if (txt_match (ctx, "DAM", 1)) {
+		return (mfm_enc_dam (ctx));
+	}
 	else if (txt_match (ctx, "FILL", 1)) {
 		return (mfm_enc_fill (ctx));
 	}
@@ -671,6 +709,9 @@ int txt_encode_pri0_mfm (pri_text_t *ctx)
 	}
 	else if (txt_match (ctx, "IAM", 1)) {
 		return (mfm_enc_iam (ctx));
+	}
+	else if (txt_match (ctx, "IDAM", 1)) {
+		return (mfm_enc_idam (ctx));
 	}
 	else if (txt_match (ctx, "REP", 1)) {
 		return (mfm_enc_rep (ctx));

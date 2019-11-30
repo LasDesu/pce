@@ -328,6 +328,20 @@ int fm_enc_check (pri_text_t *ctx)
 }
 
 static
+int fm_enc_dam (pri_text_t *ctx)
+{
+	if (fm_enc_bytes (ctx, 0xff, 0x00, 6)) {
+		return (1);
+	}
+
+	if (fm_enc_byte (ctx, 0xfb, 0xc7)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
 int fm_enc_fill (pri_text_t *ctx)
 {
 	unsigned long max;
@@ -405,6 +419,20 @@ int fm_enc_hex (pri_text_t *ctx, unsigned val)
 	}
 
 	if (fm_enc_byte (ctx, val, clk)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
+int fm_enc_idam (pri_text_t *ctx)
+{
+	if (fm_enc_bytes (ctx, 0xff, 0x00, 6)) {
+		return (1);
+	}
+
+	if (fm_enc_byte (ctx, 0xfe, 0xc7)) {
 		return (1);
 	}
 
@@ -525,11 +553,17 @@ int txt_encode_pri0_fm (pri_text_t *ctx)
 	else if (txt_match (ctx, "CRC", 1)) {
 		return (fm_enc_check_stop (ctx, 1));
 	}
+	else if (txt_match (ctx, "DAM", 1)) {
+		return (fm_enc_dam (ctx));
+	}
 	else if (txt_match (ctx, "FILL", 1)) {
 		return (fm_enc_fill (ctx));
 	}
 	else if (txt_match (ctx, "GAP", 1)) {
 		return (fm_enc_gap (ctx));
+	}
+	else if (txt_match (ctx, "IDAM", 1)) {
+		return (fm_enc_idam (ctx));
 	}
 	else if (txt_match (ctx, "REP", 1)) {
 		return (fm_enc_rep (ctx));

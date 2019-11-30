@@ -26,7 +26,7 @@ Mode IBM-FM
 
 <val>[/<clock>]
 
-AM <val> := <val>/F7
+AM <val> := <val>/C7
 
 BIT [0|1]*
 
@@ -35,10 +35,14 @@ CHECK END
 CHECK SUM
 CRC := CHECK SUM
 
+DAM := SYNC FB/C7
+
 FILL <size> <val>[/<clock>]
 FILL TRACK <val>[/<clock>]
 
 GAP <cnt> := REP <cnt> FF
+
+IDAM := SYNC FE/C7
 
 REP <count> <val>[/<clock>]
 
@@ -61,12 +65,16 @@ CHECK END
 CHECK SUM
 CRC := CHECK SUM
 
+DAM := SYNC AM FB
+
 FILL <size> <val>[/<clock>]
 FILL TRACK <val>[/<clock>]
 
 GAP <cnt> := REP <cnt> 4E
 
 IAM <v1> <v2> := REP <v1> 4E REP 12 00 REP 3 C2/08 FC REP <v2> 4E
+
+IDAM := SYNC AM FE
 
 REP <cnt> <val>[/<clock>]
 
