@@ -291,6 +291,18 @@ int mfm_enc_byte (pri_text_t *ctx, unsigned char data, unsigned char clock)
 }
 
 static
+int mfm_enc_bytes (pri_text_t *ctx, unsigned char data, unsigned char clock, unsigned cnt)
+{
+	while (cnt-- > 0) {
+		if (mfm_enc_byte (ctx, data, clock)) {
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
+static
 int mfm_enc_am (pri_text_t *ctx)
 {
 	unsigned      i;
@@ -428,6 +440,22 @@ int mfm_enc_fill (pri_text_t *ctx)
 
 		ctx->bit_cnt = max;
 		pri_trk_set_pos (ctx->trk, max);
+	}
+
+	return (0);
+}
+
+static
+int mfm_enc_gap (pri_text_t *ctx)
+{
+	unsigned long cnt;
+
+	if (txt_match_uint (ctx, 10, &cnt) == 0) {
+		return (1);
+	}
+
+	if (mfm_enc_bytes (ctx, 0x4e, 0x00, cnt)) {
+		return (1);
 	}
 
 	return (0);
@@ -637,6 +665,9 @@ int txt_encode_pri0_mfm (pri_text_t *ctx)
 	}
 	else if (txt_match (ctx, "FILL", 1)) {
 		return (mfm_enc_fill (ctx));
+	}
+	else if (txt_match (ctx, "GAP", 1)) {
+		return (mfm_enc_gap (ctx));
 	}
 	else if (txt_match (ctx, "IAM", 1)) {
 		return (mfm_enc_iam (ctx));

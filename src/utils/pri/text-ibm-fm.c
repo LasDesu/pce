@@ -230,6 +230,18 @@ int fm_enc_byte (pri_text_t *ctx, unsigned char val, unsigned char clk)
 }
 
 static
+int fm_enc_bytes (pri_text_t *ctx, unsigned char val, unsigned char clk, unsigned cnt)
+{
+	while (cnt-- > 0) {
+		if (fm_enc_byte (ctx, val, clk)) {
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
+static
 int fm_enc_am (pri_text_t *ctx)
 {
 	unsigned long val;
@@ -355,6 +367,22 @@ int fm_enc_fill (pri_text_t *ctx)
 
 		ctx->bit_cnt = max;
 		pri_trk_set_pos (ctx->trk, max);
+	}
+
+	return (0);
+}
+
+static
+int fm_enc_gap (pri_text_t *ctx)
+{
+	unsigned long cnt;
+
+	if (txt_match_uint (ctx, 10, &cnt) == 0) {
+		return (1);
+	}
+
+	if (fm_enc_bytes (ctx, 0xff, 0xff, cnt)) {
+		return (1);
 	}
 
 	return (0);
@@ -499,6 +527,9 @@ int txt_encode_pri0_fm (pri_text_t *ctx)
 	}
 	else if (txt_match (ctx, "FILL", 1)) {
 		return (fm_enc_fill (ctx));
+	}
+	else if (txt_match (ctx, "GAP", 1)) {
+		return (fm_enc_gap (ctx));
 	}
 	else if (txt_match (ctx, "REP", 1)) {
 		return (fm_enc_rep (ctx));

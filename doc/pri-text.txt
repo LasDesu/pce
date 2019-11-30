@@ -38,6 +38,8 @@ CRC := CHECK SUM
 FILL <size> <val>[/<clock>]
 FILL TRACK <val>[/<clock>]
 
+GAP <cnt> := REP <cnt> FF
+
 REP <count> <val>[/<clock>]
 
 SECT <c> <h> <s> <n>
@@ -61,6 +63,8 @@ CRC := CHECK SUM
 
 FILL <size> <val>[/<clock>]
 FILL TRACK <val>[/<clock>]
+
+GAP <cnt> := REP <cnt> 4E
 
 IAM <v1> <v2> := REP <v1> 4E REP 12 00 REP 3 C2/08 FC REP <v2> 4E
 
