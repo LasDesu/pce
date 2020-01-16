@@ -821,7 +821,7 @@ int mac_enc_eot (pri_text_t *ctx)
 }
 
 static
-int mac_enc_hex (pri_text_t *ctx, unsigned val)
+int mac_enc_hex (pri_text_t *ctx, unsigned val, unsigned cnt)
 {
 	unsigned long bits;
 
@@ -830,8 +830,10 @@ int mac_enc_hex (pri_text_t *ctx, unsigned val)
 			return (1);
 		}
 
-		if (txt_enc_bits_raw (ctx, val, bits)) {
-			return (1);
+		while (cnt-- > 0) {
+			if (txt_enc_bits_raw (ctx, val, bits)) {
+				return (1);
+			}
 		}
 	}
 	else {
@@ -843,8 +845,10 @@ int mac_enc_hex (pri_text_t *ctx, unsigned val)
 			val = gcr_enc_tab[val];
 		}
 
-		if (mac_enc_byte (ctx, val)) {
-			return (1);
+		while (cnt-- > 0) {
+			if (mac_enc_byte (ctx, val)) {
+				return (1);
+			}
 		}
 	}
 
@@ -885,19 +889,11 @@ int mac_enc_rep (pri_text_t *ctx)
 		return (1);
 	}
 
-	if (txt_match_uint (ctx, 16, &val) == 0) {
-		return (1);
+	if (txt_match_uint (ctx, 16, &val)) {
+		return (mac_enc_hex (ctx, val, cnt));
 	}
 
-	while (cnt > 0) {
-		if (mac_enc_byte (ctx, val)) {
-			return (1);
-		}
-
-		cnt -= 1;
-	}
-
-	return (0);
+	return (1);
 }
 
 static
@@ -1059,7 +1055,7 @@ int txt_encode_pri0_mac (pri_text_t *ctx)
 		return (mac_enc_nibble_stop (ctx));
 	}
 	else if (txt_match_uint (ctx, 16, &val)) {
-		return (mac_enc_hex (ctx, val));
+		return (mac_enc_hex (ctx, val, 1));
 	}
 
 	return (-1);
