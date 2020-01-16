@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text.h                                         *
  * Created:     2017-10-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2017-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -91,6 +91,7 @@ int txt_error (pri_text_t *ctx, const char *str);
 
 int txt_match_eol (pri_text_t *ctx);
 int txt_match (pri_text_t *ctx, const char *str, int skip);
+int txt_match_string (pri_text_t *ctx, char *str, unsigned max);
 int txt_match_uint (pri_text_t *ctx, unsigned base, unsigned long *val);
 
 int txt_enc_bits_raw (pri_text_t *ctx, unsigned long val, unsigned cnt);

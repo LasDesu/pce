@@ -448,6 +448,71 @@ int txt_match (pri_text_t *ctx, const char *str, int skip)
 	return (1);
 }
 
+int txt_match_string (pri_text_t *ctx, char *str, unsigned max)
+{
+	int      c, esc;
+	unsigned idx;
+
+	txt_match_space (ctx);
+
+	if ((c = txt_getc (ctx, 0)) != '"') {
+		return (0);
+	}
+
+	txt_skip (ctx, 1);
+
+	idx = 0;
+	esc = 0;
+
+	while (1) {
+		if (idx >= max) {
+			return (0);
+		}
+
+		if ((c = txt_getc (ctx, 0)) == EOF) {
+			return (0);
+		}
+
+		txt_skip (ctx, 1);
+
+		esc = 0;
+
+		if (c == '\\') {
+			esc = 1;
+
+			if ((c = txt_getc (ctx, 0)) == EOF) {
+				return (0);
+			}
+
+			txt_skip (ctx, 1);
+		}
+
+		if (esc) {
+			if (c == 'n') {
+				c = 0x0a;
+			}
+			else if (c == 't') {
+				c = 0x09;
+			}
+		}
+		else {
+			if (c == '"') {
+				break;
+			}
+		}
+
+		str[idx++] = c;
+	}
+
+	if (idx >= max) {
+		return (0);
+	}
+
+	str[idx] = 0;
+
+	return (1);
+}
+
 int txt_match_uint (pri_text_t *ctx, unsigned base, unsigned long *val)
 {
 	unsigned i, dig;
@@ -543,6 +608,34 @@ int txt_enc_clock (pri_text_t *ctx)
 	}
 
 	if (pri_trk_evt_add (ctx->trk, PRI_EVENT_CLOCK, ctx->bit_cnt, val) == NULL) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
+int txt_enc_comm (pri_text_t *ctx)
+{
+	unsigned      cnt;
+	char          str[256];
+
+	if (txt_match (ctx, "RESET", 1)) {
+		pri_img_set_comment (ctx->img, NULL, 0);
+		return (0);
+	}
+
+	if (txt_match_string (ctx, str, 256) == 0) {
+		return (1);
+	}
+
+	cnt = strlen (str);
+
+	if (cnt < 256) {
+		str[cnt++] = 0x0a;
+	}
+
+	if (pri_img_add_comment (ctx->img, (unsigned char *) str, cnt)) {
 		return (1);
 	}
 
@@ -716,6 +809,25 @@ int txt_enc_weak (pri_text_t *ctx)
 }
 
 static
+int txt_clean_comment (pri_text_t *ctx)
+{
+	pri_img_t *img;
+
+	img = ctx->img;
+
+	while (img->comment_size > 0) {
+		if (img->comment[img->comment_size - 1] == 0x0a) {
+			img->comment_size -= 1;
+		}
+		else {
+			break;
+		}
+	}
+
+	return (0);
+}
+
+static
 int txt_encode_pri0 (pri_text_t *ctx)
 {
 	int r;
@@ -754,6 +866,11 @@ int txt_encode_pri0 (pri_text_t *ctx)
 		if (txt_match (ctx, "CLOCK", 1)) {
 			if (txt_enc_clock (ctx)) {
 				txt_error (ctx, "clock");
+				return (1);
+			}
+		}
+		else if (txt_match (ctx, "COMM", 1)) {
+			if (txt_enc_comm (ctx)) {
 				return (1);
 			}
 		}
@@ -803,6 +920,10 @@ int txt_encode_pri0 (pri_text_t *ctx)
 	}
 
 	if (txt_enc_track_finish (ctx)) {
+		return (1);
+	}
+
+	if (txt_clean_comment (ctx)) {
 		return (1);
 	}
 
