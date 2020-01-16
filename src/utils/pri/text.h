@@ -74,6 +74,7 @@ typedef struct {
 	unsigned char  mac_check_buf[3];
 	unsigned short mac_check_chk[3];
 	char           mac_no_slip;
+	char           mac_nibble;
 
 	unsigned short crc;
 } pri_text_t;

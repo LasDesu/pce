@@ -94,6 +94,9 @@ MODE MAC-GCR
 
 <hex>
 
+"<"
+">"
+
 BIT [0|1]*
 
 CHECK START

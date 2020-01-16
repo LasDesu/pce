@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text-mac-gcr.c                                 *
  * Created:     2017-10-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2017-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -823,6 +823,14 @@ int mac_enc_eot (pri_text_t *ctx)
 static
 int mac_enc_hex (pri_text_t *ctx, unsigned val)
 {
+	if (ctx->mac_nibble) {
+		if (val > 63) {
+			return (1);
+		}
+
+		val = gcr_enc_tab[val];
+	}
+
 	if (mac_enc_byte (ctx, val)) {
 		return (1);
 	}
@@ -831,27 +839,25 @@ int mac_enc_hex (pri_text_t *ctx, unsigned val)
 }
 
 static
-int mac_enc_nibble (pri_text_t *ctx)
+int mac_enc_nibble_start (pri_text_t *ctx)
 {
-	unsigned long val;
-
-	if (txt_match_uint (ctx, 16, &val) == 0) {
+	if (ctx->mac_nibble) {
 		return (1);
 	}
 
-	if (val > 63) {
+	ctx->mac_nibble = 1;
+
+	return (0);
+}
+
+static
+int mac_enc_nibble_stop (pri_text_t *ctx)
+{
+	if (ctx->mac_nibble == 0) {
 		return (1);
 	}
 
-	val = gcr_enc_tab[val];
-
-	if (txt_match (ctx, ">", 1) == 0) {
-		return (1);
-	}
-
-	if (mac_enc_byte (ctx, val)) {
-		return (1);
-	}
+	ctx->mac_nibble = 0;
 
 	return (0);
 }
@@ -1034,7 +1040,10 @@ int txt_encode_pri0_mac (pri_text_t *ctx)
 		return (mac_enc_sync (ctx));
 	}
 	else if (txt_match (ctx, "<", 1)) {
-		return (mac_enc_nibble (ctx));
+		return (mac_enc_nibble_start (ctx));
+	}
+	else if (txt_match (ctx, ">", 1)) {
+		return (mac_enc_nibble_stop (ctx));
 	}
 	else if (txt_match_uint (ctx, 16, &val)) {
 		return (mac_enc_hex (ctx, val));
