@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text.c                                         *
  * Created:     2014-08-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2014-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2014-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -31,6 +31,14 @@
 #include "main.h"
 #include "text.h"
 
+
+static
+void txt_init (pri_text_t *ctx, FILE *fp)
+{
+	memset (ctx, 0, sizeof (pri_text_t));
+
+	ctx->fp = fp;
+}
 
 void txt_save_pos (const pri_text_t *ctx, pri_text_pos_t *pos)
 {
@@ -165,9 +173,8 @@ void txt_dec_event (pri_text_t *ctx, unsigned long type, unsigned long val)
 static
 void txt_dec_init (pri_text_t *ctx, FILE *fp, pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h)
 {
-	memset (ctx, 0, sizeof (pri_text_t));
+	txt_init (ctx, fp);
 
-	ctx->fp = fp;
 	ctx->img = img;
 	ctx->trk = trk;
 	ctx->c = c;
@@ -280,14 +287,6 @@ int pri_decode_text (pri_img_t *img, const char *fname, unsigned enc)
 	return (r);
 }
 
-
-static
-void txt_init (pri_text_t *ctx, FILE *fp)
-{
-	ctx->fp = fp;
-	ctx->cnt = 0;
-	ctx->line = 0;
-}
 
 static
 int txt_getc (pri_text_t *ctx, unsigned idx)
