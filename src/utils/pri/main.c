@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/main.c                                         *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -187,6 +187,7 @@ void print_help (void)
 	fputs (
 		"\n"
 		"parameters are:\n"
+		"  mac-no-slip,\n"
 		"  mfm-auto-gap3, mfm-clock, mfm-iam, mfm-gap1, mfm-gap3, mfm-gap4a,\n"
 		"  mfm-min-size, mfm-nopos, mfm-track-size\n"
 		"  fm-auto-gap3, fm-clock, fm-iam, fm-gap1, fm-gap3, fm-gap4a,\n"
@@ -221,7 +222,7 @@ void print_version (void)
 	fputs (
 		"pri version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2012-2019 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2012-2020 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
