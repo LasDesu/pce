@@ -93,6 +93,7 @@ MODE MAC-GCR
 -----------
 
 <hex>
+<hex>/<bitcnt>
 
 "<"
 ">"

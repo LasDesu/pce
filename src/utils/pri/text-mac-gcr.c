@@ -823,16 +823,29 @@ int mac_enc_eot (pri_text_t *ctx)
 static
 int mac_enc_hex (pri_text_t *ctx, unsigned val)
 {
-	if (ctx->mac_nibble) {
-		if (val > 63) {
+	unsigned long bits;
+
+	if (txt_match (ctx, "/", 1)) {
+		if (txt_match_uint (ctx, 10, &bits) == 0) {
 			return (1);
 		}
 
-		val = gcr_enc_tab[val];
+		if (txt_enc_bits_raw (ctx, val, bits)) {
+			return (1);
+		}
 	}
+	else {
+		if (ctx->mac_nibble) {
+			if (val > 63) {
+				return (1);
+			}
 
-	if (mac_enc_byte (ctx, val)) {
-		return (1);
+			val = gcr_enc_tab[val];
+		}
+
+		if (mac_enc_byte (ctx, val)) {
+			return (1);
+		}
 	}
 
 	return (0);
