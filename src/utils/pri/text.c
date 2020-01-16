@@ -79,6 +79,10 @@ unsigned txt_guess_encoding (pri_trk_t *trk)
 			return (PRI_TEXT_FM);
 		}
 
+		if ((val & 0x00ffffff) == 0xd5aa96) {
+			return (PRI_TEXT_MAC);
+		}
+
 		if ((val & 0xffffffff) == 0xcff3fcff) {
 			return (PRI_TEXT_MAC);
 		}
