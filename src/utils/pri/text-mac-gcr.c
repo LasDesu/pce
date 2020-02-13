@@ -793,6 +793,8 @@ int mac_enc_fill (pri_text_t *ctx)
 		if (mac_enc_fill_pattern (ctx, max, 0xff, 10)) {
 			return (1);
 		}
+
+		return (0);
 	}
 
 	if (txt_match_uint (ctx, 16, &val) == 0) {
