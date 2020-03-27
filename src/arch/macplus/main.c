@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/main.c                                      *
  * Created:     2007-04-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -101,7 +101,7 @@ void print_version (void)
 	fputs (
 		"pce-macplus version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2007-2019 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2007-2020 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -113,7 +113,7 @@ void mac_log_banner (void)
 {
 	pce_log (MSG_MSG,
 		"pce-macplus version " PCE_VERSION_STR "\n"
-		"Copyright (C) 2007-2019 Hampa Hug <hampa@hampa.ch>\n"
+		"Copyright (C) 2007-2020 Hampa Hug <hampa@hampa.ch>\n"
 	);
 }
 
@@ -170,6 +170,16 @@ int cmd_set_sym (macplus_t *sim, const char *sym, unsigned long val)
 	}
 
 	return (1);
+}
+
+void sim_stop (void)
+{
+	macplus_t *sim = par_sim;
+
+	pce_prt_sep ("BREAK");
+	mac_prt_state (sim, "cpu");
+
+	mac_set_msg (sim, "emu.stop", NULL);
 }
 
 void mac_log_deb (const char *msg, ...)

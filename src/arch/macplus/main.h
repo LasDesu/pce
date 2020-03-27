@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/main.h                                      *
  * Created:     2007-04-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -56,6 +56,8 @@ extern macplus_t  *par_sim;
 
 extern unsigned   par_sig_int;
 
+
+void sim_stop (void);
 
 void mac_log_deb (const char *msg, ...);
 
