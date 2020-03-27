@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/text.c                                         *
  * Created:     2012-01-20 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -249,6 +249,8 @@ int txt_parse_ulong (FILE *fp, unsigned long *val, int first)
 
 		c = fgetc (fp);
 	}
+
+	ungetc (c, fp);
 
 	return (0);
 }
