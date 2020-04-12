@@ -128,6 +128,65 @@ pce_print_uint16:
 %endif
 
 
+%ifdef PCE_USE_PARSE_OPT
+;-----------------------------------------------------------------------------
+; Parse an option string
+;
+; inp: DS:SI = command line
+;      CX      command line length
+; out: ES:DI = option string
+;      CX    = remaining command line length
+;      CF    = 1 if there are no more options
+;-----------------------------------------------------------------------------
+pce_parse_opt:
+	push	ax
+	push	dx
+
+	cld
+	mov	ah, 1
+
+.skip:
+	jcxz	.done
+	lodsb
+	dec	cx
+	cmp	al, 32
+	jbe	.skip
+
+	xor	ah, ah
+
+	cmp	al, '"'
+	je	.quote
+
+.next:
+	stosb
+	jcxz	.done
+	lodsb
+	dec	cx
+	cmp	al, 32
+	jbe	.done
+	jmp	.next
+
+.quote:
+	jcxz	.done
+	lodsb
+	dec	cx
+	cmp	al, '"'
+	je	.done
+	stosb
+	jmp	.quote
+
+.done:
+	xor	al, al
+	stosb				; terminate the string
+
+	shr	ah, 1			; set carry flag
+
+	pop	dx
+	pop	ax
+	ret
+%endif
+
+
 %ifdef PCE_USE_HOOK_CHECK
 ;-----------------------------------------------------------------------------
 ; Check if we are running under PCE
