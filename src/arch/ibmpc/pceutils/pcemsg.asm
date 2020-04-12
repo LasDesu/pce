@@ -5,7 +5,7 @@
 ;-----------------------------------------------------------------------------
 ; File name:    pcemsg.asm
 ; Created:      2004-09-17 by Hampa Hug <hampa@hampa.ch>
-; Copyright:    (C) 2004-2017 Hampa Hug <hampa@hampa.ch>
+; Copyright:    (C) 2004-2020 Hampa Hug <hampa@hampa.ch>
 ;-----------------------------------------------------------------------------
 
 ;-----------------------------------------------------------------------------
@@ -34,57 +34,21 @@ section .text
 	jmp	start
 
 
+msg_usage	db "pcemsg version ", PCE_VERSION_STR , 0x0d, 0x0a
+		db 0x0d, 0x0a
+		db "usage: pcemsg [msg [val]]", 0x0d, 0x0a
+		db 0x00
+
 msg_notpce	db "pcemsg: not running under PCE", 0x0d, 0x0a, 0x00
 msg_error	db "pcemsg: error", 0x0d, 0x0a, 0x00
 
 
 %define PCE_USE_PRINT_STRING 1
+%define PCE_USE_PARSE_OPT    1
 %define PCE_USE_HOOK_CHECK   1
 %define PCE_USE_HOOK         1
 
 %include "pce-lib.inc"
-
-
-; copy a string
-pce_set_string:
-	push	ax
-	push	dx
-
-.skip:
-	jcxz	.done
-	lodsb
-	dec	cx
-	cmp	al, 32
-	jbe	.skip
-
-	cmp	al, '"'
-	je	.quote
-
-.next:
-	stosb
-	jcxz	.done
-	lodsb
-	dec	cx
-	cmp	al, 32
-	je	.done
-	jmp	.next
-
-.quote:
-	jcxz	.done
-	lodsb
-	dec	cx
-	cmp	al, '"'
-	je	.done
-	stosb
-	jmp	.quote
-
-.done:
-	xor	al, al
-	stosb
-
-	pop	dx
-	pop	ax
-	ret
 
 
 start:
@@ -104,10 +68,11 @@ start:
 	xor	ch, ch
 
 	mov	di, str_msg
-	call	pce_set_string
+	call	pce_parse_opt
+	jc	.usage
 
 	mov	di, str_val
-	call	pce_set_string
+	call	pce_parse_opt
 
 	mov	si, str_msg
 	mov	di, str_val
@@ -115,9 +80,18 @@ start:
 	call	pce_hook
 	jc	.error
 
-.done:
+.done_ok:
 	xor	al, al
-	jmp	.exit
+
+.exit:
+	mov	ah, 0x4c
+	int	0x21
+	int	0x20
+
+.usage:
+	mov	si, msg_usage
+	call	pce_print_string
+	jmp	.done_ok
 
 .error:
 	mov	si, msg_error
@@ -129,13 +103,8 @@ start:
 
 .done_err:
 	call	pce_print_string
-	mov	ax, 0x4c01
-	int	0x21
-
-.exit:
-	mov	ah, 0x4c
-	int	0x21
-	int	0x20
+	mov	al, 0x01
+	jmp	.exit
 
 
 section	.bss
