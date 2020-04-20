@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pri/pri-enc-mfm.c                                *
  * Created:     2012-02-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -100,16 +100,14 @@ unsigned char mfm_decode_byte (mfm_code_t *mfm)
 	unsigned i;
 	unsigned val;
 
-	if (mfm->clock) {
-		mfm_get_bit (mfm);
-	}
-
 	val = 0;
 
 	for (i = 0; i < 8; i++) {
-		val = (val << 1) | (mfm_get_bit (mfm) != 0);
+		if (mfm->clock) {
+			mfm_get_bit (mfm);
+		}
 
-		mfm_get_bit (mfm);
+		val = (val << 1) | (mfm_get_bit (mfm) != 0);
 	}
 
 	return (val);
@@ -243,7 +241,11 @@ static
 int mfm_decode_weak (psi_sct_t *sct, pri_trk_t *trk)
 {
 	unsigned long ofs, val, idx;
+	unsigned long ofs1, ofs2;
 	pri_evt_t     *evt, *e;
+
+	ofs1 = trk->idx;
+	ofs2 = (ofs1 + 16UL * sct->n) % trk->size;
 
 	evt = pri_trk_evt_get_idx (trk, PRI_EVENT_WEAK, 0);
 
@@ -255,25 +257,26 @@ int mfm_decode_weak (psi_sct_t *sct, pri_trk_t *trk)
 			continue;
 		}
 
-		if (e->pos < trk->idx) {
-			ofs = trk->size + e->pos - trk->idx;
+		if (ofs1 < ofs2) {
+			if (((e->pos + 32) <= ofs1) || (e->pos >= ofs2)) {
+				continue;
+			}
 		}
 		else {
-			ofs = e->pos - trk->idx;
+			if ((e->pos >= ofs2) && ((e->pos + 32) <= ofs1)) {
+				continue;
+			}
 		}
 
+		ofs = (trk->size + e->pos - trk->idx) % trk->size;
 		val = e->val;
-
-		if (ofs >= (16UL * sct->n)) {
-			continue;
-		}
 
 		if (psi_weak_alloc (sct)) {
 			return (1);
 		}
 
 		while (val != 0) {
-			if ((ofs & 1) == 0) {
+			if (ofs & 1) {
 				idx = ofs >> 1;
 				if (val & 0x80000000) {
 					sct->weak[idx >> 3] |= 0x80 >> (idx & 7);
@@ -282,6 +285,10 @@ int mfm_decode_weak (psi_sct_t *sct, pri_trk_t *trk)
 
 			ofs += 1;
 			val = (val << 1) & 0xffffffff;
+
+			if (ofs >= trk->size) {
+				ofs = 0;
+			}
 		}
 	}
 
