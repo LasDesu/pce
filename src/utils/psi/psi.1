@@ -1,4 +1,4 @@
-.TH PSI 1 "2018-02-06" "HH" "pce"
+.TH PSI 1 "2020-04-17" "HH" "pce"
 \
 .SH NAME
 psi \- convert and modify PCE sector image files
@@ -230,13 +230,48 @@ contents of the sectors are read sequentially from the file.
 .B new
 Create all selected sectors, if they do not already exist.
 .TP
-.BI "regular " "c/h/s/n"
-Regularize the image. After this operation the image has a regular
-geometry of \fIc\fR cylinders, \fIh\fR heads and \fIs\fR sectors
-per track (numbered 1 to \fIs\fR) and a uniform sector size of
-\fIn\fR (default: 512). All sector attributes are removed. Sectors
-that don't fit within the regular geometry are removed and missing
-sectors are created.
+.BI "regular " format
+Convert a disk image to a regular geometry. Sectors outside the specified
+geometry are removed and missing sectors are added.
+The format can be one of:
+.RS
+.TP
+.B ibm160
+IBM MFM 40/1/8
+.TP
+.B ibm180
+IBM MFM 40/1/9
+.TP
+.B ibm320
+IBM MFM 40/2/8
+.TP
+.B ibm360
+IBM MFM 40/2/9
+.TP
+.B ibm400
+IBM MFM 40/2/10
+.TP
+.B ibm720
+IBM MFM 80/2/9
+.TP
+.B ibm800
+IBM MFM 80/2/10
+.TP
+.B ibm1200
+IBM MFM 80/2/15
+.TP
+.B ibm1440
+IBM MFM 80/2/18
+.TP
+.B mac400
+Macintosh GCR 400K single sided
+.TP
+.B mac800
+Macintosh GCR 800K double sided
+.TP
+\fI<c>\fB/\fI<h>\fB/\fI<s>\fR
+Any regular disk geometry
+.RE
 .TP
 .BI "reorder " "s1,s2,s3,..."
 Reorder the sectors on all selected tracks. Sectors that are not
