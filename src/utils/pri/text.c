@@ -324,6 +324,17 @@ int txt_error (pri_text_t *ctx, const char *str)
 	return (1);
 }
 
+unsigned long txt_get_position (pri_text_t *ctx)
+{
+	unsigned long val;
+
+	val = (ctx->bit_cnt + ctx->offset) & 0xffffffff;
+
+	ctx->offset = 0;
+
+	return (val);
+}
+
 static
 void txt_skip (pri_text_t *ctx, unsigned cnt)
 {
@@ -596,7 +607,7 @@ int txt_enc_bits_raw (pri_text_t *ctx, unsigned long val, unsigned cnt)
 static
 int txt_enc_clock (pri_text_t *ctx)
 {
-	unsigned long val, old;
+	unsigned long pos, val, old;
 
 	if (txt_match_uint (ctx, 10, &val) == 0) {
 		return (1);
@@ -607,7 +618,9 @@ int txt_enc_clock (pri_text_t *ctx)
 		val = (65536ULL * val + (old / 2)) / old;
 	}
 
-	if (pri_trk_evt_add (ctx->trk, PRI_EVENT_CLOCK, ctx->bit_cnt, val) == NULL) {
+	pos = txt_get_position (ctx);
+
+	if (pri_trk_evt_add (ctx->trk, PRI_EVENT_CLOCK, pos, val) == NULL) {
 		return (1);
 	}
 
@@ -645,7 +658,7 @@ int txt_enc_comm (pri_text_t *ctx)
 static
 int txt_enc_index (pri_text_t *ctx)
 {
-	ctx->index_position = ctx->bit_cnt;
+	ctx->index_position = txt_get_position (ctx);
 
 	return (0);
 }
@@ -675,6 +688,20 @@ int txt_enc_mode (pri_text_t *ctx)
 		ctx->encoding = PRI_TEXT_RAW;
 		return (1);
 	}
+
+	return (0);
+}
+
+static
+int txt_enc_offset (pri_text_t *ctx)
+{
+	unsigned long val;
+
+	if (txt_match_uint (ctx, 10, &val) == 0) {
+		return (1);
+	}
+
+	ctx->offset = val;
 
 	return (0);
 }
@@ -795,13 +822,15 @@ int txt_enc_track (pri_text_t *ctx)
 static
 int txt_enc_weak (pri_text_t *ctx)
 {
-	unsigned long val;
+	unsigned long val, pos;
 
 	if (txt_match_uint (ctx, 16, &val) == 0) {
 		return (1);
 	}
 
-	if (pri_trk_evt_add (ctx->trk, PRI_EVENT_WEAK, ctx->bit_cnt, val) == NULL) {
+	pos = txt_get_position (ctx);
+
+	if (pri_trk_evt_add (ctx->trk, PRI_EVENT_WEAK, pos, val) == NULL) {
 		return (1);
 	}
 
@@ -881,6 +910,11 @@ int txt_encode_pri0 (pri_text_t *ctx)
 		}
 		else if (txt_match (ctx, "MODE", 1)) {
 			if (txt_enc_mode (ctx)) {
+				return (1);
+			}
+		}
+		else if (txt_match (ctx, "OFFSET", 1)) {
+			if (txt_enc_offset (ctx)) {
 				return (1);
 			}
 		}

@@ -65,6 +65,8 @@ typedef struct {
 
 	unsigned long  index_position;
 
+	unsigned long  offset;
+
 	unsigned       column;
 	char           need_nl;
 
