@@ -11,6 +11,7 @@ OFFSET <val>
 RATE <clock-rate>
 RAW <bit>...
 WEAK <val>
+WEAK RUN <cnt>
 
 
 Mode RAW

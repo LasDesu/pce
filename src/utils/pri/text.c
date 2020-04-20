@@ -524,6 +524,32 @@ int txt_match_string (pri_text_t *ctx, char *str, unsigned max)
 	return (1);
 }
 
+int txt_match_hex_digit (pri_text_t *ctx, unsigned *val)
+{
+	int c;
+
+	txt_match_space (ctx);
+
+	c = txt_getc (ctx, 0);
+
+	if ((c >= '0') && (c <= '9')) {
+		*val = c - '0';
+	}
+	else if ((c >= 'A') && (c <= 'F')) {
+		*val = c - 'A' + 10;
+	}
+	else if ((c >= 'a') && (c <= 'f')) {
+		*val = c - 'a' + 10;
+	}
+	else {
+		return (0);
+	}
+
+	txt_skip (ctx, 1);
+
+	return (1);
+}
+
 int txt_match_uint (pri_text_t *ctx, unsigned base, unsigned long *val)
 {
 	unsigned i, dig;
@@ -820,18 +846,74 @@ int txt_enc_track (pri_text_t *ctx)
 }
 
 static
-int txt_enc_weak (pri_text_t *ctx)
+int txt_enc_weak_run (pri_text_t *ctx)
 {
-	unsigned long val, pos;
+	unsigned long pos, cnt, val;
 
-	if (txt_match_uint (ctx, 16, &val) == 0) {
+	if (txt_match_uint (ctx, 10, &cnt) == 0) {
 		return (1);
 	}
 
 	pos = txt_get_position (ctx);
+	val = 0xffffffff;
 
-	if (pri_trk_evt_add (ctx->trk, PRI_EVENT_WEAK, pos, val) == NULL) {
-		return (1);
+	while (cnt >= 32) {
+		if (pri_trk_evt_add (ctx->trk, PRI_EVENT_WEAK, pos, val) == NULL) {
+			return (1);
+		}
+
+		pos += 32;
+		cnt -= 32;
+	}
+
+	if (cnt > 0) {
+		val = (val << (32 - cnt)) & 0xffffffff;
+
+		if (pri_trk_evt_add (ctx->trk, PRI_EVENT_WEAK, pos, val) == NULL) {
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
+static
+int txt_enc_weak (pri_text_t *ctx)
+{
+	unsigned      dig, cnt;
+	unsigned long pos, val;
+
+	if (txt_match (ctx, "RUN", 1)) {
+		return (txt_enc_weak_run (ctx));
+	}
+
+	pos = txt_get_position (ctx);
+	val = 0;
+	cnt = 0;
+
+	while (txt_match_eol (ctx) == 0) {
+		if (txt_match_hex_digit (ctx, &dig) == 0) {
+			break;
+		}
+
+		val |= (unsigned long) (dig & 0x0f) << (28 - cnt);
+		cnt += 4;
+
+		if (cnt >= 32) {
+			if (pri_trk_evt_add (ctx->trk, PRI_EVENT_WEAK, pos, val) == NULL) {
+				return (1);
+			}
+
+			pos += 32;
+			val = 0;
+			cnt = 0;
+		}
+	}
+
+	if (cnt > 0) {
+		if (pri_trk_evt_add (ctx->trk, PRI_EVENT_WEAK, pos, val) == NULL) {
+			return (1);
+		}
 	}
 
 	return (0);
