@@ -1065,10 +1065,7 @@ void mac_sony_ctl_format (mac_sony_t *sony)
 	else {
 		blk = dsk_get_block_cnt (dsk);
 
-		if ((blk == 800) || (blk == 1600)) {
-			;
-		}
-		else if (dsk_get_type (dsk) == PCE_DISK_PSI) {
+		if (dsk_get_type (dsk) == PCE_DISK_PSI) {
 			if ((format == 0) || (format == 1)) {
 				blk = 800;
 			}
