@@ -358,12 +358,14 @@ void mac_sony_insert (mac_sony_t *sony, unsigned drive)
 
 		if (dsk_get_block_cnt (dsk) < 1600) {
 			mem_set_uint8 (sony->mem, vars + SONY_TWOSIDEFMT, 0x00);
+			mem_set_uint8 (sony->mem, vars + SONY_SIDES, 0x00);
+			mem_set_uint8 (sony->mem, vars + SONY_NEWIF, 0x00);
 		}
 		else {
 			mem_set_uint8 (sony->mem, vars + SONY_TWOSIDEFMT, 0xff);
+			mem_set_uint8 (sony->mem, vars + SONY_SIDES, 0xff);
+			mem_set_uint8 (sony->mem, vars + SONY_NEWIF, 0xff);
 		}
-
-		mem_set_uint8 (sony->mem, vars + SONY_NEWIF, 0xff);
 
 		if (dsk_get_readonly (dsk)) {
 			mem_set_uint8 (sony->mem, vars + SONY_WPROT, 0xff);
