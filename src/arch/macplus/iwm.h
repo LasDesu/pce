@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/iwm.h                                       *
  * Created:     2007-11-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -42,7 +42,6 @@ typedef struct {
 	pri_img_t       *img;
 	char            img_del;
 
-	char            locked;
 	char            auto_rotate;
 
 	unsigned        cylinders;
@@ -127,8 +126,6 @@ void mac_iwm_set_disks (mac_iwm_t *iwm, disks_t *dsks);
 void mac_iwm_set_disk_id (mac_iwm_t *iwm, unsigned drive, unsigned id);
 void mac_iwm_flush_disk (mac_iwm_t *iwm, unsigned id);
 void mac_iwm_insert_disk (mac_iwm_t *iwm, unsigned id);
-int mac_iwm_get_locked (const mac_iwm_t *iwm, unsigned drive);
-void mac_iwm_set_locked (mac_iwm_t *iwm, unsigned drive, int locked);
 void mac_iwm_set_auto_rotate (mac_iwm_t *iwm, unsigned drive, int val);
 
 void mac_iwm_set_head_sel (mac_iwm_t *iwm, unsigned char val);

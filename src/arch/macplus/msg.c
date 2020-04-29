@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/msg.c                                       *
  * Created:     2007-12-04 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -124,66 +124,6 @@ int mac_set_msg_emu_exit (macplus_t *sim, const char *msg, const char *val)
 	sim->brk = PCE_BRK_ABORT;
 
 	mon_set_terminate (&par_mon, 1);
-
-	return (0);
-}
-
-static
-int mac_set_msg_emu_iwm_ro (macplus_t *sim, const char *msg, const char *val)
-{
-	unsigned drv;
-
-	if (msg_get_uint (val, &drv)) {
-		return (1);
-	}
-
-	if (drv == 0) {
-		pce_log (MSG_INF, "setting all iwm drives to read-only\n");
-		mac_iwm_set_locked (&sim->iwm, 0, 1);
-		mac_iwm_set_locked (&sim->iwm, 1, 1);
-		mac_iwm_set_locked (&sim->iwm, 2, 1);
-	}
-	else {
-		pce_log (MSG_INF, "setting iwm drive %lu to read-only\n", drv);
-		mac_iwm_set_locked (&sim->iwm, drv - 1, 1);
-	}
-
-	return (0);
-}
-
-static
-int mac_set_msg_emu_iwm_rw (macplus_t *sim, const char *msg, const char *val)
-{
-	unsigned drv;
-
-	if (msg_get_uint (val, &drv)) {
-		return (1);
-	}
-
-	if (drv == 0) {
-		pce_log (MSG_INF, "setting all iwm drives to read/write\n");
-		mac_iwm_set_locked (&sim->iwm, 0, 0);
-		mac_iwm_set_locked (&sim->iwm, 1, 0);
-		mac_iwm_set_locked (&sim->iwm, 2, 0);
-	}
-	else {
-		pce_log (MSG_INF, "setting iwm drive %lu to read/write\n", drv);
-		mac_iwm_set_locked (&sim->iwm, drv - 1, 0);
-	}
-
-	return (0);
-}
-
-static
-int mac_set_msg_emu_iwm_status (macplus_t *sim, const char *msg, const char *val)
-{
-	unsigned i;
-
-	for (i = 0; i < 3; i++) {
-		pce_log (MSG_INF, "IWM drive %u: locked=%d\n",
-			i + 1, mac_iwm_get_locked (&sim->iwm, i)
-		);
-	}
 
 	return (0);
 }
@@ -380,9 +320,6 @@ static mac_msg_list_t set_msg_list[] = {
 	{ "emu.cpu.speed", mac_set_msg_emu_cpu_speed },
 	{ "emu.cpu.speed.step", mac_set_msg_emu_cpu_speed_step },
 	{ "emu.exit", mac_set_msg_emu_exit },
-	{ "emu.iwm.ro", mac_set_msg_emu_iwm_ro },
-	{ "emu.iwm.rw", mac_set_msg_emu_iwm_rw },
-	{ "emu.iwm.status", mac_set_msg_emu_iwm_status },
 	{ "emu.mac.insert", mac_set_msg_emu_mac_insert },
 	{ "emu.pause", mac_set_msg_emu_pause },
 	{ "emu.pause.toggle", mac_set_msg_emu_pause_toggle },

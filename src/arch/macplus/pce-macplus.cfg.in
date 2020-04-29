@@ -237,9 +237,6 @@ iwm {
 		# Force the drive to be single sided.
 		single_sided = 0
 
-		# The disk is locked.
-		locked       = 0
-
 		# Automatically align the individual tracks.
 		auto_rotate  = 1
 	}
@@ -249,7 +246,6 @@ iwm {
 		disk         = 2
 		inserted     = 0
 		single_sided = 0
-		locked       = 0
 		auto_rotate  = 1
 	}
 
@@ -259,7 +255,6 @@ iwm {
 		file         = "disk3.pbit"
 		inserted     = 0
 		single_sided = 0
-		locked       = 0
 		auto_rotate  = 1
 	}
 }
