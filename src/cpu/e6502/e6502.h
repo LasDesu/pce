@@ -40,6 +40,11 @@
 #define E6502_FLG_Z 0x02
 #define E6502_FLG_C 0x01
 
+#define E6502_MAP_BITS  8
+#define E6502_MAP_PAGES (1 << (16 - E6502_MAP_BITS))
+#define E6502_MAP_SIZE  (1 << E6502_MAP_BITS)
+#define E6502_MAP_MASK  ((1 << E6502_MAP_BITS) - 1)
+
 
 struct e6502_t;
 
@@ -78,8 +83,8 @@ typedef struct e6502_t {
 	void           *set_ioport_ext;
 	void           (*set_ioport) (void *ext, unsigned char val);
 
-	unsigned char  *mem_map_rd[64];
-	unsigned char  *mem_map_wr[64];
+	unsigned char  *mem_map_rd[E6502_MAP_PAGES];
+	unsigned char  *mem_map_wr[E6502_MAP_PAGES];
 
 	void           *hook_ext;
 	int            (*hook_all) (void *ext, unsigned char op);
@@ -149,10 +154,8 @@ unsigned char e6502_get_mem8 (e6502_t *c, unsigned short addr)
 		return (e6502_get_ioport_8 (c, addr));
 	}
 
-	p = c->mem_map_rd[(addr >> 10) & 0x3f];
-
-	if (p != NULL) {
-		return (p[addr & 0x3ff]);
+	if ((p = c->mem_map_rd[(addr & 0xffff) >> E6502_MAP_BITS]) != NULL) {
+		return (p[addr & E6502_MAP_MASK]);
 	}
 
 	return (c->get_uint8 (c->mem_rd_ext, addr));
@@ -168,10 +171,8 @@ void e6502_set_mem8 (e6502_t *c, unsigned short addr, unsigned char val)
 		return;
 	}
 
-	p = c->mem_map_wr[(addr >> 10) & 0x3f];
-
-	if (p != NULL) {
-		p[addr & 0x3ff] = val;
+	if ((p = c->mem_map_wr[(addr & 0xffff) >> E6502_MAP_BITS]) != NULL) {
+		p[addr & E6502_MAP_MASK] = val;
 	}
 	else {
 		c->set_uint8 (c->mem_wr_ext, addr, val);
