@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/atarist/ikbd.c                                      *
  * Created:     2013-06-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -167,6 +167,7 @@ static st_joymap_t joymap[] = {
 	{ PCE_KEY_KP_2, 0x02 },
 	{ PCE_KEY_KP_3, 0x0a },
 	{ PCE_KEY_KP_0, 0x80 },
+	{ PCE_KEY_LSUPER, 0x80 },
 	{ PCE_KEY_NONE, 0 }
 };
 
