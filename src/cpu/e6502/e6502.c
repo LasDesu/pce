@@ -314,12 +314,12 @@ int e6502_set_reg (e6502_t *c, const char *reg, unsigned long val)
 	return (1);
 }
 
-unsigned long long e6502_get_clock (e6502_t *c)
+unsigned long e6502_get_clock (e6502_t *c)
 {
 	return (c->clkcnt);
 }
 
-unsigned long long e6502_get_opcnt (e6502_t *c)
+unsigned long e6502_get_opcnt (e6502_t *c)
 {
 	return (c->inscnt);
 }

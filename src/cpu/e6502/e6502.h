@@ -48,53 +48,53 @@ typedef void (*e6502_opcode_f) (struct e6502_t *c);
 
 
 typedef struct e6502_t {
-	unsigned           flags;
+	unsigned       flags;
 
-	unsigned short     pc;
-	unsigned char      a;
-	unsigned char      x;
-	unsigned char      y;
-	unsigned char      s;
-	unsigned char      p;
+	unsigned short pc;
+	unsigned char  a;
+	unsigned char  x;
+	unsigned char  y;
+	unsigned char  s;
+	unsigned char  p;
 
-	char               check_irq;
+	char           check_irq;
 
-	unsigned short     lpc;
+	unsigned short lpc;
 
-	unsigned short     ea;
-	char               ea_page;
+	unsigned short ea;
+	char           ea_page;
 
-	unsigned char      rst_val;
-	unsigned char      irq_val;
-	unsigned char      nmi_val;
-	unsigned char      nmi_pnd;
+	unsigned char  rst_val;
+	unsigned char  irq_val;
+	unsigned char  nmi_val;
+	unsigned char  nmi_pnd;
 
-	void               *mem_rd_ext;
-	void               *mem_wr_ext;
+	void           *mem_rd_ext;
+	void           *mem_wr_ext;
 
-	unsigned char      (*get_uint8) (void *ext, unsigned long addr);
-	void               (*set_uint8) (void *ext, unsigned long addr, unsigned char val);
+	unsigned char  (*get_uint8) (void *ext, unsigned long addr);
+	void           (*set_uint8) (void *ext, unsigned long addr, unsigned char val);
 
-	void               *set_ioport_ext;
-	void               (*set_ioport) (void *ext, unsigned char val);
+	void           *set_ioport_ext;
+	void           (*set_ioport) (void *ext, unsigned char val);
 
-	unsigned char      *mem_map_rd[64];
-	unsigned char      *mem_map_wr[64];
+	unsigned char  *mem_map_rd[64];
+	unsigned char  *mem_map_wr[64];
 
-	void               *hook_ext;
-	int                (*hook_all) (void *ext, unsigned char op);
-	int                (*hook_undef) (void *ext, unsigned char op);
-	int                (*hook_brk) (void *ext, unsigned char op);
+	void           *hook_ext;
+	int            (*hook_all) (void *ext, unsigned char op);
+	int            (*hook_undef) (void *ext, unsigned char op);
+	int            (*hook_brk) (void *ext, unsigned char op);
 
-	unsigned char      ioport[3];
+	unsigned char  ioport[3];
 
-	unsigned char      inst[4];
+	unsigned char  inst[4];
 
-	e6502_opcode_f     op[256];
+	e6502_opcode_f op[256];
 
-	unsigned long      delay;
-	unsigned long long clkcnt;
-	unsigned long long inscnt;
+	unsigned long  delay;
+	unsigned long  clkcnt;
+	unsigned long  inscnt;
 } e6502_t;
 
 
@@ -254,12 +254,12 @@ int e6502_set_reg (e6502_t *c, const char *reg, unsigned long val);
 /*****************************************************************************
  * @short Get the number of executed clock cycles
  *****************************************************************************/
-unsigned long long e6502_get_clock (e6502_t *c);
+unsigned long e6502_get_clock (e6502_t *c);
 
 /*****************************************************************************
  * @short Get the number of executed instructions
  *****************************************************************************/
-unsigned long long e6502_get_opcnt (e6502_t *c);
+unsigned long e6502_get_opcnt (e6502_t *c);
 
 /*****************************************************************************
  * @short Get the current delay
