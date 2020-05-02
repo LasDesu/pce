@@ -74,9 +74,6 @@ PCE_RC759_OBJ_EXT := \
 	src/lib/inidsk.o \
 	src/lib/iniram.o \
 	src/lib/initerm.o \
-	src/lib/ihex.o \
-	src/lib/srec.o \
-	src/lib/load.o \
 	src/lib/log.o \
 	src/lib/monitor.o \
 	src/lib/msg.o \
@@ -84,8 +81,9 @@ PCE_RC759_OBJ_EXT := \
 	src/lib/path.o \
 	src/lib/string.o \
 	src/lib/sysdep.o \
-	$(CPU_8086_OBJ) \
+	$(LIBPCE_LOAD_OBJ) \
 	$(LIBINI_OBJ) \
+	$(CPU_8086_OBJ) \
 	$(DRV_BLK_OBJ) \
 	$(DRV_PSI_OBJ) \
 	$(DRV_PRI_OBJ) \

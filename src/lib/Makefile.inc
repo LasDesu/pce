@@ -18,6 +18,7 @@ LIBPCE_BAS := \
 	initerm \
 	load \
 	log \
+	mhex \
 	monitor \
 	msg \
 	msgdsk \
@@ -37,6 +38,8 @@ LIBPCE_OBJ := $(foreach f,$(LIBPCE_BAS),$(rel)/$(f).o)
 LIBPCE_HDR := $(foreach f,$(LIBPCE_BAS),$(rel)/$(f).h)
 LIBPCE_SDP := src/config.h
 
+LIBPCE_LOAD_OBJ := $(rel)/ihex.o $(rel)/mhex.o $(rel)/srec.o $(rel)/load.o
+
 CLN  += $(LIBPCE_OBJ)
 DIST += $(LIBPCE_SRC) $(LIBPCE_HDR)
 
@@ -51,6 +54,7 @@ $(rel)/inidsk.o:	$(rel)/inidsk.c
 $(rel)/iniram.o:	$(rel)/iniram.c
 $(rel)/initerm.o:	$(rel)/initerm.c
 $(rel)/log.o:		$(rel)/log.c
+$(rel)/mhex.o:		$(rel)/mhex.c
 $(rel)/monitor.o:	$(rel)/monitor.c
 $(rel)/msg.o:		$(rel)/msg.c
 $(rel)/msgdsk.o:	$(rel)/msgdsk.c

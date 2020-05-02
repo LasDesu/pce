@@ -2740,6 +2740,7 @@ src/lib/load.o: src/lib/load.c \
 	src/lib/ihex.h \
 	src/lib/load.h \
 	src/lib/log.h \
+	src/lib/mhex.h \
 	src/lib/path.h \
 	src/lib/srec.h \
 	src/libini/libini.h
@@ -2747,10 +2748,14 @@ src/lib/load.o: src/lib/load.c \
 src/lib/log.o: src/lib/log.c \
 	src/lib/log.h
 
+src/lib/mhex.o: src/lib/mhex.c \
+	src/lib/mhex.h
+
 src/lib/monitor.o: src/lib/monitor.c \
 	src/lib/cmd.h \
 	src/lib/console.h \
 	src/lib/ihex.h \
+	src/lib/mhex.h \
 	src/lib/monitor.h \
 	src/lib/srec.h
 

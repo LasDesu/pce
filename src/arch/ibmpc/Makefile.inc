@@ -83,9 +83,6 @@ PCE_IBMPC_OBJ_EXT := \
 	src/lib/inidsk.o \
 	src/lib/iniram.o \
 	src/lib/initerm.o \
-	src/lib/ihex.o \
-	src/lib/srec.o \
-	src/lib/load.o \
 	src/lib/log.o \
 	src/lib/monitor.o \
 	src/lib/msg.o \
@@ -93,6 +90,8 @@ PCE_IBMPC_OBJ_EXT := \
 	src/lib/path.o \
 	src/lib/string.o \
 	src/lib/sysdep.o \
+	$(LIBPCE_LOAD_OBJ) \
+	$(LIBINI_OBJ) \
 	$(CPU_8086_OBJ) \
 	$(DEV_VID_OBJ) \
 	$(DRV_BLK_OBJ) \
@@ -100,8 +99,7 @@ PCE_IBMPC_OBJ_EXT := \
 	$(DRV_PSI_OBJ) \
 	$(DRV_CHR_OBJ) \
 	$(DRV_SND_OBJ) \
-	$(DRV_TRM_OBJ) \
-	$(LIBINI_OBJ)
+	$(DRV_TRM_OBJ)
 
 ifeq "$(PCE_ENABLE_TUN)" "1"
 PCE_IBMPC_OBJ_EXT += src/lib/tun.o

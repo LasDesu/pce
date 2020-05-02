@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/lib/monitor.c                                            *
  * Created:     2006-12-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2006-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2006-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -29,13 +29,15 @@
 #include <lib/cmd.h>
 #include <lib/console.h>
 #include <lib/ihex.h>
+#include <lib/mhex.h>
 #include <lib/srec.h>
 
 
 #define MON_FORMAT_NONE   0
 #define MON_FORMAT_BINARY 1
 #define MON_FORMAT_IHEX   2
-#define MON_FORMAT_SREC   3
+#define MON_FORMAT_MHEX   3
+#define MON_FORMAT_SREC   4
 
 
 static mon_cmd_t par_cmd[] = {
@@ -233,6 +235,9 @@ unsigned mon_guess_format (const char *fname)
 	else if (strcasecmp (ext, "hex") == 0) {
 		return (MON_FORMAT_IHEX);
 	}
+	else if (strcasecmp (ext, "mhex") == 0) {
+		return (MON_FORMAT_MHEX);
+	}
 	else if (strcasecmp (ext, "srec") == 0) {
 		return (MON_FORMAT_SREC);
 	}
@@ -248,6 +253,9 @@ int mon_match_format (monitor_t *mon, cmd_t *cmd, unsigned *fmt)
 	}
 	else if (cmd_match (cmd, "ihex")) {
 		*fmt = MON_FORMAT_IHEX;
+	}
+	else if (cmd_match (cmd, "mhex")) {
+		*fmt = MON_FORMAT_MHEX;
 	}
 	else if (cmd_match (cmd, "srec")) {
 		*fmt = MON_FORMAT_SREC;
@@ -715,6 +723,12 @@ void mon_cmd_load (monitor_t *mon, cmd_t *cmd)
 		}
 		break;
 
+	case MON_FORMAT_MHEX:
+		if (mhex_load_fp (fp, mon, (mhex_set_f) mon_set_mem8)) {
+			pce_printf ("loading mhex failed\n");
+		}
+		break;
+
 	case MON_FORMAT_SREC:
 		if (srec_load_fp (fp, mon, (srec_set_f) mon_set_mem8)) {
 			pce_printf ("loading srec failed\n");
@@ -817,6 +831,17 @@ void mon_cmd_save (monitor_t *mon, cmd_t *cmd)
 				if (ihex_save (fp, seg, ofs, cnt, mon, (ihex_get_f) mon_get_mem8)) {
 					pce_printf ("saving ihex failed\n");
 				}
+			}
+			break;
+
+		case MON_FORMAT_MHEX:
+			if (mon->memory_mode == 0) {
+				seg = 0;
+				ofs = addr;
+			}
+
+			if (mhex_save_fp (fp, seg, ofs, cnt, mon, (mhex_get_f) mon_get_mem8)) {
+				pce_printf ("saving mhex failed\n");
 			}
 			break;
 

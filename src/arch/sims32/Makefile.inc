@@ -39,17 +39,15 @@ PCE_SIMS32_OBJ_EXT := \
 	src/lib/cfg.o \
 	src/lib/cmd.o \
 	src/lib/console.o \
-	src/lib/ihex.o \
 	src/lib/iniram.o \
-	src/lib/load.o \
 	src/lib/log.o \
 	src/lib/monitor.o \
 	src/lib/path.o \
-	src/lib/srec.o \
 	src/lib/sysdep.o \
+	$(LIBPCE_LOAD_OBJ) \
+	$(LIBINI_OBJ) \
 	$(CPU_SPARC32_OBJ) \
-	$(DRV_CHR_OBJ) \
-	$(LIBINI_OBJ)
+	$(DRV_CHR_OBJ)
 
 ifeq "$(PCE_ENABLE_TUN)" "1"
 PCE_SIMS32_OBJ_EXT += src/lib/tun.o

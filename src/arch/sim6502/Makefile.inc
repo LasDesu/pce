@@ -35,16 +35,14 @@ PCE_SIM6502_OBJ_EXT := \
 	src/lib/cfg.o \
 	src/lib/cmd.o \
 	src/lib/console.o \
-	src/lib/ihex.o \
 	src/lib/iniram.o \
-	src/lib/load.o \
 	src/lib/log.o \
 	src/lib/monitor.o \
 	src/lib/path.o \
-	src/lib/srec.o \
 	src/lib/sysdep.o \
-	$(CPU_6502_OBJ) \
-	$(LIBINI_OBJ)
+	$(LIBPCE_LOAD_OBJ) \
+	$(LIBINI_OBJ) \
+	$(CPU_6502_OBJ)
 
 ifeq "$(PCE_BUILD_SIM6502)" "1"
 BIN  += $(PCE_SIM6502_BIN)

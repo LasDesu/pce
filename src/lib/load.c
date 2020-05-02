@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/lib/load.c                                               *
  * Created:     2004-08-02 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2013 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -28,6 +28,7 @@
 
 #include <lib/log.h>
 #include <lib/ihex.h>
+#include <lib/mhex.h>
 #include <lib/srec.h>
 #include <lib/load.h>
 #include <lib/path.h>
@@ -65,6 +66,26 @@ int pce_load_mem_ihex (memory_t *mem, const char *fname)
 	}
 
 	r = ihex_load_fp (fp, mem, (ihex_set_f) &mem_set_uint8_rw);
+
+	fclose (fp);
+
+	return (r);
+}
+
+int pce_load_mem_mhex (memory_t *mem, const char *fname)
+{
+	int  r;
+	FILE *fp;
+
+	pce_log_tag (MSG_INF, "Load:", "file=%s format=mhex\n",
+		fname
+	);
+
+	if ((fp = fopen (fname, "rb")) == NULL) {
+		return (1);
+	}
+
+	r = mhex_load_fp (fp, mem, (mhex_set_f) mem_set_uint8_rw);
 
 	fclose (fp);
 
@@ -142,6 +163,9 @@ int pce_load_mem (memory_t *mem, const char *fname, const char *fmt, unsigned lo
 		if ((strcasecmp (ext, "ihex") == 0) || (strcasecmp (ext, "ihx") == 0)) {
 			fmt = "ihex";
 		}
+		else if (strcasecmp (ext, "mhex") == 0) {
+			fmt = "mhex";
+		}
 		else if (strcasecmp (ext, "srec") == 0) {
 			fmt = "srec";
 		}
@@ -158,6 +182,9 @@ int pce_load_mem (memory_t *mem, const char *fname, const char *fmt, unsigned lo
 	}
 	else if (strcmp (fmt, "ihex") == 0) {
 		return (pce_load_mem_ihex (mem, fname));
+	}
+	else if (strcmp (fmt, "mhex") == 0) {
+		return (pce_load_mem_mhex (mem, fname));
 	}
 	else if (strcmp (fmt, "srec") == 0) {
 		return (pce_load_mem_srec (mem, fname));
