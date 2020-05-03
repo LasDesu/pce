@@ -437,15 +437,19 @@ unsigned char e6522_get_pcr (e6522_t *via)
 	return (via->pcr);
 }
 
-
-void e6522_set_ora (e6522_t *via, unsigned char val)
+static
+void e6522_set_ora (e6522_t *via, unsigned char val, int handshake)
 {
 	via->ora = val;
 
 	e6522_set_ora_out (via);
-	e6522_set_ifr (via, via->ifr & ~(E6522_IFR_CA1 | E6522_IFR_CA2));
+
+	if (handshake) {
+		e6522_set_ifr (via, via->ifr & ~(E6522_IFR_CA1 | E6522_IFR_CA2));
+	}
 }
 
+static
 void e6522_set_ddra (e6522_t *via, unsigned char val)
 {
 	via->ddra = val;
@@ -453,6 +457,7 @@ void e6522_set_ddra (e6522_t *via, unsigned char val)
 	e6522_set_ora_out (via);
 }
 
+static
 void e6522_set_orb (e6522_t *via, unsigned char val)
 {
 	via->orb = val;
@@ -461,6 +466,7 @@ void e6522_set_orb (e6522_t *via, unsigned char val)
 	e6522_set_ifr (via, via->ifr & ~(E6522_IFR_CB1 | E6522_IFR_CB2));
 }
 
+static
 void e6522_set_ddrb (e6522_t *via, unsigned char val)
 {
 	via->ddrb = val;
@@ -640,6 +646,10 @@ void e6522_set_cb2_inp (e6522_t *via, unsigned char val)
 
 void e6522_set_ira_inp (e6522_t *via, unsigned char val)
 {
+	if (via->ira == val) {
+		return;
+	}
+
 	via->ira = val;
 
 	e6522_set_ora_out (via);
@@ -647,6 +657,10 @@ void e6522_set_ira_inp (e6522_t *via, unsigned char val)
 
 void e6522_set_irb_inp (e6522_t *via, unsigned char val)
 {
+	if (via->irb == val) {
+		return;
+	}
+
 	via->irb = val;
 
 	e6522_set_orb_out (via);
@@ -777,7 +791,7 @@ void e6522_set_uint8 (e6522_t *via, unsigned long addr, unsigned char val)
 		break;
 
 	case 0x01:
-		e6522_set_ora (via, val);
+		e6522_set_ora (via, val, 1);
 		break;
 
 	case 0x02:
@@ -833,7 +847,7 @@ void e6522_set_uint8 (e6522_t *via, unsigned long addr, unsigned char val)
 		break;
 
 	case 0x0f:
-		e6522_set_ora (via, val);
+		e6522_set_ora (via, val, 0);
 		break;
 
 	}
