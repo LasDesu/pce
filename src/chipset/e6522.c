@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/e6522.c                                          *
  * Created:     2007-11-09 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2011 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -83,6 +83,10 @@ void e6522_init (e6522_t *via, unsigned addr_shift)
 	via->set_orb = NULL;
 	via->set_orb_val = 0;
 
+	via->set_ca2_ext = NULL;
+	via->set_ca2 = NULL;
+	via->set_ca2_val = 0;
+
 	via->set_cb2_ext = NULL;
 	via->set_cb2 = NULL;
 	via->set_cb2_val = 0;
@@ -109,6 +113,12 @@ void e6522_set_orb_fct (e6522_t *via, void *ext, void *fct)
 {
 	via->set_orb_ext = ext;
 	via->set_orb = fct;
+}
+
+void e6522_set_ca2_fct (e6522_t *via, void *ext, void *fct)
+{
+	via->set_ca2_ext = ext;
+	via->set_ca2 = fct;
 }
 
 void e6522_set_cb2_fct (e6522_t *via, void *ext, void *fct)
@@ -153,6 +163,43 @@ void e6522_set_orb_out (e6522_t *via)
 
 	if (via->set_orb != NULL) {
 		via->set_orb (via->set_orb_ext, val);
+	}
+}
+
+/*
+ * Set the CA2 output according to the VIA's state
+ */
+static
+void e6522_set_ca2_out (e6522_t *via)
+{
+	unsigned char val;
+
+	if ((via->pcr & 0x08) == 0) {
+		/* CA2 is input */
+		val = 1;
+	}
+	else if ((via->pcr & 0x06) == 0x06) {
+		/* manual output mode (1) */
+		val = 1;
+	}
+	else if ((via->pcr & 0x06) == 0x04) {
+		/* manual output mode (0) */
+		val = 0;
+	}
+	else {
+		/* not implemented */
+		val = 1;
+	}
+
+
+	if (val == via->set_ca2_val) {
+		return;
+	}
+
+	via->set_ca2_val = val;
+
+	if (via->set_ca2 != NULL) {
+		via->set_ca2 (via->set_ca2_ext, val);
 	}
 }
 
@@ -507,6 +554,7 @@ void e6522_set_pcr (e6522_t *via, unsigned char val)
 {
 	via->pcr = val;
 
+	e6522_set_ca2_out (via);
 	e6522_set_cb2_out (via);
 }
 
