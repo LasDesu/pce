@@ -354,6 +354,7 @@ int main (int argc, char *argv[])
 	mon_set_msg_fct (&par_mon, st_set_msg, par_sim);
 	mon_set_get_mem_fct (&par_mon, par_sim->mem, mem_get_uint8);
 	mon_set_set_mem_fct (&par_mon, par_sim->mem, mem_set_uint8);
+	mon_set_set_memrw_fct (&par_mon, par_sim->mem, mem_set_uint8_rw);
 	mon_set_memory_mode (&par_mon, 0);
 
 	cmd_init (par_sim, cmd_get_sym, cmd_set_sym);

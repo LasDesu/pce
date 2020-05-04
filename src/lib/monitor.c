@@ -47,6 +47,7 @@ static mon_cmd_t par_cmd[] = {
 	{ "f", "addr cnt [val...]", "find bytes in memory" },
 	{ "h", "", "print help" },
 	{ "load", "name [fmt] [a [n]]", "read a file into memory" },
+	{ "mem", "[ro|rw]", "set memory ro or rw" },
 	{ "m", "msg [val]", "send a message to the emulator core" },
 	{ "q", "", "quit" },
 	{ "save", "name [fmt] [a n...]", "write memory to a file" },
@@ -76,6 +77,9 @@ void mon_init (monitor_t *mon)
 	mon->set_mem8_ext = NULL;
 	mon->set_mem8 = NULL;
 
+	mon->set_mem8rw_ext = NULL;
+	mon->set_mem8rw = NULL;
+
 	mon->memory_mode = 0;
 
 	mon->default_seg = 0;
@@ -86,6 +90,7 @@ void mon_init (monitor_t *mon)
 	mon->cmd_cnt = 0;
 	mon->cmd = NULL;
 
+	mon->rw = 0;
 	mon->terminate = 0;
 	mon->prompt = NULL;
 
@@ -143,6 +148,12 @@ void mon_set_set_mem_fct (monitor_t *mon, void *ext, void *fct)
 	mon->set_mem8 = fct;
 }
 
+void mon_set_set_memrw_fct (monitor_t *mon, void *ext, void *fct)
+{
+	mon->set_mem8rw_ext = ext;
+	mon->set_mem8rw = fct;
+}
+
 void mon_set_memory_mode (monitor_t *mon, unsigned mode)
 {
 	mon->memory_mode = mode;
@@ -171,8 +182,15 @@ unsigned char mon_get_mem8 (monitor_t *mon, unsigned long addr)
 static
 void mon_set_mem8 (monitor_t *mon, unsigned long addr, unsigned char val)
 {
-	if (mon->set_mem8 != NULL) {
-		mon->set_mem8 (mon->set_mem8_ext, addr, val);
+	if (mon->rw) {
+		if (mon->set_mem8rw != NULL) {
+			mon->set_mem8rw (mon->set_mem8_ext, addr, val);
+		}
+	}
+	else {
+		if (mon->set_mem8 != NULL) {
+			mon->set_mem8 (mon->set_mem8_ext, addr, val);
+		}
 	}
 }
 
@@ -768,6 +786,32 @@ void mon_cmd_m (monitor_t *mon, cmd_t *cmd)
 }
 
 /*
+ * mem - set memory to r/w or r/o
+ */
+static
+void mon_cmd_mem (monitor_t *mon, cmd_t *cmd)
+{
+	if (cmd_match (cmd, "ro")) {
+		mon->rw = 0;
+	}
+	else if (cmd_match (cmd, "rw")) {
+		if (mon->set_mem8rw == NULL) {
+			pce_puts ("monitor: no rw function\n");
+		}
+		else {
+			mon->rw = 1;
+		}
+	}
+	else {
+		pce_printf ("memory is %s\n", mon->rw ? "rw" : "ro");
+	}
+
+	if (!cmd_match_end (cmd)) {
+		return;
+	}
+}
+
+/*
  * save - write memory to disk
  */
 static
@@ -1037,6 +1081,9 @@ int mon_run (monitor_t *mon)
 			}
 			else if (cmd_match (&cmd, "h")) {
 				mon_cmd_h (mon, &cmd);
+			}
+			else if (cmd_match (&cmd, "mem")) {
+				mon_cmd_mem (mon, &cmd);
 			}
 			else if (cmd_match (&cmd, "m")) {
 				mon_cmd_m (mon, &cmd);
