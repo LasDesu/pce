@@ -57,11 +57,12 @@ start:
 	.ascii	"PCEX"			/* marker */
 	.long	0			/* version */
 
-	.long	4			/* entry count */
+	.long	5			/* entry count */
 	.long	(sony_driver - start)
 	.long	(sony_check - start)
 	.long	(sony_disk_icon - start)
 	.long	(sony_disk_icon_pce - start)
+	.long	(pcex_interrupt - start)
 
 
 /* Sony driver */
@@ -267,3 +268,17 @@ sony_disk_icon_pce:
 	.word	0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff
 	.word	0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0x7fff, 0xfffe
 	.word	0x0000
+
+
+pcex_interrupt:
+	movem.l	%d1-%d7/%a0-%a6, -(%sp)
+
+	cmp.w	#0, %d0
+	bne.s	1f
+
+	dc.w	0xa856			/* ObscureCursor */
+
+1:
+	movem.l	(%sp)+, %d1-%d7/%a0-%a6
+	move.l	(%sp)+, %d0
+	rtr
