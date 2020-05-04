@@ -95,6 +95,15 @@ emu.disk.boot <bootdrive>
 emu.fdc.accurate "0" | "1"
 	Disable or enable the FDC accurate mode.
 
+emu.par1.file <filename>
+	Set the output file for parallel port 1.
+
+emu.par2.file <filename>
+	Set the output file for parallel port 2.
+
+emu.par3.file <filename>
+	Set the output file for parallel port 3.
+
 emu.parport.driver <port>":"<driver>
 	Attach a parallel port to a new character driver. The driver
 	string has the same format as in the config file.

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/msg.c                                         *
  * Created:     2004-09-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -136,6 +136,36 @@ int pc_set_msg_emu_fdc_accurate (ibmpc_t *pc, const char *msg, const char *val)
 		);
 
 		e8272_set_accuracy (&pc->fdc->e8272, v);
+	}
+
+	return (0);
+}
+
+static
+int pc_set_msg_emu_par1_file (ibmpc_t *pc, const char *msg, const char *val)
+{
+	if (pc_set_parport_file (pc, 0, val)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
+int pc_set_msg_emu_par2_file (ibmpc_t *pc, const char *msg, const char *val)
+{
+	if (pc_set_parport_file (pc, 1, val)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
+int pc_set_msg_emu_par3_file (ibmpc_t *pc, const char *msg, const char *val)
+{
+	if (pc_set_parport_file (pc, 2, val)) {
+		return (1);
 	}
 
 	return (0);
@@ -464,6 +494,9 @@ static pc_msg_list_t set_msg_list[] = {
 	{ "emu.disk.boot", pc_set_msg_emu_disk_boot },
 	{ "emu.exit", pc_set_msg_emu_exit },
 	{ "emu.fdc.accurate", pc_set_msg_emu_fdc_accurate },
+	{ "emu.par1.file", pc_set_msg_emu_par1_file },
+	{ "emu.par2.file", pc_set_msg_emu_par2_file },
+	{ "emu.par3.file", pc_set_msg_emu_par3_file },
 	{ "emu.parport.driver", pc_set_msg_emu_parport_driver },
 	{ "emu.parport.file", pc_set_msg_emu_parport_file },
 	{ "emu.pause", pc_set_msg_emu_pause },
