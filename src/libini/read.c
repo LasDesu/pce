@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/libini/read.c                                            *
  * Created:     2001-08-24 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2001-2013 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2001-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -174,6 +174,10 @@ int parse_if (scanner_t *scn, ini_sct_t *sct, char *buf)
 		skip = 0;
 		done = 1;
 	}
+	else if ((val.type == INI_VAL_STR) && (val.val.str[0] != 0)) {
+		skip = 0;
+		done = 1;
+	}
 	else {
 		skip = 1;
 		done = 0;
@@ -198,6 +202,10 @@ int parse_if (scanner_t *scn, ini_sct_t *sct, char *buf)
 
 			if (done == 0) {
 				if ((val.type == INI_VAL_INT) && (val.val.u32 != 0)) {
+					skip = 0;
+					done = 1;
+				}
+				else if ((val.type == INI_VAL_STR) && (val.val.str[0] != 0)) {
 					skip = 0;
 					done = 1;
 				}
