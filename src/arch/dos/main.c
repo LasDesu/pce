@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/dos/main.c                                          *
  * Created:     2012-12-30 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2015 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -73,7 +73,7 @@ void print_version (void)
 	fputs (
 		"pce-dos version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2012-2015 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2012-2020 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
