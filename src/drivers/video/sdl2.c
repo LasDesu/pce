@@ -407,7 +407,9 @@ void sdl2_event_keydown (sdl2_t *sdl, SDL_Scancode key, SDL_Keymod mod)
 	pcekey = sdl2_map_key (sdl, key);
 
 	if (sdl->report_keys || (pcekey == PCE_KEY_NONE)) {
-		fprintf (stderr, "sdl: key = 0x%04x\n", (unsigned) key);
+		fprintf (stderr, "sdl: key = 0x%04x (%s)\n",
+			(unsigned) key, SDL_GetScancodeName (key)
+		);
 	}
 
 	if (pcekey == PCE_KEY_NONE) {
