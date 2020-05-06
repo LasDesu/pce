@@ -384,6 +384,7 @@ static void op_ud (e6502_t *c)
 static void op_00 (e6502_t *c)
 {
 	if (e6502_hook_brk (c)) {
+		e6502_set_clk (c, 1, 1);
 		return;
 	}
 
