@@ -3222,3 +3222,34 @@ src/utils/psi/save.o: src/utils/psi/save.c \
 	src/drivers/psi/psi.h \
 	src/utils/psi/main.h \
 	src/utils/psi/save.h
+
+src/utils/pti/comment.o: src/utils/pti/comment.c \
+	src/config.h \
+	src/drivers/pti/pti.h \
+	src/utils/pti/comment.h \
+	src/utils/pti/main.h
+
+src/utils/pti/main.o: src/utils/pti/main.c \
+	src/config.h \
+	src/drivers/pti/pti-io.h \
+	src/drivers/pti/pti.h \
+	src/lib/getopt.h \
+	src/utils/pti/comment.h \
+	src/utils/pti/main.h \
+	src/utils/pti/ops.h
+
+src/utils/pti/ops.o: src/utils/pti/ops.c \
+	src/config.h \
+	src/drivers/pti/pti-io.h \
+	src/drivers/pti/pti.h \
+	src/lib/getopt.h \
+	src/utils/pti/comment.h \
+	src/utils/pti/main.h \
+	src/utils/pti/ops.h \
+	src/utils/pti/space.h
+
+src/utils/pti/space.o: src/utils/pti/space.c \
+	src/config.h \
+	src/drivers/pti/pti.h \
+	src/utils/pti/main.h \
+	src/utils/pti/space.h

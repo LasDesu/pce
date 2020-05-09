@@ -173,6 +173,7 @@ include $(srcdir)/src/utils/pce-img/Makefile.inc
 include $(srcdir)/src/utils/pfi/Makefile.inc
 include $(srcdir)/src/utils/pri/Makefile.inc
 include $(srcdir)/src/utils/psi/Makefile.inc
+include $(srcdir)/src/utils/pti/Makefile.inc
 
 TARGETS += $(BIN) $(ETC) $(SHARE)
 
