@@ -149,6 +149,7 @@ include $(srcdir)/src/drivers/char/Makefile.inc
 include $(srcdir)/src/drivers/pfi/Makefile.inc
 include $(srcdir)/src/drivers/pri/Makefile.inc
 include $(srcdir)/src/drivers/psi/Makefile.inc
+include $(srcdir)/src/drivers/pti/Makefile.inc
 include $(srcdir)/src/drivers/sound/Makefile.inc
 include $(srcdir)/src/drivers/video/Makefile.inc
 include $(srcdir)/src/arch/Makefile.inc

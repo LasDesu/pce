@@ -2591,6 +2591,49 @@ src/drivers/psi/psi-io.o: src/drivers/psi/psi-io.c \
 src/drivers/psi/psi.o: src/drivers/psi/psi.c \
 	src/drivers/psi/psi.h
 
+src/drivers/pti/pti-img-cas.o: src/drivers/pti/pti-img-cas.c \
+	src/drivers/pti/pti-img-cas.h \
+	src/drivers/pti/pti-io.h \
+	src/drivers/pti/pti.h
+
+src/drivers/pti/pti-img-pcm.o: src/drivers/pti/pti-img-pcm.c \
+	src/drivers/pti/pti-img-pcm.h \
+	src/drivers/pti/pti-io.h \
+	src/drivers/pti/pti.h
+
+src/drivers/pti/pti-img-pti.o: src/drivers/pti/pti-img-pti.c \
+	src/drivers/pti/pti-img-pti.h \
+	src/drivers/pti/pti-io.h \
+	src/drivers/pti/pti.h
+
+src/drivers/pti/pti-img-tap.o: src/drivers/pti/pti-img-tap.c \
+	src/drivers/pti/pti-img-tap.h \
+	src/drivers/pti/pti-io.h \
+	src/drivers/pti/pti.h
+
+src/drivers/pti/pti-img-txt.o: src/drivers/pti/pti-img-txt.c \
+	src/drivers/pti/pti-img-txt.h \
+	src/drivers/pti/pti-io.h \
+	src/drivers/pti/pti.h
+
+src/drivers/pti/pti-img-wav.o: src/drivers/pti/pti-img-wav.c \
+	src/drivers/pti/pti-img-wav.h \
+	src/drivers/pti/pti-io.h \
+	src/drivers/pti/pti.h
+
+src/drivers/pti/pti-io.o: src/drivers/pti/pti-io.c \
+	src/drivers/pti/pti-img-cas.h \
+	src/drivers/pti/pti-img-pcm.h \
+	src/drivers/pti/pti-img-pti.h \
+	src/drivers/pti/pti-img-tap.h \
+	src/drivers/pti/pti-img-txt.h \
+	src/drivers/pti/pti-img-wav.h \
+	src/drivers/pti/pti-io.h \
+	src/drivers/pti/pti.h
+
+src/drivers/pti/pti.o: src/drivers/pti/pti.c \
+	src/drivers/pti/pti.h
+
 src/drivers/sound/filter.o: src/drivers/sound/filter.c \
 	src/config.h \
 	src/drivers/sound/filter.h
