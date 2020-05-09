@@ -24,7 +24,6 @@
 #define PCE_IBMPC_H 1
 
 
-#include "cassette.h"
 #include "covox.h"
 #include "ems.h"
 #include "keyboard.h"
@@ -42,6 +41,7 @@
 
 #include <cpu/e8086/e8086.h>
 
+#include <devices/cassette.h>
 #include <devices/fdc.h>
 #include <devices/hdc.h>
 #include <devices/memory.h>
@@ -77,7 +77,7 @@ typedef struct ibmpc_t {
 	e8255_t            ppi;
 	e8259_t            pic;
 	pc_kbd_t           kbd;
-	pc_cassette_t      *cas;
+	cassette_t         *cas;
 	pc_speaker_t       spk;
 	pc_covox_t         *cov;
 

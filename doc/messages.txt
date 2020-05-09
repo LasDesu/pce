@@ -120,50 +120,6 @@ emu.serport.file <port>":"<filename>
 	This is equivalent to
 	emu.serport.driver <port>:stdio:file=<filename>.
 
-emu.tape.append
-	Move the read or write position to the end of the cassette file.
-
-emu.tape.file <filename>
-	Set a new cassette file. If the file name ends with ".pcm" or
-	".raw" then PCM mode is automatically enabled. If the file
-	name ends with ".cas" then binary mode is automatically
-	disabled. In all other cases the current PCM mode is not
-	changed.
-
-emu.tape.load [<position> | "end"]
-	Switch to load mode. If <position> is given, move the load
-	position to <position>. If "end" is specified, move the load
-	position to the end of the cassette file.
-
-emu.tape.pcm "0" | "1"
-	Disable or enable PCM mode.
-
-emu.tape.read <filename>
-	This is equivalent to
-		emu.tape.file <filename>
-		emu.tape.load 0
-
-emu.tape.rewind
-	Move the read or write position to the beginning of the cassette
-	file.
-
-emu.tape.save [<position> | "end"]
-	Switch to save mode. If <position> is given, move the save
-	position to <position>. If "end" is specified, move the save
-	position to the end of the cassette file.
-
-emu.tape.srate <rate>
-	Set the PCM sample rate to <rate>.
-
-emu.tape.state
-	Print the cassette state. Prints the current mode (load/save)
-	and the current position.
-
-emu.tape.write <filename>
-	This is equivalent to
-		emu.tape.file <filename>
-		emu.tape.save 0
-
 emu.video.blink <blink-rate>
 	Set the cursor blink rate. The number specified is the number
 	of screen refreshes for which the cursor is visible/invisible.
@@ -236,6 +192,47 @@ emu.stop
 
 emu.video.brightness <brightness>
 	Set the video brightness in the range of 0 - 1000.
+
+
+Cassette messages
+==============================================================================
+
+cas.commit
+	Write the cassette image back to disk.
+
+cas.create <filename>
+	Create a new cassette and insert it for writing.
+
+cas.open <filename>
+	Open a cassette image and insert it for writing. Also, remove the
+	read image.
+
+cas.play
+	Press play on the cassette player.
+
+cas.load <pos>
+	Move the read position to <pos>.
+
+cas.read <filename>
+	Open a cassette image and insert it for reading.
+
+cas.record
+	Press play and record on the cassette player.
+
+cas.space <duration>
+	Add <duration> seconds of silence to the end of the tape.
+
+cas.state
+	Print the cassette state.
+
+cas.stop
+	Press stop on the cassette player.
+
+cas.truncate <pos>
+	Truncate the write tape at position <pos>.
+
+cas.write <filename>
+	Open a cassette image and insert it for writing.
 
 
 Disk messages

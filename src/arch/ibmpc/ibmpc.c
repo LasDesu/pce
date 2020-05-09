@@ -54,6 +54,7 @@
 
 #include <cpu/e8086/e8086.h>
 
+#include <devices/cassette.h>
 #include <devices/fdc.h>
 #include <devices/hdc.h>
 #include <devices/memory.h>
@@ -70,6 +71,8 @@
 #include <devices/video/wy700.h>
 
 #include <drivers/block/block.h>
+
+#include <drivers/pti/pti-io.h>
 
 #include <drivers/video/terminal.h>
 
@@ -234,13 +237,13 @@ unsigned char pc_ppi_get_port_c (ibmpc_t *pc)
 	}
 	else {
 		if (pc->cas != NULL) {
-			if (pc_cas_get_inp (pc->cas)) {
-				pc->ppi_port_c[0] |= 0x10;
-				pc->ppi_port_c[1] |= 0x10;
-			}
-			else {
+			if (cas_get_inp (pc->cas)) {
 				pc->ppi_port_c[0] &= ~0x10;
 				pc->ppi_port_c[1] &= ~0x10;
+			}
+			else {
+				pc->ppi_port_c[0] |= 0x10;
+				pc->ppi_port_c[1] |= 0x10;
 			}
 		}
 
@@ -279,7 +282,7 @@ void pc_ppi_set_port_b (ibmpc_t *pc, unsigned char val)
 			/* cassette motor change */
 
 			if (pc->cas != NULL) {
-				pc_cas_set_motor (pc->cas, (val & 0x08) == 0);
+				cas_set_motor (pc->cas, (val & 0x08) == 0);
 
 				if (val & 0x08) {
 					/* motor off: restore clock */
@@ -334,7 +337,7 @@ void pc_set_timer2_out (ibmpc_t *pc, unsigned char val)
 
 
 		if (pc->cas != NULL) {
-			pc_cas_set_out (pc->cas, val);
+			cas_set_out (pc->cas, !val);
 		}
 	}
 
@@ -347,6 +350,18 @@ void pc_set_key (ibmpc_t *pc, unsigned event, unsigned key)
 	if (event == PCE_KEY_EVENT_MAGIC) {
 		if (key == PCE_KEY_O) {
 			pc_set_msg (pc, "emu.video.composite.cycle", "");
+		}
+		else if (key == PCE_KEY_F9) {
+			pc_set_msg (pc, "emu.cas.play", "");
+		}
+		else if (key == PCE_KEY_F10) {
+			pc_set_msg (pc, "emu.cas.record", "");
+		}
+		else if (key == PCE_KEY_F11) {
+			pc_set_msg (pc, "emu.cas.load", "0");
+		}
+		else if (key == PCE_KEY_F12) {
+			pc_set_msg (pc, "emu.cas.stop", "");
 		}
 		else {
 			pce_log (MSG_INF, "unhandled magic key (%u)\n",
@@ -829,11 +844,9 @@ void pc_setup_kbd (ibmpc_t *pc, ini_sct_t *ini)
 static
 void pc_setup_cassette (ibmpc_t *pc, ini_sct_t *ini)
 {
-	const char    *fname;
-	const char    *mode;
-	unsigned long pos, srate;
-	int           enable, append, pcm;
-	ini_sct_t     *sct;
+	const char *read_name, *write_name;
+	int        enable;
+	ini_sct_t  *sct;
 
 	pc->cas = NULL;
 
@@ -841,9 +854,7 @@ void pc_setup_cassette (ibmpc_t *pc, ini_sct_t *ini)
 		return;
 	}
 
-	sct = ini_next_sct (ini, NULL, "cassette");
-
-	if (sct == NULL) {
+	if ((sct = ini_next_sct (ini, NULL, "cassette")) == NULL) {
 		return;
 	}
 
@@ -853,55 +864,36 @@ void pc_setup_cassette (ibmpc_t *pc, ini_sct_t *ini)
 		return;
 	}
 
-	ini_get_string (sct, "file", &fname, NULL);
-	ini_get_string (sct, "mode", &mode, "load");
-	ini_get_uint32 (sct, "position", &pos, 0);
-	ini_get_uint32 (sct, "srate", &srate, 44100);
-	ini_get_bool (sct, "append", &append, 0);
+	ini_get_string (sct, "file", &write_name, NULL);
+	ini_get_string (sct, "write", &write_name, write_name);
+	ini_get_string (sct, "read", &read_name, NULL);
 
-	if (ini_get_bool (sct, "pcm", &pcm, 0)) {
-		pcm = -1;
-	}
-
-	pce_log_tag (MSG_INF, "CASSETTE:",
-		"file=%s mode=%s pcm=%d srate=%lu pos=%lu append=%d\n",
-		(fname != NULL) ? fname : "<none>",
-		mode, pcm, srate, pos, append
+	pce_log_tag (MSG_INF, "CASSETTE:", "read=%s write=%s\n",
+		(read_name != NULL) ? read_name : "<none>",
+		(write_name != NULL) ? write_name : "<none>"
 	);
 
-	pc->cas = pc_cas_new();
-
-	if (pc->cas == NULL) {
+	if ((pc->cas = cas_new()) == NULL) {
 		pce_log (MSG_ERR, "*** alloc failed\n");
 		return;
 	}
 
-	if (pc_cas_set_fname (pc->cas, fname)) {
-		pce_log (MSG_ERR, "*** opening file failed (%s)\n", fname);
+	cas_set_clock (pc->cas, PCE_IBMPC_CLK2);
+	cas_set_auto_play (pc->cas, 1);
+
+	pti_set_default_clock (PCE_IBMPC_CLK2);
+
+	if (cas_set_read_name (pc->cas, read_name)) {
+		pce_log (MSG_ERR, "*** opening read file failed (%s)\n",
+			read_name
+		);
 	}
 
-	if (strcmp (mode, "load") == 0) {
-		pc_cas_set_mode (pc->cas, 0);
+	if (cas_set_write_name (pc->cas, write_name, 1)) {
+		pce_log (MSG_ERR, "*** opening write file failed (%s)\n",
+			write_name
+		);
 	}
-	else if (strcmp (mode, "save") == 0) {
-		pc_cas_set_mode (pc->cas, 1);
-	}
-	else {
-		pce_log (MSG_ERR, "*** unknown cassette mode (%s)\n", mode);
-	}
-
-	if (append) {
-		pc_cas_append (pc->cas);
-	}
-	else {
-		pc_cas_set_position (pc->cas, pos);
-	}
-
-	if (pcm >= 0) {
-		pc_cas_set_pcm (pc->cas, pcm);
-	}
-
-	pc_cas_set_srate (pc->cas, srate);
 }
 
 static
@@ -1751,7 +1743,7 @@ void pc_del (ibmpc_t *pc)
 
 	pc_covox_del (pc->cov);
 	pc_speaker_free (&pc->spk);
-	pc_cas_del (pc->cas);
+	cas_del (pc->cas);
 	e8237_free (&pc->dma);
 	e8255_free (&pc->ppi);
 	e8253_free (&pc->pit);
@@ -2075,6 +2067,10 @@ void pc_clock (ibmpc_t *pc, unsigned long cnt)
 
 	e8253_clock (&pc->pit, 1);
 
+	if (pc->cas != NULL) {
+		cas_clock (pc->cas);
+	}
+
 	pc->clk_div[0] += 1;
 
 	if (pc->clk_div[0] >= 8) {
@@ -2083,10 +2079,6 @@ void pc_clock (ibmpc_t *pc, unsigned long cnt)
 		pc->clk_div[0] &= 7;
 
 		pc_kbd_clock (&pc->kbd, clk);
-
-		if (pc->cas != NULL) {
-			pc_cas_clock (pc->cas, clk);
-		}
 
 		e8237_clock (&pc->dma, clk);
 

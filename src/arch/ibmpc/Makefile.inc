@@ -37,7 +37,6 @@ $(rel)/%.o: $(rel)/%.c
 
 PCE_IBMPC_BAS  := \
 	atari-pc \
-	cassette \
 	cmd \
 	covox \
 	ems \
@@ -67,6 +66,7 @@ PCE_IBMPC_OBJ_EXT := \
 	src/chipset/82xx/e8259.o \
 	src/chipset/82xx/e8272.o \
 	src/chipset/e6845.o \
+	src/devices/cassette.o \
 	src/devices/device.o \
 	src/devices/fdc.o \
 	src/devices/hdc.o \
@@ -97,6 +97,7 @@ PCE_IBMPC_OBJ_EXT := \
 	$(DRV_BLK_OBJ) \
 	$(DRV_PRI_OBJ) \
 	$(DRV_PSI_OBJ) \
+	$(DRV_PTI_OBJ) \
 	$(DRV_CHR_OBJ) \
 	$(DRV_SND_OBJ) \
 	$(DRV_TRM_OBJ)
@@ -115,7 +116,6 @@ CLN  += $(PCE_IBMPC_BIN) $(PCE_IBMPC_OBJ) $(PCE_IBMPC_ETC)
 DIST += $(PCE_IBMPC_SRC) $(PCE_IBMPC_HDR) $(PCE_IBMPC_MAN1)
 DIST += $(rel)/pce-ibmpc.cfg.in $(rel)/pce.inc $(rel)/pce-lib.inc
 
-$(rel)/cassette.o:	$(rel)/cassette.c
 $(rel)/cmd.o:		$(rel)/cmd.c
 $(rel)/covox.o:		$(rel)/covox.c
 $(rel)/ems.o:		$(rel)/ems.c
