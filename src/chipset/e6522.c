@@ -880,6 +880,7 @@ void e6522_reset (e6522_t *via)
 	via->ifr = 0x00;
 	via->ier = 0x00;
 
+	via->t1_reload = 0;
 	via->t1_latch = 0;
 	via->t1_val = 0;
 	via->t1_hot = 0;
@@ -901,7 +902,12 @@ void e6522_reset (e6522_t *via)
 static
 void e6522_clock_t1 (e6522_t *via, unsigned long n)
 {
-	if ((n < via->t1_val) || (via->t1_val == 0)) {
+	if (via->t1_reload) {
+		n -= 1;
+		via->t1_reload = 0;
+	}
+
+	if (n <= via->t1_val) {
 		via->t1_val = (via->t1_val - n) & 0xffff;
 		return;
 	}
@@ -921,6 +927,8 @@ void e6522_clock_t1 (e6522_t *via, unsigned long n)
 		}
 
 		via->t1_val = (via->t1_latch - n) & 0xffff;
+
+		via->t1_reload = 1;
 	}
 	else {
 		/* one shot */
@@ -937,7 +945,7 @@ void e6522_clock_t1 (e6522_t *via, unsigned long n)
 static
 void e6522_clock_t2 (e6522_t *via, unsigned long n)
 {
-	if ((n < via->t2_val) || (via->t2_val == 0)) {
+	if (n <= via->t2_val) {
 		via->t2_val = (via->t2_val - n) & 0xffff;
 		return;
 	}

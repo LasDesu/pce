@@ -48,6 +48,7 @@ typedef struct {
 	unsigned char  ifr;
 	unsigned char  ier;
 
+	char           t1_reload;
 	unsigned short t1_latch;
 	unsigned short t1_val;
 	int            t1_hot;
