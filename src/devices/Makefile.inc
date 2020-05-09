@@ -5,7 +5,20 @@ rel := src/devices
 DIRS += $(rel)
 DIST += $(rel)/Makefile.inc
 
-DEV_BAS := ata device fdc hdc memory nvram parport pci pci-ata serport slip
+DEV_BAS := \
+	ata \
+	cassette \
+	device \
+	fdc \
+	hdc \
+	memory \
+	nvram \
+	parport \
+	pci \
+	pci-ata \
+	serport \
+	slip
+
 DEV_SRC := $(foreach f,$(DEV_BAS),$(rel)/$(f).c)
 DEV_OBJ := $(foreach f,$(DEV_BAS),$(rel)/$(f).o)
 DEV_HDR := $(foreach f,$(DEV_BAS),$(rel)/$(f).h)
@@ -14,6 +27,7 @@ CLN  += $(DEV_OBJ)
 DIST += $(DEV_SRC) $(DEV_HDR)
 
 $(rel)/ata.o:		$(rel)/ata.c
+$(rel)/cassette.o:	$(rel)/cassette.c
 $(rel)/device.o:	$(rel)/device.c
 $(rel)/fdc.o:		$(rel)/fdc.c
 $(rel)/hdc.o:		$(rel)/hdc.c

@@ -2083,6 +2083,15 @@ src/devices/ata.o: src/devices/ata.c \
 	src/devices/memory.h \
 	src/drivers/block/block.h
 
+src/devices/cassette.o: src/devices/cassette.c \
+	src/config.h \
+	src/devices/cassette.h \
+	src/drivers/pti/pti-io.h \
+	src/drivers/pti/pti.h \
+	src/lib/console.h \
+	src/lib/msg.h \
+	src/lib/string.h
+
 src/devices/clock/ds1743.o: src/devices/clock/ds1743.c \
 	src/chipset/clock/ds1743.h \
 	src/devices/clock/ds1743.h \
