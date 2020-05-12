@@ -85,6 +85,7 @@ PCE_BUILD_SIM405  := @PCE_BUILD_SIM405@
 PCE_BUILD_SIM6502 := @PCE_BUILD_SIM6502@
 PCE_BUILD_SIMARM  := @PCE_BUILD_SIMARM@
 PCE_BUILD_SIMS32  := @PCE_BUILD_SIMS32@
+PCE_BUILD_VIC20   := @PCE_BUILD_VIC20@
 
 PCE_BUILD_IBMPC_ROM   := @PCE_BUILD_IBMPC_ROM@
 PCE_BUILD_MACPLUS_ROM := @PCE_BUILD_MACPLUS_ROM@
@@ -167,6 +168,7 @@ include $(srcdir)/src/arch/sim405/pceutils/Makefile.inc
 include $(srcdir)/src/arch/sim6502/Makefile.inc
 include $(srcdir)/src/arch/simarm/Makefile.inc
 include $(srcdir)/src/arch/sims32/Makefile.inc
+include $(srcdir)/src/arch/vic20/Makefile.inc
 include $(srcdir)/src/utils/Makefile.inc
 include $(srcdir)/src/utils/aym/Makefile.inc
 include $(srcdir)/src/utils/pce-img/Makefile.inc

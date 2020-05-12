@@ -1841,6 +1841,168 @@ src/arch/sims32/sims32.o: src/arch/sims32/sims32.c \
 	src/lib/sysdep.h \
 	src/libini/libini.h
 
+src/arch/vic20/cmd.o: src/arch/vic20/cmd.c \
+	src/arch/vic20/cmd.h \
+	src/arch/vic20/main.h \
+	src/arch/vic20/vic20.h \
+	src/arch/vic20/video.h \
+	src/chipset/e6522.h \
+	src/chipset/e6560.h \
+	src/config.h \
+	src/cpu/e6502/e6502.h \
+	src/devices/cassette.h \
+	src/devices/memory.h \
+	src/drivers/pti/pti.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/brkpt.h \
+	src/lib/cmd.h \
+	src/lib/console.h \
+	src/lib/log.h \
+	src/lib/monitor.h \
+	src/lib/sysdep.h \
+	src/libini/libini.h
+
+src/arch/vic20/keybd.o: src/arch/vic20/keybd.c \
+	src/arch/vic20/keybd.h \
+	src/arch/vic20/main.h \
+	src/arch/vic20/msg.h \
+	src/arch/vic20/vic20.h \
+	src/arch/vic20/video.h \
+	src/chipset/e6522.h \
+	src/chipset/e6560.h \
+	src/config.h \
+	src/cpu/e6502/e6502.h \
+	src/devices/cassette.h \
+	src/devices/memory.h \
+	src/drivers/pti/pti.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/brkpt.h \
+	src/lib/cmd.h \
+	src/libini/libini.h
+
+src/arch/vic20/main.o: src/arch/vic20/main.c \
+	src/arch/vic20/cmd.h \
+	src/arch/vic20/main.h \
+	src/arch/vic20/msg.h \
+	src/arch/vic20/setup.h \
+	src/arch/vic20/vic20.h \
+	src/arch/vic20/video.h \
+	src/chipset/e6522.h \
+	src/chipset/e6560.h \
+	src/config.h \
+	src/cpu/e6502/e6502.h \
+	src/devices/cassette.h \
+	src/devices/memory.h \
+	src/drivers/pti/pti.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/brkpt.h \
+	src/lib/cfg.h \
+	src/lib/cmd.h \
+	src/lib/console.h \
+	src/lib/getopt.h \
+	src/lib/log.h \
+	src/lib/monitor.h \
+	src/lib/path.h \
+	src/lib/sysdep.h \
+	src/libini/libini.h
+
+src/arch/vic20/msg.o: src/arch/vic20/msg.c \
+	src/arch/vic20/main.h \
+	src/arch/vic20/msg.h \
+	src/arch/vic20/vic20.h \
+	src/arch/vic20/video.h \
+	src/chipset/e6522.h \
+	src/chipset/e6560.h \
+	src/config.h \
+	src/cpu/e6502/e6502.h \
+	src/devices/cassette.h \
+	src/devices/memory.h \
+	src/drivers/pti/pti.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/brkpt.h \
+	src/lib/cmd.h \
+	src/lib/log.h \
+	src/lib/monitor.h \
+	src/lib/msg.h \
+	src/lib/string.h \
+	src/lib/sysdep.h \
+	src/libini/libini.h
+
+src/arch/vic20/setup.o: src/arch/vic20/setup.c \
+	src/arch/vic20/keybd.h \
+	src/arch/vic20/main.h \
+	src/arch/vic20/msg.h \
+	src/arch/vic20/vic20.h \
+	src/arch/vic20/video.h \
+	src/chipset/e6522.h \
+	src/chipset/e6560.h \
+	src/config.h \
+	src/cpu/e6502/e6502.h \
+	src/devices/cassette.h \
+	src/devices/memory.h \
+	src/drivers/pti/pti-io.h \
+	src/drivers/pti/pti.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/brkpt.h \
+	src/lib/cmd.h \
+	src/lib/iniram.h \
+	src/lib/initerm.h \
+	src/lib/load.h \
+	src/lib/log.h \
+	src/libini/libini.h
+
+src/arch/vic20/vic20.o: src/arch/vic20/vic20.c \
+	src/arch/vic20/keybd.h \
+	src/arch/vic20/main.h \
+	src/arch/vic20/msg.h \
+	src/arch/vic20/setup.h \
+	src/arch/vic20/vic20.h \
+	src/arch/vic20/video.h \
+	src/chipset/e6522.h \
+	src/chipset/e6560.h \
+	src/config.h \
+	src/cpu/e6502/e6502.h \
+	src/devices/cassette.h \
+	src/devices/memory.h \
+	src/drivers/pti/pti.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/brkpt.h \
+	src/lib/cmd.h \
+	src/lib/log.h \
+	src/lib/sysdep.h \
+	src/libini/libini.h
+
+src/arch/vic20/video.o: src/arch/vic20/video.c \
+	src/arch/vic20/main.h \
+	src/arch/vic20/video.h \
+	src/chipset/e6560.h \
+	src/config.h \
+	src/devices/memory.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/console.h \
+	src/libini/libini.h
+
 src/chipset/80186/dma.o: src/chipset/80186/dma.c \
 	src/chipset/80186/dma.h
 
