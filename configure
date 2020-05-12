@@ -638,7 +638,6 @@ PCE_ENABLE_TUN
 PCE_BUILD_VIC20
 PCE_BUILD_SIMARM
 PCE_BUILD_SIMS32
-PCE_BUILD_SIM6502
 PCE_BUILD_SIM405
 PCE_BUILD_RC759
 PCE_BUILD_MACPLUS_ROM
@@ -751,7 +750,6 @@ enable_macplus
 enable_macplus_rom
 enable_rc759
 enable_sim405
-enable_sim6502
 enable_sims32
 enable_simarm
 enable_vic20
@@ -1400,7 +1398,6 @@ Optional Features:
   --enable-macplus-rom    Build the Mac Plus ROM from source [no]
   --enable-rc759          Enable the RC759 Piccoline [yes]
   --enable-sim405         Enable the PPC405 simulator [yes]
-  --enable-sim6502        Enable the 6502 simulator [yes]
   --enable-sims32         Enable the sparc32 simulator [yes]
   --enable-simarm         Enable the arm simulator [yes]
   --enable-vic20          Enable the VIC20 emulator [yes]
@@ -4704,7 +4701,6 @@ if test -d "$srcdir/src/arch/ibmpc"; then have_ibmpc=1; else have_ibmpc=0; fi
 if test -d "$srcdir/src/arch/macplus"; then have_macplus=1; else have_macplus=0; fi
 if test -d "$srcdir/src/arch/rc759"; then have_rc759=1; else have_rc759=0; fi
 if test -d "$srcdir/src/arch/sim405"; then have_sim405=1; else have_sim405=0; fi
-if test -d "$srcdir/src/arch/sim6502"; then have_sim6502=1; else have_sim6502=0; fi
 if test -d "$srcdir/src/arch/simarm"; then have_simarm=1; else have_simarm=0; fi
 if test -d "$srcdir/src/arch/sims32"; then have_sims32=1; else have_sims32=0; fi
 if test -d "$srcdir/src/arch/vic20"; then have_vic20=1; else have_vic20=0; fi
@@ -4970,43 +4966,6 @@ fi
 
 if test "x$PCE_BUILD_SIM405" = "x1" ; then
 	$as_echo "#define PCE_BUILD_SIM405 1" >>confdefs.h
-
-fi
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to build the 6502 simulator" >&5
-$as_echo_n "checking whether to build the 6502 simulator... " >&6; }
-if test "x$have_sim6502" != "x1" ; then
-	PCE_BUILD_SIM6502=0
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no (no source)" >&5
-$as_echo "no (no source)" >&6; }
-else
-	# Check whether --enable-sim6502 was given.
-if test "${enable_sim6502+set}" = set; then :
-  enableval=$enable_sim6502;
-		if test "x$enableval" = "xyes" ; then
-			PCE_BUILD_SIM6502=1
-			{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (forced)" >&5
-$as_echo "yes (forced)" >&6; }
-		else
-			PCE_BUILD_SIM6502=0
-			{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no (forced)" >&5
-$as_echo "no (forced)" >&6; }
-		fi
-
-else
-
-		PCE_BUILD_SIM6502=1
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (default)" >&5
-$as_echo "yes (default)" >&6; }
-
-
-fi
-
-fi
-
-if test "x$PCE_BUILD_SIM6502" = "x1" ; then
-	$as_echo "#define PCE_BUILD_SIM6502 1" >>confdefs.h
 
 fi
 
@@ -5705,12 +5664,6 @@ if test "x$PCE_BUILD_SIM405" = "x1" ; then
 	emu1="$emu1 sim405"
 else
 	emu2="$emu2 sim405"
-fi
-
-if test "x$PCE_BUILD_SIM6502" = "x1" ; then
-	emu1="$emu1 sim6502"
-else
-	emu2="$emu2 sim6502"
 fi
 
 if test "x$PCE_BUILD_SIMARM" = "x1" ; then

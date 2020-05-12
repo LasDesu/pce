@@ -1568,61 +1568,6 @@ src/arch/sim405/sim405.o: src/arch/sim405/sim405.c \
 	src/lib/sysdep.h \
 	src/libini/libini.h
 
-src/arch/sim6502/console.o: src/arch/sim6502/console.c \
-	src/arch/sim6502/console.h \
-	src/arch/sim6502/main.h \
-	src/arch/sim6502/sim6502.h \
-	src/config.h \
-	src/cpu/e6502/e6502.h \
-	src/devices/memory.h \
-	src/lib/brkpt.h \
-	src/lib/cmd.h \
-	src/lib/console.h \
-	src/lib/ihex.h \
-	src/lib/iniram.h \
-	src/lib/load.h \
-	src/lib/log.h \
-	src/lib/monitor.h \
-	src/lib/sysdep.h \
-	src/libini/libini.h
-
-src/arch/sim6502/main.o: src/arch/sim6502/main.c \
-	src/arch/sim6502/console.h \
-	src/arch/sim6502/main.h \
-	src/arch/sim6502/sim6502.h \
-	src/config.h \
-	src/cpu/e6502/e6502.h \
-	src/devices/memory.h \
-	src/lib/brkpt.h \
-	src/lib/cfg.h \
-	src/lib/cmd.h \
-	src/lib/console.h \
-	src/lib/ihex.h \
-	src/lib/iniram.h \
-	src/lib/load.h \
-	src/lib/log.h \
-	src/lib/monitor.h \
-	src/lib/sysdep.h \
-	src/libini/libini.h
-
-src/arch/sim6502/sim6502.o: src/arch/sim6502/sim6502.c \
-	src/arch/sim6502/console.h \
-	src/arch/sim6502/main.h \
-	src/arch/sim6502/sim6502.h \
-	src/config.h \
-	src/cpu/e6502/e6502.h \
-	src/devices/memory.h \
-	src/lib/brkpt.h \
-	src/lib/cmd.h \
-	src/lib/console.h \
-	src/lib/ihex.h \
-	src/lib/iniram.h \
-	src/lib/load.h \
-	src/lib/log.h \
-	src/lib/monitor.h \
-	src/lib/sysdep.h \
-	src/libini/libini.h
-
 src/arch/simarm/cmd_arm.o: src/arch/simarm/cmd_arm.c \
 	src/arch/simarm/cmd_arm.h \
 	src/arch/simarm/intc.h \
