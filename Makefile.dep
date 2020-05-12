@@ -1877,6 +1877,9 @@ src/chipset/clock/mc146818a.o: src/chipset/clock/mc146818a.c \
 src/chipset/e6522.o: src/chipset/e6522.c \
 	src/chipset/e6522.h
 
+src/chipset/e6560.o: src/chipset/e6560.c \
+	src/chipset/e6560.h
+
 src/chipset/e6845.o: src/chipset/e6845.c \
 	src/chipset/e6845.h
 
