@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e68000/internal.h                                    *
  * Created:     2005-07-17 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2005-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2005-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -247,7 +247,7 @@ void e68_cc_set_subx_32 (e68000_t *c, uint32_t d, uint32_t s1, uint32_t s2);
 
 typedef int (*e68_get_ea_ptr_f) (e68000_t *c, unsigned ea, unsigned mask, unsigned size);
 
-e68_get_ea_ptr_f e68_ea_tab[64];
+extern e68_get_ea_ptr_f e68_ea_tab[64];
 
 static inline
 int e68_ea_get_ptr (e68000_t *c, unsigned ea, unsigned mask, unsigned size)
