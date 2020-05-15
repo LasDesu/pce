@@ -481,6 +481,15 @@ int pti_set_parameter (const char *name, const char *val)
 
 		pti_wav_set_lowpass_order (order);
 	}
+	else if (strcmp (name, "wav-sine") == 0) {
+		int sine;
+
+		if (pti_parse_bool (val, &sine)) {
+			return (1);
+		}
+
+		pti_wav_set_sine_wave (sine);
+	}
 	else if (strcmp (name, "wav-srate") == 0) {
 		unsigned long srate;
 

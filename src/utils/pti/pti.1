@@ -1,4 +1,4 @@
-.TH PTI 1 "2020-05-09" "HH" "pce"
+.TH PTI 1 "2020-05-15" "HH" "pce"
 .SH NAME
 pti \- convert and modify PCE Tape images
 
@@ -206,6 +206,11 @@ files. A frequency of 0 turns the filter off, which is the default.
 .BI "wav-lowpass-order "
 Set the filter order of the lowpass filter used when saving WAV files.
 The default is 4, the maximum is 16.
+.TP
+.BI "wav-sine " enable
+If \fIenable\fR is true, then the signal written to WAV files is made
+up of a series of sine waves. If it is false, a simple square wave
+is written. The default is enabled.
 .TP
 .BI "wav-srate " srate
 Set the sample rate used when saving WAV files. The default is 48000.

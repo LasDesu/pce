@@ -77,6 +77,7 @@ void pti_wav_set_default_clock (unsigned long val);
 void pti_wav_set_bits (unsigned val);
 void pti_wav_set_lowpass (unsigned long val);
 void pti_wav_set_lowpass_order (unsigned val);
+void pti_wav_set_sine_wave (int val);
 void pti_wav_set_srate (unsigned long val);
 void pti_set_default_clock (unsigned long val);
 

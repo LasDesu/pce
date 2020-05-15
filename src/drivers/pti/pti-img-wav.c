@@ -76,20 +76,34 @@ typedef struct {
 	unsigned long         start_data;
 	unsigned long         start_pcm;
 
+	unsigned              iir_cnt;
 	wav_iir2_t            iir[8];
+
+	unsigned long         rem;
 } wav_save_t;
 
 
 static unsigned long wav_default_clock = 1000000;
 
 static pti_wav_param_t wav_default = {
-	.srate    = 48000,
-	.bits     = 16,
-	.channels = 1,
-	.lowpass  = 0,
-	.order    = 4
+	.srate       = 48000,
+	.bits        = 16,
+	.channels    = 1,
+	.lowpass     = 0,
+	.order       = 4,
+	.sine_wave   = 1
 };
 
+
+void pti_wav_init (pti_wav_param_t *par)
+{
+	par->srate = 48000;
+	par->bits = 16;
+	par->channels = 1;
+	par->lowpass = 0;
+	par->order = 4;
+	par->sine_wave = 1;
+}
 
 void pti_wav_set_default_clock (unsigned long val)
 {
@@ -123,6 +137,11 @@ void pti_wav_set_lowpass (unsigned long val)
 void pti_wav_set_lowpass_order (unsigned val)
 {
 	wav_default.order = val;
+}
+
+void pti_wav_set_sine_wave (int val)
+{
+	wav_default.sine_wave = (val != 0);
 }
 
 
@@ -585,87 +604,176 @@ int wav_save_smp (wav_save_t *wav, long smp)
 }
 
 static
-void wav_setup_iir (wav_save_t *wav, wav_iir2_t **iir, unsigned *cnt)
+void wav_setup_iir (wav_save_t *wav)
 {
+	unsigned      cnt;
+	unsigned long freq;
+
 	if (wav->par->lowpass == 0) {
-		*iir = NULL;
-		*cnt = 0;
+		wav->iir_cnt = 0;
 		return;
 	}
 
-	*cnt = (wav->par->order + 1) / 2;
+	cnt = (wav->par->order + 1) / 2;
 
-	if (*cnt < 1) {
-		*cnt = 1;
+	if (cnt < 1) {
+		cnt = 1;
 	}
-	else if (*cnt > 8) {
-		*cnt = 8;
+	else if (cnt > 8) {
+		cnt = 8;
 	}
 
-	*iir = wav->iir;
+	if (wav->par->sine_wave) {
+		freq = wav->par->srate;
+	}
+	else {
+		freq = wav->img->clock;
+	}
 
-	wav_iir_butterworth (*iir, *cnt, wav->par->lowpass, wav->img->clock);
+	wav_iir_butterworth (wav->iir, cnt, wav->par->lowpass, freq);
+
+	wav->iir_cnt = cnt;
+}
+
+static
+int wav_save_pulse_square (wav_save_t *wav, unsigned long clk, long smp)
+{
+	unsigned long cnt;
+	unsigned long clock, srate;
+
+	clock = wav->img->clock;
+	srate = wav->par->srate;
+
+	while (clk > 0) {
+		cnt = (clk < 256) ? clk : 256;
+
+		wav->rem += cnt * srate;
+
+		while (wav->rem >= clock) {
+			wav->rem -= clock;
+
+			if (wav_save_smp (wav, smp)) {
+				return (1);
+			}
+		}
+
+		clk -= cnt;
+	}
+
+	return (0);
+}
+
+static
+int wav_save_pulse_sine (wav_save_t *wav, unsigned long clk, long smp)
+{
+	unsigned long i;
+	unsigned long clock, srate;
+	double        val;
+
+	clock = wav->img->clock;
+	srate = wav->par->srate;
+
+	for (i = 0; i < clk; i++) {
+		wav->rem += srate;
+
+		while (wav->rem >= clock) {
+			wav->rem -= clock;
+
+			val = smp * sin ((M_PI * i) / (double) clk);
+
+			if (wav->iir_cnt > 0) {
+				val = wav_iir (wav->iir, wav->iir_cnt, val);
+			}
+
+			if (wav_save_smp (wav, (long) val)) {
+				return (1);
+			}
+		}
+	}
+
+	return (0);
+}
+
+static
+int wav_save_pulse_iir (wav_save_t *wav, unsigned long clk, long smp)
+{
+	unsigned long i;
+	unsigned long clock, srate;
+	long          val;
+
+	clock = wav->img->clock;
+	srate = wav->par->srate;
+
+	for (i = 0; i < clk; i++) {
+		val = wav_iir (wav->iir, wav->iir_cnt, smp);
+
+		wav->rem += srate;
+
+		while (wav->rem >= clock) {
+			wav->rem -= clock;
+
+			if (wav_save_smp (wav, val)) {
+				return (1);
+			}
+		}
+	}
+
+	return (0);
 }
 
 static
 int wav_save_pcm (wav_save_t *wav)
 {
 	unsigned long   i;
-	unsigned        iir_cnt;
-	unsigned long   clk, cnt;
-	long            smp, out;
+	unsigned long   clk;
+	long            smp;
 	int             level;
 	const pti_img_t *img;
-	wav_iir2_t      *iir;
 
 	if (pti_set_pos (wav->fp, wav->start_pcm)) {
 		return (1);
 	}
 
-	wav_setup_iir (wav, &iir, &iir_cnt);
+	wav_setup_iir (wav);
 
 	wav->size = 0;
 
 	img = wav->img;
 
-	cnt = 0;
-	smp = 0;
+	wav->rem = 0;
 
 	for (i = 0; i < img->pulse_cnt; i++) {
 		pti_pulse_get (img->pulse[i], &clk, &level);
 
 		if (level < 0) {
-			out = -16384;
+			smp = -16384;
 		}
 		else if (level > 0) {
-			out = 16384;
+			smp = 16384;
 		}
 		else {
-			out = 0;
+			smp = 0;
 		}
 
-		while (clk-- > 0) {
-			if (iir != NULL) {
-				smp = wav_iir (iir, iir_cnt, out);
+		if (wav->par->sine_wave) {
+			if (wav_save_pulse_sine (wav, clk, smp)) {
+				return (1);
 			}
-			else {
-				smp = out;
+		}
+		else if (wav->iir_cnt == 0) {
+			if (wav_save_pulse_square (wav, clk, smp)) {
+				return (1);
 			}
-
-			cnt += wav->par->srate;
-
-			while (cnt >= img->clock) {
-				cnt -= img->clock;
-
-				if (wav_save_smp (wav, smp)) {
-					return (1);
-				}
+		}
+		else {
+			if (wav_save_pulse_iir (wav, clk, smp)) {
+				return (1);
 			}
 		}
 	}
 
-	if (cnt >= (img->clock / 2)) {
-		if (wav_save_smp (wav, smp)) {
+	if (wav->rem >= (img->clock / 2)) {
+		if (wav_save_smp (wav, 0)) {
 			return (1);
 		}
 	}
@@ -689,6 +797,8 @@ int pti_save_wav (FILE *fp, const pti_img_t *img, const pti_wav_param_t *par)
 	wav.start_fmt = wav.start_riff + 12;
 	wav.start_data = wav.start_fmt + 24;
 	wav.start_pcm = wav.start_data + 8;
+
+	wav.iir_cnt = 0;
 
 	if (wav_save_pcm (&wav)) {
 		return (1);
