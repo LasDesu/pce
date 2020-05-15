@@ -292,7 +292,12 @@ int mon_match_address (monitor_t *mon, cmd_t *cmd, unsigned long *addr, unsigned
 	unsigned short tseg, tofs;
 
 	if (mon->memory_mode == 0) {
-		return (cmd_match_uint32 (cmd, addr));
+		if (!cmd_match_uint32 (cmd, addr)) {
+			return (0);
+		}
+
+		tseg = *addr >> 4;
+		tofs = *addr & 0x0f;
 	}
 	else {
 		tseg = mon->default_seg;
@@ -304,14 +309,14 @@ int mon_match_address (monitor_t *mon, cmd_t *cmd, unsigned long *addr, unsigned
 		mon->default_seg = tseg;
 
 		*addr = ((unsigned long) tseg << 4) + tofs;
+	}
 
-		if (seg != NULL) {
-			*seg = tseg;
-		}
+	if (seg != NULL) {
+		*seg = tseg;
+	}
 
-		if (ofs != NULL) {
-			*ofs = tofs;
-		}
+	if (ofs != NULL) {
+		*ofs = tofs;
 	}
 
 	return (1);
