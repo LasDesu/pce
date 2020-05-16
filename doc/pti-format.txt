@@ -74,8 +74,13 @@ CHUNK "DATA": Data
 8	n	Data
 n+8	4	CRC
 
-	- The data is organized in packets. Each packet represents one
-	  (duration, level) pair.
+	- The data is organized in packets. Each packet represents either
+	  one or two phases of constant level.
+		one phase:
+			(duration, level)
+		two phases:
+			(floor(duration/2), -1),
+			(floor((duration+1)/2), 1).
 	- The duration is measured in cycles of the clock defined in the
 	  file header chunk.
 	- The level can be on of [-1 0 1].
@@ -89,17 +94,17 @@ n+8	4	CRC
 	0	6-7	Signal level
 				00 = 1
 				01 = 0
-				10 = invalid
+				10 = -1, 1
 				11 = -1
 	0	4-5	Packet size (n)
 				00 = 2
 				01 = 3
 				10 = 4
 				11 = 5
-	0	0-3	data bits (highest 4 bits)
-	1	0-7	data bits
+	0	0-3	duration (highest 4 bits)
+	1	0-7	duration
 	...
-	n-1	0-7	data bits (lowest 8 bits)
+	n-1	0-7	duration (lowest 8 bits)
 
 
 CRC

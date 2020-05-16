@@ -283,7 +283,7 @@ int pti_decode_data (pti_load_t *pti, unsigned char *buf, unsigned long size)
 {
 	unsigned      tag, cnt;
 	unsigned long clk;
-	int           val;
+	int           level;
 
 	if (pti_read_crc (pti, buf, size)) {
 		return (1);
@@ -309,20 +309,38 @@ int pti_decode_data (pti_load_t *pti, unsigned char *buf, unsigned long size)
 
 		switch (tag & 0xc0) {
 		case 0x00:
-			val = 1;
+			level = 1;
+			break;
+
+		case 0x40:
+			level = 0;
+			break;
+
+		case 0x80:
+			level = 0;
 			break;
 
 		case 0xc0:
-			val = -1;
+			level = -1;
 			break;
 
 		default:
-			val = 0;
-			break;
+			return (1);
 		}
 
-		if (pti_img_add_pulse (pti->img, clk, val)) {
-			return (1);
+		if ((tag & 0xc0) == 0x80) {
+			if (pti_img_add_pulse (pti->img, clk / 2, -1)) {
+				return (1);
+			}
+
+			if (pti_img_add_pulse (pti->img, clk - (clk / 2), 1)) {
+				return (1);
+			}
+		}
+		else {
+			if (pti_img_add_pulse (pti->img, clk, level)) {
+				return (1);
+			}
 		}
 	}
 
@@ -576,8 +594,8 @@ static
 int pti_save_data (FILE *fp, const pti_img_t *img)
 {
 	int           r;
-	unsigned long clk;
-	int           val;
+	unsigned long clk, clk2;
+	int           level, level2;
 	unsigned      tag;
 	unsigned long i, n, max;
 	unsigned char *buf, *tmp;
@@ -594,16 +612,17 @@ int pti_save_data (FILE *fp, const pti_img_t *img)
 
 	pti_set_uint32_be (buf, 0, PTI_MAGIC_DATA);
 
+	i = 0;
 	n = 8;
 
-	for (i = 0; i < img->pulse_cnt; i++) {
-		pti_pulse_get (img->pulse[i], &clk, &val);
+	while (i < img->pulse_cnt) {
+		pti_pulse_get (img->pulse[i++], &clk, &level);
 
 		if (clk == 0) {
 			continue;
 		}
 
-		if ((max - n) < 16) {
+		if ((n + 16) > max) {
 			max *= 2;
 
 			if ((tmp = realloc (buf, max)) == 0) {
@@ -614,10 +633,22 @@ int pti_save_data (FILE *fp, const pti_img_t *img)
 			buf = tmp;
 		}
 
-		if (val < 0) {
+		clk2 = 0;
+		level2 = 0;
+
+		if (i < img->pulse_cnt) {
+			pti_pulse_get (img->pulse[i], &clk2, &level2);
+		}
+
+		if ((level < 0) && (level2 > 0) && (clk == ((clk + clk2) / 2))) {
+			i += 1;
+			tag = 0x80;
+			clk += clk2;
+		}
+		else if (level < 0) {
 			tag = 0xc0;
 		}
-		else if (val > 0) {
+		else if (level > 0) {
 			tag = 0x00;
 		}
 		else {
