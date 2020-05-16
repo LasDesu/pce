@@ -36,10 +36,13 @@ CHUNK "PTI ": File header chunk
 ------------------------------------------------------------------------
 
 0	4	Magic ('PTI ')
-4	4	Size (8)
+4	4	Size (12)
 8	4	Version (0)
 12	4	Clock
-16	4	CRC
+16	4	Flags
+20	4	CRC
+
+	- No flags are defined yet.
 
 
 CHUNK "END ": End chunk

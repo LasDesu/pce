@@ -158,14 +158,20 @@ int pti_skip_chunk (pti_load_t *pti, unsigned long size)
 static
 int pti_load_header (pti_load_t *pti, unsigned long size)
 {
-	unsigned char buf[8];
-	unsigned long vers, clock;
+	unsigned      n;
+	unsigned char buf[16];
+	unsigned long vers, clock, flags;
+
+	n = 12;
 
 	if (size < 8) {
 		return (1);
 	}
+	else if (size < 12) {
+		n = 8;
+	}
 
-	if (pti_read_crc (pti, buf, 8)) {
+	if (pti_read_crc (pti, buf, n)) {
 		return (1);
 	}
 
@@ -180,7 +186,13 @@ int pti_load_header (pti_load_t *pti, unsigned long size)
 
 	pti_img_set_clock (pti->img, clock);
 
-	if (pti_skip_chunk (pti, size - 8)) {
+	flags = (n >= 12) ? pti_get_uint32_be (buf, 8) : 0;
+
+	if (flags) {
+		fprintf (stderr, "pti: unknown flags (0x%08lx)\n", flags);
+	}
+
+	if (pti_skip_chunk (pti, size - n)) {
 		return (1);
 	}
 
@@ -467,15 +479,16 @@ pti_img_t *pti_load_pti (FILE *fp)
 static
 int pti_save_header (FILE *fp, const pti_img_t *img)
 {
-	unsigned char buf[20];
+	unsigned char buf[24];
 
 	pti_set_uint32_be (buf, 0, PTI_MAGIC_PTI);
-	pti_set_uint32_be (buf, 4, 8);
+	pti_set_uint32_be (buf, 4, 12);
 	pti_set_uint32_be (buf, 8, 0);
 	pti_set_uint32_be (buf, 12, pti_img_get_clock (img));
-	pti_set_uint32_be (buf, 16, pti_crc (0, buf, 16));
+	pti_set_uint32_be (buf, 16, 0);
+	pti_set_uint32_be (buf, 20, pti_crc (0, buf, 20));
 
-	if (pti_write (fp, buf, 20)) {
+	if (pti_write (fp, buf, 24)) {
 		return (1);
 	}
 
