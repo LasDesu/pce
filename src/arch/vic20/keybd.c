@@ -143,17 +143,17 @@ static vic20_key_map_t key_map[] = {
 };
 
 static vic20_key_map_t joy_map[] = {
-	{ PCE_KEY_KP_0,      0x10, 0, 0, 0 },
-	{ PCE_KEY_KP_1,      0x09, 0, 0, 0 },
-	{ PCE_KEY_KP_2,      0x08, 0, 0, 0 },
-	{ PCE_KEY_KP_3,      0x0a, 0, 0, 0 },
-	{ PCE_KEY_KP_4,      0x01, 0, 0, 0 },
-	{ PCE_KEY_KP_5,      0x10, 0, 0, 0 },
-	{ PCE_KEY_KP_6,      0x02, 0, 0, 0 },
-	{ PCE_KEY_KP_7,      0x05, 0, 0, 0 },
-	{ PCE_KEY_KP_8,      0x04, 0, 0, 0 },
-	{ PCE_KEY_KP_9,      0x06, 0, 0, 0 },
-	{ PCE_KEY_LSUPER,    0x10, 0, 0, 0 },
+	{ PCE_KEY_KP_0,      0x10, 0x00, 0, 0 },
+	{ PCE_KEY_KP_1,      0x09, 0x06, 0, 0 },
+	{ PCE_KEY_KP_2,      0x08, 0x04, 0, 0 },
+	{ PCE_KEY_KP_3,      0x0a, 0x05, 0, 0 },
+	{ PCE_KEY_KP_4,      0x01, 0x02, 0, 0 },
+	{ PCE_KEY_KP_5,      0x10, 0x00, 0, 0 },
+	{ PCE_KEY_KP_6,      0x02, 0x01, 0, 0 },
+	{ PCE_KEY_KP_7,      0x05, 0x0a, 0, 0 },
+	{ PCE_KEY_KP_8,      0x04, 0x08, 0, 0 },
+	{ PCE_KEY_KP_9,      0x06, 0x09, 0, 0 },
+	{ PCE_KEY_LSUPER,    0x10, 0x00, 0, 0 },
 	{ PCE_KEY_NONE,      0, 0, 0, 0 },
 };
 
@@ -269,6 +269,7 @@ int kbd_joystick (vic20_t *sim, unsigned event, pce_key_t key)
 
 	if (event == PCE_KEY_EVENT_DOWN) {
 		sim->joymat |= joy_map[i].a1;
+		sim->joymat &= ~joy_map[i].b1;
 	}
 	else {
 		sim->joymat &= ~joy_map[i].a1;
