@@ -264,16 +264,32 @@ void v20_stop (vic20_t *sim)
 
 void v20_set_speed_tape (vic20_t *sim, unsigned char val)
 {
-	sim->speed_tape = (val != 0);
+	if (val) {
+		sim->speed_tape = 1;
+		sim->framedrop_tape = 4;
+	}
+	else {
+		sim->speed_tape = 0;
+		sim->framedrop_tape = 0;
+	}
 
 	v20_set_speed (sim, sim->speed_base);
 }
 
 void v20_set_speed (vic20_t *sim, unsigned speed)
 {
-	int report;
+	int      report;
+	unsigned drop;
 
 	report = (sim->speed_base != speed);
+
+	drop = sim->framedrop_base;
+
+	if (sim->framedrop_tape > drop) {
+		drop = sim->framedrop_tape;
+	}
+
+	v20_video_set_framedrop (&sim->video, drop);
 
 	sim->speed_base = speed;
 

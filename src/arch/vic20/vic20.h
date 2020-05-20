@@ -81,6 +81,9 @@ typedef struct vic20_s {
 	char          speed_auto;
 	char          speed_tape;
 
+	unsigned      framedrop_base;
+	unsigned      framedrop_tape;
+
 	unsigned long clock;
 	unsigned long sync_clk;
 	unsigned long sync_us;

@@ -74,6 +74,9 @@ void v20_setup_vic20 (vic20_t *sim, ini_sct_t *ini)
 	sim->speed_auto = (aspeed != 0);
 	sim->speed_tape = 0;
 
+	sim->framedrop_base = 0;
+	sim->framedrop_tape = 0;
+
 	pce_log_tag (MSG_INF, "VIC20:",
 		"cpu=6502 clock=%lu speed=%u autospeed=%d pal=%d\n",
 		sim->clock, sim->speed, sim->speed_auto, sim->pal
@@ -150,6 +153,8 @@ void v20_setup_video (vic20_t *sim, ini_sct_t *ini)
 	if (snd != NULL) {
 		pce_log_tag (MSG_INF, "VIC:", "sound=%s\n", snd);
 	}
+
+	sim->framedrop_base = drop;
 
 	v20_video_init (&sim->video);
 
