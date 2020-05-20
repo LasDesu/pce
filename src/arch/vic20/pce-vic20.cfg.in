@@ -64,6 +64,9 @@ datasette {
 	#read = "cassette.pti"
 
 	#write = "cassette-new.pti"
+
+	# The motor off delay in milliseconds.
+	motor_delay = 50
 }
 
 rom {

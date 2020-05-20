@@ -844,9 +844,10 @@ void pc_setup_kbd (ibmpc_t *pc, ini_sct_t *ini)
 static
 void pc_setup_cassette (ibmpc_t *pc, ini_sct_t *ini)
 {
-	const char *read_name, *write_name;
-	int        enable;
-	ini_sct_t  *sct;
+	int           enable;
+	const char    *read_name, *write_name;
+	unsigned long delay;
+	ini_sct_t     *sct;
 
 	pc->cas = NULL;
 
@@ -867,10 +868,12 @@ void pc_setup_cassette (ibmpc_t *pc, ini_sct_t *ini)
 	ini_get_string (sct, "file", &write_name, NULL);
 	ini_get_string (sct, "write", &write_name, write_name);
 	ini_get_string (sct, "read", &read_name, NULL);
+	ini_get_uint32 (sct, "motor_delay", &delay, 0);
 
-	pce_log_tag (MSG_INF, "CASSETTE:", "read=%s write=%s\n",
+	pce_log_tag (MSG_INF, "CASSETTE:", "read=%s write=%s motor_delay=%lu\n",
 		(read_name != NULL) ? read_name : "<none>",
-		(write_name != NULL) ? write_name : "<none>"
+		(write_name != NULL) ? write_name : "<none>",
+		delay
 	);
 
 	if ((pc->cas = cas_new()) == NULL) {
@@ -878,7 +881,11 @@ void pc_setup_cassette (ibmpc_t *pc, ini_sct_t *ini)
 		return;
 	}
 
+	delay = (unsigned long) (((double) delay * PCE_IBMPC_CLK2) / 1000.0);
+
 	cas_set_clock (pc->cas, PCE_IBMPC_CLK2);
+	cas_set_motor_delay (pc->cas, delay);
+
 	cas_set_auto_play (pc->cas, 1);
 
 	pti_set_default_clock (PCE_IBMPC_CLK2);

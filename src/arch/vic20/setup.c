@@ -212,8 +212,9 @@ void v20_setup_keybd (vic20_t *sim, ini_sct_t *ini)
 static
 void v20_setup_datasette (vic20_t *sim, ini_sct_t *ini)
 {
-	const char *read_name, *write_name;
-	ini_sct_t  *sct;
+	const char    *read_name, *write_name;
+	unsigned long delay;
+	ini_sct_t     *sct;
 
 	cas_init (&sim->cas);
 
@@ -224,17 +225,22 @@ void v20_setup_datasette (vic20_t *sim, ini_sct_t *ini)
 	ini_get_string (sct, "file", &write_name, NULL);
 	ini_get_string (sct, "write", &write_name, write_name);
 	ini_get_string (sct, "read", &read_name, write_name);
+	ini_get_uint32 (sct, "motor_delay", &delay, 50);
 
-	pce_log_tag (MSG_INF, "CASSETTE:", "read=%s write=%s\n",
+	pce_log_tag (MSG_INF, "CASSETTE:", "read=%s write=%s motor_delay=%lu\n",
 		(read_name != NULL) ? read_name : "<none>",
-		(write_name != NULL) ? write_name : "<none>"
+		(write_name != NULL) ? write_name : "<none>",
+		delay
 	);
+
+	delay = (unsigned long) (((double) delay * sim->clock) / 1000.0);
 
 	cas_set_inp_fct (&sim->cas, sim, v20_cas_set_inp);
 	cas_set_play_fct (&sim->cas, sim, v20_cas_set_play);
 	cas_set_run_fct (&sim->cas, sim, v20_set_speed_tape);
 
 	cas_set_clock (&sim->cas, sim->clock);
+	cas_set_motor_delay (&sim->cas, delay);
 
 	pti_set_default_clock (sim->clock);
 

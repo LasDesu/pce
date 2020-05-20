@@ -36,7 +36,6 @@ typedef struct {
 
 	void          *set_run_ext;
 	void          (*set_run) (void *ext, unsigned char val);
-	unsigned char set_run_val;
 
 	pti_img_t     *read_img;
 	char          *read_name;
@@ -47,6 +46,7 @@ typedef struct {
 	char          modified;
 	char          eof;
 
+	char          run;
 	char          motor;
 	char          play;
 	char          record;
@@ -60,6 +60,9 @@ typedef struct {
 	unsigned long clock;
 	unsigned long remainder;
 	unsigned long position;
+
+	unsigned long motor_delay;
+	unsigned long motor_delay_count;
 
 	unsigned long counter;
 } cassette_t;
@@ -81,6 +84,7 @@ void cas_set_clock (cassette_t *cas, unsigned long val);
 
 void cas_set_auto_play (cassette_t *cas, int val);
 void cas_set_auto_motor (cassette_t *cas, int val);
+void cas_set_motor_delay (cassette_t *cas, unsigned long val);
 
 int cas_set_read_name (cassette_t *cas, const char *fname);
 int cas_set_write_name (cassette_t *cas, const char *fname, int create);

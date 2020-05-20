@@ -288,7 +288,6 @@ void cas_init (cassette_t *cas)
 
 	cas->set_run = NULL;
 	cas->set_run_ext = NULL;
-	cas->set_run_val = 0;
 
 	cas->read_img = NULL;
 	cas->read_name = NULL;
@@ -299,6 +298,7 @@ void cas_init (cassette_t *cas)
 	cas->modified = 0;
 	cas->eof = 0;
 
+	cas->run = 0;
 	cas->motor = 0;
 	cas->play = 0;
 	cas->record = 0;
@@ -312,6 +312,9 @@ void cas_init (cassette_t *cas)
 	cas->clock = 0;
 	cas->remainder = 0;
 	cas->position = 0;
+
+	cas->motor_delay = 0;
+	cas->motor_delay_count = 0;
 
 	cas->counter = 0;
 }
@@ -381,6 +384,11 @@ void cas_set_auto_play (cassette_t *cas, int val)
 void cas_set_auto_motor (cassette_t *cas, int val)
 {
 	cas->auto_motor = (val != 0);
+}
+
+void cas_set_motor_delay (cassette_t *cas, unsigned long val)
+{
+	cas->motor_delay = val;
 }
 
 static
@@ -642,7 +650,7 @@ int cas_write_pulse (cassette_t *cas, unsigned long clk, int level)
 static
 void cas_write_pulse_flush (cassette_t *cas)
 {
-	if ((cas->motor == 0) || (cas->record == 0)) {
+	if ((cas->run == 0) || (cas->record == 0)) {
 		return;
 	}
 
@@ -653,20 +661,35 @@ void cas_write_pulse_flush (cassette_t *cas)
 }
 
 static
-void cas_set_run (cassette_t *cas)
+void cas_run_stop (cassette_t *cas)
 {
-	unsigned char val;
+	int run;
 
-	val = (cas->motor && cas->play);
+	run = (cas->motor && cas->play) || (cas->motor_delay_count > 0);
 
-	if (cas->set_run_val == val) {
+	if (cas->run == run) {
 		return;
 	}
 
-	cas->set_run_val = val;
+	if (cas->run && cas->record) {
+		cas_write_pulse_flush (cas);
+	}
+
+	cas->run = run;
 
 	if (cas->set_run != NULL) {
-		cas->set_run (cas->set_run_ext, val);
+		cas->set_run (cas->set_run_ext, run);
+	}
+
+	if (cas->record) {
+		cas->eof = 0;
+	}
+
+	cas_print_state (cas);
+
+	if (cas->run) {
+		cas->counter = 0;
+		cas->remainder = 0;
 	}
 }
 
@@ -679,20 +702,17 @@ void cas_set_play (cassette_t *cas, int val)
 	}
 
 	cas->play = val;
-
-	cas->counter = 0;
-	cas->remainder = 0;
-	cas->eof = 0;
-
-	if (cas->set_play != NULL) {
-		cas->set_play (cas->set_play_ext, cas->play);
-	}
+	cas->motor_delay_count = 0;
 
 	if (cas->auto_motor) {
 		cas->motor = cas->play || cas->record;
 	}
 
-	cas_set_run (cas);
+	if (cas->set_play != NULL) {
+		cas->set_play (cas->set_play_ext, cas->play);
+	}
+
+	cas_run_stop (cas);
 }
 
 void cas_set_record (cassette_t *cas, int val)
@@ -703,21 +723,18 @@ void cas_set_record (cassette_t *cas, int val)
 		return;
 	}
 
-	if ((cas->record != 0) && (val == 0)) {
+	if (cas->run && cas->record) {
 		cas_write_pulse_flush (cas);
 	}
 
 	cas->record = val;
-
-	cas->counter = 0;
-	cas->remainder = 0;
-	cas->eof = 0;
+	cas->motor_delay_count = 0;
 
 	if (cas->auto_motor) {
 		cas->motor = cas->play || cas->record;
 	}
 
-	cas_set_run (cas);
+	cas_run_stop (cas);
 }
 
 void cas_press_keys (cassette_t *cas, int play, int record)
@@ -752,7 +769,7 @@ void cas_print_state (cassette_t *cas)
 	if (cas->eof) {
 		state = "EOF";
 	}
-	else if (cas->motor && cas->play) {
+	else if (cas->run) {
 		state = cas->record ? "SAVE" : "LOAD";
 	}
 	else {
@@ -772,22 +789,24 @@ void cas_set_motor (cassette_t *cas, int val)
 {
 	val = (val != 0);
 
+	if (cas->auto_motor) {
+		val |= cas->play || cas->record;
+	}
+
 	if (cas->motor == val) {
 		return;
 	}
 
-	if ((cas->motor != 0) && (val == 0)) {
-		cas_write_pulse_flush (cas);
-	}
-
 	cas->motor = val;
 
-	cas->counter = 0;
-	cas->remainder = 0;
-	cas->eof = 0;
+	if (cas->run && (cas->motor == 0)) {
+		cas->motor_delay_count = cas->motor_delay;
+	}
+	else {
+		cas->motor_delay_count = 0;
+	}
 
-	cas_set_run (cas);
-	cas_print_state (cas);
+	cas_run_stop (cas);
 }
 
 static
@@ -813,13 +832,14 @@ int cas_get_inp (const cassette_t *cas)
 
 void cas_set_out (cassette_t *cas, int val)
 {
-	if ((cas->motor == 0) || (cas->record == 0)) {
-		return;
-	}
-
 	val = (val != 0);
 
 	if (cas->out_val == val) {
+		return;
+	}
+
+	if ((cas->run == 0) || (cas->record == 0)) {
+		cas->out_val = val;
 		return;
 	}
 
@@ -834,8 +854,16 @@ void cas_clock (cassette_t *cas)
 {
 	int v;
 
-	if ((cas->motor == 0) || (cas->play == 0)) {
+	if (cas->run == 0) {
 		return;
+	}
+
+	if (cas->motor_delay_count > 0) {
+		cas->motor_delay_count -= 1;
+
+		if (cas->motor_delay_count == 0) {
+			cas_run_stop (cas);
+		}
 	}
 
 	if (cas->record) {
@@ -849,11 +877,8 @@ void cas_clock (cassette_t *cas)
 	}
 
 	if (cas_read_pulse (cas, &cas->counter, &v)) {
-		if (cas->eof == 0) {
-			cas_press_keys (cas, 0, 0);
-			cas->eof = 1;
-			cas_print_state (cas);
-		}
+		cas->eof = 1;
+		cas_press_keys (cas, 0, 0);
 		return;
 	}
 
