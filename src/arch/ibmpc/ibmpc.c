@@ -80,9 +80,9 @@ void pc_e86_hook (void *ext, unsigned char op1, unsigned char op2);
 
 static char *par_intlog[256];
 
-/* EC7879 specific */
+/* PK8641 specific */
 static
-void ec7879_update_irq(ibmpc_t *pc)
+void pk8641_update_irq(ibmpc_t *pc)
 {
 	unsigned mask = 0x17000;
 	
@@ -101,7 +101,7 @@ void ec7879_update_irq(ibmpc_t *pc)
 }
 
 static
-void ec7879_memio_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
+void pk8641_memio_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 {	
 	static unsigned long ticks = 0;
 	unsigned long interval = pce_get_interval_us( &ticks );
@@ -128,7 +128,7 @@ void ec7879_memio_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 	}
 	else if ( (addr & 0xE01) == 0x600 )
 	{//fprintf(stderr,"!");
-		//ec7879_update_irq(pc);
+		//pk8641_update_irq(pc);
 		e8272_set_uint8 (&pc->fdc->e8272, (addr >> 1) & 1 | 4, val);
 	}
 	else if ( (addr & 0xE01) == 0x601 )
@@ -136,7 +136,7 @@ void ec7879_memio_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 		//e8272_set_uint8 (&pc->fdc->e8272, 2, val);
 		pc->irq_601 = val;
 		e8272_set_uint8 (&pc->fdc->e8272, 2, (val & 0x3D));
-		ec7879_update_irq(pc);
+		pk8641_update_irq(pc);
 	}
 	else if ( (addr & 0xE01) == 0x800 )
 	{
@@ -174,7 +174,7 @@ void ec7879_memio_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 }
 
 static
-void ec7879_memio_set_uint16 (ibmpc_t *pc, unsigned long addr, unsigned short val)
+void pk8641_memio_set_uint16 (ibmpc_t *pc, unsigned long addr, unsigned short val)
 {
 	if ( (addr & 0xF01) == 0xC00 )
 	{//printf("%.4x:%.4x %s %d: %.5lx <- %.4x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,val);
@@ -183,16 +183,16 @@ void ec7879_memio_set_uint16 (ibmpc_t *pc, unsigned long addr, unsigned short va
 	}
 	else
 	{
-		ec7879_memio_set_uint8 (pc, addr, val & 0xff);
+		pk8641_memio_set_uint8 (pc, addr, val & 0xff);
 
 		if ((addr + 1) < 0x1000) {
-			ec7879_memio_set_uint8 (pc, addr + 1, val >> 8);
+			pk8641_memio_set_uint8 (pc, addr + 1, val >> 8);
 		}
 	}
 }
 
 static
-unsigned char ec7879_memio_get_uint8 (ibmpc_t *pc, unsigned long addr)
+unsigned char pk8641_memio_get_uint8 (ibmpc_t *pc, unsigned long addr)
 {
 	unsigned char ret = 0xFF;
 	
@@ -207,7 +207,7 @@ unsigned char ec7879_memio_get_uint8 (ibmpc_t *pc, unsigned long addr)
 	else if ( (addr & 0xE01) == 0x001 )
 	{//fprintf(stderr,"!\n");
 		pc->irq_stat &= ~(1 << 14);
-		ec7879_update_irq(pc);
+		pk8641_update_irq(pc);
 		ret = e8255_get_uint8 (&pc->ppi, (addr >> 1) & 3);
 	}
 	else if ( (addr & 0xE01) == 0x600 )
@@ -275,7 +275,7 @@ unsigned char ec7879_memio_get_uint8 (ibmpc_t *pc, unsigned long addr)
 }
 
 static
-unsigned short ec7879_memio_get_uint16 (ibmpc_t *pc, unsigned long addr)
+unsigned short pk8641_memio_get_uint16 (ibmpc_t *pc, unsigned long addr)
 {
 	unsigned short ret;
 
@@ -287,10 +287,10 @@ unsigned short ec7879_memio_get_uint16 (ibmpc_t *pc, unsigned long addr)
 	}
 	else
 	{
-		ret = ec7879_memio_get_uint8 (pc, addr);
+		ret = pk8641_memio_get_uint8 (pc, addr);
 
 		if ((addr + 1) < 0x1000) {
-			ret |= ec7879_memio_get_uint8 (pc, addr + 1) << 8;
+			ret |= pk8641_memio_get_uint8 (pc, addr + 1) << 8;
 		}
 	}
 
@@ -298,42 +298,42 @@ unsigned short ec7879_memio_get_uint16 (ibmpc_t *pc, unsigned long addr)
 }
 
 static
-void ec7879_timer0_irq (ibmpc_t *pc, unsigned char val)
+void pk8641_timer0_irq (ibmpc_t *pc, unsigned char val)
 {//printf("%s %d %d\n",__FUNCTION__,__LINE__,val);
 	if (val != 0) {
 		pc->irq_stat |= 1 << 14;
 	}
-	ec7879_update_irq(pc);
+	pk8641_update_irq(pc);
 }
 
 static
-void ec7879_kbd_irq (ibmpc_t *pc, unsigned char val)
+void pk8641_kbd_irq (ibmpc_t *pc, unsigned char val)
 {//printf("%s %d %d\n",__FUNCTION__,__LINE__,val);	
 	if (val != 0)
 	{
 		pc->ppi_port_a[1] = pc_kbd_get_key (&pc->kbd);
 		pc->irq_stat |= 1 << 13;
 	}
-	ec7879_update_irq(pc);
+	pk8641_update_irq(pc);
 }
 
 static
-void ec7879_fdc_irq (ibmpc_t *pc, unsigned char val)
+void pk8641_fdc_irq (ibmpc_t *pc, unsigned char val)
 {//printf("%s %d %d\n",__FUNCTION__,__LINE__,val);
 	if (val != 0)
 		pc->irq_stat |= 1 << 15;
 	else
 		pc->irq_stat &= ~(1 << 15);
-	ec7879_update_irq(pc);
+	pk8641_update_irq(pc);
 }
 
 static
-void ec7879_uart_irq (ibmpc_t *pc, unsigned char val)
+void pk8641_uart_irq (ibmpc_t *pc, unsigned char val)
 {
-	ec7879_update_irq(pc);
+	pk8641_update_irq(pc);
 }
 
-unsigned char ec7879_inta (ibmpc_t *pc)
+unsigned char pk8641_inta (ibmpc_t *pc)
 {//printf("%s %d: %x\n",__FUNCTION__,__LINE__,pc->irq_stat);
 	/*if ( pc->irq_601 & 8 )
 		if ( pc->irq_stat & (1 << 15) ){
@@ -349,7 +349,7 @@ unsigned char ec7879_inta (ibmpc_t *pc)
 }
 
 static
-void ec7879_fdc_dreq(ibmpc_t *pc, unsigned char val)
+void pk8641_fdc_dreq(ibmpc_t *pc, unsigned char val)
 {//printf("%s %d %d\n",__FUNCTION__,__LINE__,val);
 	//pc->irq_800 = val;
 	/*if ( val )
@@ -358,7 +358,7 @@ void ec7879_fdc_dreq(ibmpc_t *pc, unsigned char val)
 }
 
 static
-unsigned char ec7879_port_get_uint8 (ibmpc_t *pc, unsigned long addr)
+unsigned char pk8641_port_get_uint8 (ibmpc_t *pc, unsigned long addr)
 {//printf("%.4x:%.4x %s %d %x>\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr);
 	pc->irq_stat |= addr & 0x3FF;
 	pc->irq_stat |= 0x0800;
@@ -368,7 +368,7 @@ unsigned char ec7879_port_get_uint8 (ibmpc_t *pc, unsigned long addr)
 }
 
 static
-void ec7879_port_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
+void pk8641_port_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 {//printf("%.4x:%.4x %s %d %x<%x\n",e86_get_cs(pc->cpu),e86_get_ip(pc->cpu),__FUNCTION__,__LINE__,addr,val);
 	pc->irq_stat &= 0xF000;
 	pc->irq_stat |= addr & 0x3FF;
@@ -381,7 +381,7 @@ void ec7879_port_set_uint8 (ibmpc_t *pc, unsigned long addr, unsigned char val)
 }
 
 static
-void ec7879_port_set_uint16 (ibmpc_t *pc, unsigned long addr, unsigned short val)
+void pk8641_port_set_uint16 (ibmpc_t *pc, unsigned long addr, unsigned short val)
 {//printf("%s %d %x<%x\n",__FUNCTION__,__LINE__,addr,val);
 	pc->irq_stat &= 0xF000;
 	pc->irq_stat |= addr & 0x3FF;
@@ -394,7 +394,7 @@ void ec7879_port_set_uint16 (ibmpc_t *pc, unsigned long addr, unsigned short val
 }
 
 static
-void ec7879_ppi_set_port_b (ibmpc_t *pc, unsigned char val)
+void pk8641_ppi_set_port_b (ibmpc_t *pc, unsigned char val)
 {
 	unsigned char old;
 //printf("%s %d %x\n",__FUNCTION__,__LINE__,val);
@@ -409,7 +409,7 @@ void ec7879_ppi_set_port_b (ibmpc_t *pc, unsigned char val)
 	
 	if ( val & 0x20 )
 		pc->irq_stat &= ~(1 << 13);		
-	ec7879_update_irq(pc);
+	pk8641_update_irq(pc);
 
 	e8253_set_gate (&pc->pit, 2, val & 0x01);
 
@@ -441,7 +441,7 @@ void ec7879_ppi_set_port_b (ibmpc_t *pc, unsigned char val)
 }
 
 static
-unsigned char ec7879_ppi_get_port_a (ibmpc_t *pc)
+unsigned char pk8641_ppi_get_port_a (ibmpc_t *pc)
 {
 	if (pc->ppi_port_b & 0x80) {
 		/* joystick
@@ -462,33 +462,33 @@ unsigned char ec7879_ppi_get_port_a (ibmpc_t *pc)
 
 
 static
-int pc_setup_ec7879_periph(ibmpc_t *pc, ini_sct_t *sct)
+int pc_setup_pk8641_periph(ibmpc_t *pc, ini_sct_t *sct)
 {
-	if ((pc->model & PCE_IBMPC_EC7879) == 0) {
+	if ((pc->model & PCE_IBMPC_PK8641) == 0) {
 		return (-1);
 	}
 
-	e86_set_inta_fct (pc->cpu, pc, ec7879_inta);
-	e8253_set_out_fct (&pc->pit, 0, pc, ec7879_timer0_irq);
-	pc_kbd_set_irq_fct (&pc->kbd, pc, ec7879_kbd_irq);
-	e8272_set_irq_fct (&pc->fdc->e8272, pc, ec7879_fdc_irq);
+	e86_set_inta_fct (pc->cpu, pc, pk8641_inta);
+	e8253_set_out_fct (&pc->pit, 0, pc, pk8641_timer0_irq);
+	pc_kbd_set_irq_fct (&pc->kbd, pc, pk8641_kbd_irq);
+	e8272_set_irq_fct (&pc->fdc->e8272, pc, pk8641_fdc_irq);
 	
-	e8272_set_dreq_fct (&pc->fdc->e8272, pc, ec7879_fdc_dreq);
+	e8272_set_dreq_fct (&pc->fdc->e8272, pc, pk8641_fdc_dreq);
 	dev_fdc_mem_rmv_io (pc->fdc, pc->prt);
 	pc->cpu->test = 1;
 	
-	e8250_set_irq_fct (&pc->serport[0]->uart, pc, ec7879_uart_irq);
-	e8250_set_irq_fct (&pc->serport[1]->uart, pc, ec7879_uart_irq);
+	e8250_set_irq_fct (&pc->serport[0]->uart, pc, pk8641_uart_irq);
+	e8250_set_irq_fct (&pc->serport[1]->uart, pc, pk8641_uart_irq);
 	
-	pc->ppi.port[0].read = (void *) ec7879_ppi_get_port_a;
-	pc->ppi.port[1].write = (void *) ec7879_ppi_set_port_b;
+	pc->ppi.port[0].read = (void *) pk8641_ppi_get_port_a;
+	pc->ppi.port[1].write = (void *) pk8641_ppi_set_port_b;
 	
 	pc_kbd_set_enable (&pc->kbd, 1);
 	pc_kbd_set_clk (&pc->kbd, 1);
 	
 	//pc->irq_stat = 1 << 15;
 	pc->irq_601 = 0;
-	ec7879_update_irq(pc);
+	pk8641_update_irq(pc);
 		
 	//e8259_free (&pc->pic);
 	
@@ -501,18 +501,18 @@ int pc_setup_ec7879_periph(ibmpc_t *pc, ini_sct_t *sct)
 }
 
 static
-int pc_setup_ec7879(ibmpc_t *pc, ini_sct_t *sct)
+int pc_setup_pk8641(ibmpc_t *pc, ini_sct_t *sct)
 {
 	mem_blk_t *blk;
 	
-	if ((pc->model & PCE_IBMPC_EC7879) == 0) {
+	if ((pc->model & PCE_IBMPC_PK8641) == 0) {
 		return (-1);
 	}
 	
 	blk = mem_blk_new (0xF0000, 0x1000, 0);
 	mem_blk_set_fct (blk, pc,
-		ec7879_memio_get_uint8, ec7879_memio_get_uint16, NULL,
-		ec7879_memio_set_uint8, ec7879_memio_set_uint16, NULL
+		pk8641_memio_get_uint8, pk8641_memio_get_uint16, NULL,
+		pk8641_memio_set_uint8, pk8641_memio_set_uint16, NULL
 	);	
 	mem_add_blk (pc->mem, blk, 0);
 	
@@ -521,8 +521,8 @@ int pc_setup_ec7879(ibmpc_t *pc, ini_sct_t *sct)
 		return;
 	}
 	mem_blk_set_fct (blk, pc,
-		ec7879_port_get_uint8, NULL, NULL,
-		ec7879_port_set_uint8, ec7879_port_set_uint16, NULL
+		pk8641_port_get_uint8, NULL, NULL,
+		pk8641_port_set_uint8, pk8641_port_set_uint16, NULL
 	);
 	mem_add_blk (pc->prt, blk, 1);
 	
@@ -530,7 +530,7 @@ int pc_setup_ec7879(ibmpc_t *pc, ini_sct_t *sct)
 	
 	return (0);
 }
-/* EC7879 specific */
+/* PK8641 specific */
 
 
 static
@@ -898,8 +898,8 @@ void pc_setup_system (ibmpc_t *pc, ini_sct_t *ini)
 	else if (strcmp (model, "m24") == 0) {
 		pc->model = PCE_IBMPC_5160 | PCE_IBMPC_M24;
 	}
-	else if (strcmp (model, "ec7879") == 0) {
-		pc->model = PCE_IBMPC_EC7879 | PCE_IBMPC_5160;
+	else if (strcmp (model, "pk8641") == 0) {
+		pc->model = PCE_IBMPC_PK8641 | PCE_IBMPC_5160;
 	}
 	else {
 		pce_log (MSG_ERR, "*** unknown model (%s)\n", model);
@@ -2089,7 +2089,7 @@ ibmpc_t *pc_new (ini_sct_t *ini)
 	pc_setup_mem (pc, ini);
 	pc_setup_ports (pc, ini);
 	
-	pc_setup_ec7879 (pc, ini);
+	pc_setup_pk8641 (pc, ini);
 
 	pc_setup_nvram (pc, ini);
 	pc_setup_cpu (pc, ini);
@@ -2119,7 +2119,7 @@ ibmpc_t *pc_new (ini_sct_t *ini)
 	pc_setup_ems (pc, ini);
 	pc_setup_xms (pc, ini);
 	
-	pc_setup_ec7879_periph (pc, ini);
+	pc_setup_pk8641_periph (pc, ini);
 
 
 	pce_load_mem_ini (pc->mem, ini);
