@@ -30,14 +30,11 @@
 #define V20_CPU_SYNC 100
 
 
-typedef struct vic20_s vic20_t;
-
-
 extern int        par_verbose;
 
 extern const char *par_terminal;
 
-extern vic20_t    *par_sim;
+extern struct vic20_s *par_sim;
 
 
 void sim_log_deb (const char *msg, ...);
