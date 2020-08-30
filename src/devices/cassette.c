@@ -464,6 +464,7 @@ int cas_set_write_name (cassette_t *cas, const char *fname, int create)
 	free (cas->write_name);
 	cas->write_name = NULL;
 
+	cas->modified = 0;
 	cas->position = 0;
 	cas->remainder = 0;
 
@@ -483,8 +484,6 @@ int cas_set_write_name (cassette_t *cas, const char *fname, int create)
 
 			pti_img_set_clock (cas->write_img, cas->clock);
 
-			cas->modified = 1;
-
 			return (0);
 		}
 	}
@@ -492,8 +491,6 @@ int cas_set_write_name (cassette_t *cas, const char *fname, int create)
 	if ((cas->write_img = pti_img_load (cas->write_name, PTI_FORMAT_NONE)) == NULL) {
 		return (1);
 	}
-
-	cas->modified = 0;
 
 	return (0);
 }
