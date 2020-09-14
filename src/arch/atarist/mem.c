@@ -156,6 +156,8 @@ unsigned short st_mem_get_uint16 (void *ext, unsigned long addr)
 	case 0xff860c:
 		return (st_dma_get_addr (&sim->dma, 2));
 
+	case 0xff8800:
+	case 0xff8802:
 	case 0xfffc00:
 	case 0xfffc02:
 	case 0xfffc04:
