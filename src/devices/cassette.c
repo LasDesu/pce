@@ -837,6 +837,7 @@ void cas_set_out (cassette_t *cas, int val)
 
 	if ((cas->run == 0) || (cas->record == 0)) {
 		cas->out_val = val;
+		cas->inp_val = val;
 		return;
 	}
 
