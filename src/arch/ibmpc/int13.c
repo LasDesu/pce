@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/int13.c                                       *
  * Created:     2003-04-14 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -319,7 +319,7 @@ void dsk_int13_05 (disks_t *dsks, e8086_t *cpu)
 static
 void dsk_int13_08 (disks_t *dsks, e8086_t *cpu)
 {
-	unsigned drive;
+	unsigned drive, c;
 	disk_t   *dsk;
 
 	drive = e86_get_dl (cpu);
@@ -354,10 +354,12 @@ void dsk_int13_08 (disks_t *dsks, e8086_t *cpu)
 		e86_set_bx (cpu, type);
 	}
 
+	c = (dsk->visible_c > 0) ? (dsk->visible_c - 1) : 0;
+
 	e86_set_dl (cpu, dsks_get_hd_cnt (dsks));
 	e86_set_dh (cpu, dsk->visible_h - 1);
-	e86_set_ch (cpu, dsk->visible_c - 1);
-	e86_set_cl (cpu, dsk->visible_s | (((dsk->visible_c - 1) >> 2) & 0xc0));
+	e86_set_ch (cpu, c);
+	e86_set_cl (cpu, dsk->visible_s | ((c >> 2) & 0xc0));
 
 	dsk_int13_set_status (dsks, cpu, 0x00);
 }
