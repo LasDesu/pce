@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/video/sdl.c                                      *
  * Created:     2003-09-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -646,6 +646,8 @@ int sdl_open (sdl_t *sdl, unsigned w, unsigned h)
 	SDL_EventState (SDL_MOUSEMOTION, SDL_ENABLE);
 
 	sdl_set_window_size (sdl, fx * w + bx, fy * h + by, 0);
+
+	trm_set_size (&sdl->trm, w, h);
 
 	return (0);
 }

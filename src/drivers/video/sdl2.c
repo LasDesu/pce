@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/video/sdl2.c                                     *
  * Created:     2015-06-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2015-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2015-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -740,6 +740,8 @@ int sdl2_open (sdl2_t *sdl, unsigned w, unsigned h)
 		fprintf (stderr, "sdl2: renderer\n");
 		return (1);
 	}
+
+	trm_set_size (&sdl->trm, w, h);
 
 	return (0);
 }
