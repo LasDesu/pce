@@ -54,6 +54,7 @@ extern unsigned long par_trk[2];
 extern unsigned long par_data_rate;
 
 extern char          par_mac_no_slip;
+extern char          par_text_align;
 
 
 typedef int (*pri_trk_cb) (pri_img_t *img, pri_trk_t *trk,

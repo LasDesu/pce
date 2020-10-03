@@ -65,6 +65,7 @@ pri_dec_mfm_t par_dec_mfm;
 pri_enc_mfm_t par_enc_mfm;
 
 char          par_mac_no_slip = 0;
+char          par_text_align = 1;
 
 
 static pce_option_t opts[] = {
@@ -191,7 +192,7 @@ void print_help (void)
 		"  mfm-auto-gap3, mfm-clock, mfm-iam, mfm-gap1, mfm-gap3, mfm-gap4a,\n"
 		"  mfm-min-size, mfm-nopos, mfm-track-size\n"
 		"  fm-auto-gap3, fm-clock, fm-iam, fm-gap1, fm-gap3, fm-gap4a,\n"
-		"  fm-track-size\n"
+		"  fm-track-size, text-align\n"
 		"\n"
 		"decode types are:\n"
 		"  auto, ibm-fm, ibm-mfm, mac-gcr,\n"
@@ -772,6 +773,9 @@ int pri_set_parameter (const char *name, const char *val)
 	}
 	else if (strcmp (name, "fm-track-size") == 0) {
 		par_enc_fm.track_size = strtoul (val, NULL, 0);
+	}
+	else if (strcmp (name, "text-align") == 0) {
+		par_text_align = (strtoul (val, NULL, 0) != 0);
 	}
 	else {
 		fprintf (stderr, "%s: unknown parameter (%s)\n", arg0, name);

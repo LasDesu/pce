@@ -178,7 +178,12 @@ int txt_mfm_dec_track (pri_text_t *ctx)
 	fprintf (ctx->fp, "MODE IBM-MFM\n");
 	fprintf (ctx->fp, "RATE %lu\n\n", pri_trk_get_clock (ctx->trk));
 
-	align = mfm_dec_align (ctx);
+	if (par_text_align) {
+		align = mfm_dec_align (ctx);
+	}
+	else {
+		align = 0;
+	}
 
 	ctx->shift_cnt = 0;
 	ctx->last_val = 0;
