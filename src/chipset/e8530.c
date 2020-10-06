@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/e8530.c                                          *
  * Created:     2007-11-11 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -284,6 +284,11 @@ void e8530_check_rxd (e8530_t *scc, unsigned chn)
 	}
 
 	if (c->read_char_cnt == 0) {
+		return;
+	}
+
+	if ((c->wr[3] & 0x01) == 0) {
+		/* receiver disabled */
 		return;
 	}
 
