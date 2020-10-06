@@ -42,6 +42,8 @@ void e8530_init_chn (e8530_t *scc, unsigned chn)
 	c->txd_empty = 1;
 	c->rxd_empty = 1;
 
+	c->int_on_next_rx = 0;
+
 	c->char_clk_cnt = 0;
 	c->char_clk_div = 16384;
 
@@ -219,9 +221,39 @@ void e8530_set_int_cond (e8530_t *scc, unsigned chn, unsigned char cond)
 		c0->rr[3] |= (chn == 0) ? 0x10 : 0x02;
 	}
 
-	if ((cond & 0x04) && ((c->wr[1] & 0x18) == 0x10)) {
+	if ((cond & 0x04) && (c->wr[1] & 0x18)) {
 		/* receive interrupt */
-		c0->rr[3] |= (chn == 0) ? 0x20 : 0x04;
+		int data, spec, irq;
+
+		data = (c->rxd_empty == 0);
+		spec = (c->rr[0] & 0x80) != 0;
+		irq = 0;
+
+		switch ((c->wr[1] >> 3) & 3) {
+		case 0: /* disabled */
+			irq = 0;
+			break;
+
+		case 1: /* rx int on first char / special condition */
+			irq = (data && c->int_on_next_rx) || spec;
+			break;
+
+		case 2: /* rx int on all chars / special condition */
+			irq = data || spec;
+			break;
+
+		case 3: /* rx int on special condition */
+			irq = spec;
+			break;
+		}
+
+		if (data) {
+			c->int_on_next_rx = 0;
+		}
+
+		if (irq) {
+			c0->rr[3] |= (chn == 0) ? 0x20 : 0x04;
+		}
 	}
 
 	if ((c0->wr[9] & 0x08) == 0) {
@@ -707,6 +739,7 @@ void e8530_set_wr0 (e8530_t *scc, unsigned chn, unsigned char val)
 		break;
 
 	case 0x04: /* enable interrupt on next rx character */
+		scc->chn[chn].int_on_next_rx = 1;
 		break;
 
 	case 0x05: /* reset tx interrupt pending */
@@ -714,6 +747,7 @@ void e8530_set_wr0 (e8530_t *scc, unsigned chn, unsigned char val)
 		break;
 
 	case 0x06: /* error reset */
+		scc->chn[chn].rr[1] &= 0x7f;
 		break;
 
 	case 0x07: /* reset highest ius */
@@ -751,14 +785,37 @@ void e8530_set_wr2 (e8530_t *scc, unsigned char val)
 static
 void e8530_set_wr3 (e8530_t *scc, unsigned chn, unsigned char val)
 {
-	scc->chn[chn].wr[3] = val;
+	e8530_chn_t *c;
+
+	c = &scc->chn[chn];
+
+	if (c->wr[3] ^ val) {
+		if (val & 0x01) {
+#if DEBUG_SCC >= 1
+			fprintf (stderr, "SCC %c: receiver enable\n", scc_get_chn (chn));
+#endif
+			c->int_on_next_rx = 1;
+			c->rxd_empty = 1;
+		}
+		else {
+			c->rr[0] &= ~0x01;
+			e8530_clr_int_cond (scc, chn, 0x04);
+#if DEBUG_SCC >= 1
+			fprintf (stderr, "SCC %c: receiver disable\n", scc_get_chn (chn));
+#endif
+		}
+	}
 
 	if (val & 0x10) {
-#if DEBUG_SCC
-		fprintf (stderr, "SCC %c: sync/hunt mode\n", scc_get_chn (chn));
+#if DEBUG_SCC >= 1
+		if ((c->rr[0] & 0x10) == 0) {
+			fprintf (stderr, "SCC %c: sync/hunt mode\n", scc_get_chn (chn));
+		}
 #endif
-		scc->chn[chn].rr[0] |= 0x10;
+		c->rr[0] |= 0x10;
 	}
+
+	c->wr[3] = val;
 }
 
 /*
