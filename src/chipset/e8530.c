@@ -479,7 +479,7 @@ void e8530_set_params (e8530_t *scc, unsigned chn)
 		div = (c->wr[13] << 8) | c->wr[12];
 		div = 2 * mul * (div + 2);
 
-		c->char_clk_div = (c->bpc + c->stop + 1) * div;
+		c->char_clk_div = ((2 * c->bpc + c->stop + 2) * div) / 2;
 
 		if (c->parity != 0) {
 			c->char_clk_div += div;
