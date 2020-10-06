@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/macplus.h                                   *
  * Created:     2007-04-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -132,6 +132,8 @@ struct macplus_s {
 	unsigned long      sync_clk;
 	unsigned long      sync_us;
 	long               sync_sleep;
+
+	unsigned           ser_clk;
 
 	unsigned long long clk_cnt;
 	unsigned long      clk_div[4];

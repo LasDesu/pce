@@ -1317,6 +1317,7 @@ void mac_init (macplus_t *sim, ini_sct_t *ini)
 		sim->speed_limit[i] = 0;
 	}
 
+	sim->ser_clk = 0;
 	sim->clk_cnt = 0;
 
 	for (i = 0; i < 4; i++) {
@@ -1594,6 +1595,17 @@ void mac_realtime_sync (macplus_t *sim, unsigned long n)
 	}
 }
 
+void mac_clock_scc (macplus_t *sim, unsigned n)
+{
+	/* 3.672 MHz = (15/32 * 7.8336 MHz) */
+	sim->ser_clk += 15 * n;
+
+	if (sim->ser_clk >= 32) {
+		e8530_clock (&sim->scc, sim->ser_clk / 32);
+		sim->ser_clk &= 31;
+	}
+}
+
 void mac_clock (macplus_t *sim, unsigned n)
 {
 	unsigned long viaclk, clkdiv, cpuclk;
@@ -1641,6 +1653,8 @@ void mac_clock (macplus_t *sim, unsigned n)
 
 	mac_iwm_clock (&sim->iwm, viaclk);
 
+	mac_clock_scc (sim, 10 * viaclk);
+
 	sim->clk_div[1] -= 10 * viaclk;
 	sim->clk_div[2] += 10 * viaclk;
 
@@ -1650,8 +1664,8 @@ void mac_clock (macplus_t *sim, unsigned n)
 
 	mac_video_clock (sim->video, sim->clk_div[2]);
 
-	mac_ser_clock (&sim->ser[0], sim->clk_div[2]);
-	mac_ser_clock (&sim->ser[1], sim->clk_div[2]);
+	mac_ser_process (&sim->ser[0]);
+	mac_ser_process (&sim->ser[1]);
 
 	if (sim->kbd != NULL) {
 		mac_kbd_clock (sim->kbd, sim->clk_div[2]);
