@@ -314,9 +314,10 @@ video {
 	color = "amber"
 
 	#color_background = 0x000000
-	#color_normal = 0xe89050
-	#color_bright = 0xfff0c8
-	#color_graphics = 0xfff0c8
+	#color_dim = 0x752500
+	#color_normal = 0xca7a2a
+	#color_bright = 0xffcf7f
+	#color_graphics = 0xca7a2a
 
 	# The blink rate for blinking characters and the
 	# cursor. Setting this to 0 will turn off blinking.

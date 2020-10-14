@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/video/hgc.h                                      *
  * Created:     2003-08-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -49,7 +49,7 @@ typedef struct {
 
 	unsigned char       mod_cnt;
 
-	unsigned char       rgb[17][3];
+	unsigned char       rgb[5][3];
 
 	unsigned short      lfsr;
 
