@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/video/video.h                                    *
  * Created:     2003-08-30 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -91,6 +91,10 @@ void pce_video_clock1 (video_t *vid, unsigned long cnt);
 int pce_video_set_buf_size (video_t *vid, unsigned w, unsigned h, unsigned bpp);
 
 unsigned char *pce_video_get_row_ptr (video_t *vid, unsigned row);
+
+unsigned long pce_color_add (unsigned long col, unsigned long val);
+unsigned long pce_color_sub (unsigned long col, unsigned long val);
+int pce_color_get (const char *name, unsigned long *col);
 
 
 #endif
