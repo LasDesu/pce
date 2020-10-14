@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/video/mda.c                                      *
  * Created:     2003-04-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -70,6 +70,7 @@ void mda_line_text (mda_t *mda, unsigned row)
 	unsigned            val, cmask;
 	unsigned            addr, caddr;
 	unsigned char       code, attr;
+	int                 blink;
 	const unsigned char *fg, *bg, *col;
 	unsigned char       *ptr;
 
@@ -93,6 +94,8 @@ void mda_line_text (mda_t *mda, unsigned row)
 		cmask = 0;
 	}
 
+	blink = (mda->reg[MDA_MODE] & MDA_MODE_BLINK) != 0;
+
 	for (i = 0; i < hd; i++) {
 		code = mda->mem[(2 * addr + 0) & 0x0fff];
 		attr = mda->mem[(2 * addr + 1) & 0x0fff];
@@ -107,27 +110,35 @@ void mda_line_text (mda_t *mda, unsigned row)
 			val = 0x1ff;
 		}
 
-		if ((attr & 0x80) && (mda->reg[MDA_MODE] & MDA_MODE_BLINK)) {
-			if (mda->blink == 0) {
-				val = 0;
-			}
+		if ((attr & 0x80) && blink && (mda->blink == 0)) {
+			val = 0;
 		}
 
 		if (addr == caddr) {
 			val |= cmask;
 		}
 
-		if ((attr & 0x77) == 0x70) {
+		switch (attr & 0x7f) {
+		case 0x00:
+		case 0x08:
 			fg = mda->rgb[0];
-			bg = mda->rgb[7];
-
-			if ((attr & 0x80) && (~mda->reg[MDA_MODE] & MDA_MODE_BLINK)) {
-				bg = mda->rgb[15];
-			}
-		}
-		else {
-			fg = mda->rgb[attr & 0x0f];
 			bg = mda->rgb[0];
+			break;
+
+		case 0x70:
+			fg = mda->rgb[0];
+			bg = ((attr & 0x80) && !blink) ? mda->rgb[15] : mda->rgb[7];
+			break;
+
+		case 0x78:
+			fg = mda->rgb[8];
+			bg = ((attr & 0x80) && !blink) ? mda->rgb[15] : mda->rgb[7];
+			break;
+
+		default:
+			fg = (attr & 0x08) ? mda->rgb[15] : mda->rgb[7];
+			bg = mda->rgb[0];
+			break;
 		}
 
 		for (j = 0; j < 9; j++) {
