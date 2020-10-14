@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/video/hgc.c                                      *
  * Created:     2003-08-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -81,6 +81,7 @@ void hgc_line_text (hgc_t *hgc, unsigned row)
 	unsigned            val, cmask;
 	unsigned            addr, caddr;
 	unsigned char       code, attr;
+	int                 blink;
 	const unsigned char *mem, *col, *fg, *bg;
 	unsigned char       *ptr;
 
@@ -105,6 +106,8 @@ void hgc_line_text (hgc_t *hgc, unsigned row)
 		cmask = 0;
 	}
 
+	blink = (hgc->reg[HGC_MODE] & HGC_MODE_BLINK) != 0;
+
 	for (i = 0; i < hd; i++) {
 		code = mem[(2 * addr + 0) & 0x7fff];
 		attr = mem[(2 * addr + 1) & 0x7fff];
@@ -119,27 +122,35 @@ void hgc_line_text (hgc_t *hgc, unsigned row)
 			val = 0x1ff;
 		}
 
-		if ((attr & 0x80) && (hgc->reg[HGC_MODE] & HGC_MODE_BLINK)) {
-			if (hgc->blink == 0) {
-				val = 0;
-			}
+		if ((attr & 0x80) && blink && (hgc->blink == 0)) {
+			val = 0;
 		}
 
 		if (addr == caddr) {
 			val |= cmask;
 		}
 
-		if ((attr & 0x77) == 0x70) {
+		switch (attr & 0x7f) {
+		case 0x00:
+		case 0x08:
 			fg = hgc->rgb[0];
-			bg = hgc->rgb[7];
-
-			if ((attr & 0x80) && (~hgc->reg[HGC_MODE] & HGC_MODE_BLINK)) {
-				bg = hgc->rgb[15];
-			}
-		}
-		else {
-			fg = hgc->rgb[attr & 0x0f];
 			bg = hgc->rgb[0];
+			break;
+
+		case 0x70:
+			fg = hgc->rgb[0];
+			bg = ((attr & 0x80) && !blink) ? hgc->rgb[15] : hgc->rgb[7];
+			break;
+
+		case 0x78:
+			fg = hgc->rgb[8];
+			bg = ((attr & 0x80) && !blink) ? hgc->rgb[15] : hgc->rgb[7];
+			break;
+
+		default:
+			fg = (attr & 0x08) ? hgc->rgb[15] : hgc->rgb[7];
+			bg = hgc->rgb[0];
+			break;
 		}
 
 		for (j = 0; j < 9; j++) {
