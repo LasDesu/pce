@@ -26,6 +26,7 @@
 
 #include <chipset/e6845.h>
 #include <devices/memory.h>
+#include <devices/video/video.h>
 #include <devices/video/mda.h>
 #include <devices/video/mda_font.h>
 #include <drivers/video/terminal.h>
@@ -71,6 +72,7 @@ void mda_line_text (mda_t *mda, unsigned row)
 	unsigned            addr, caddr;
 	unsigned char       code, attr;
 	int                 blink;
+	unsigned            fgi, bgi;
 	const unsigned char *fg, *bg, *col;
 	unsigned char       *ptr;
 
@@ -121,25 +123,28 @@ void mda_line_text (mda_t *mda, unsigned row)
 		switch (attr & 0x7f) {
 		case 0x00:
 		case 0x08:
-			fg = mda->rgb[0];
-			bg = mda->rgb[0];
+			fgi = 0;
+			bgi = 0;
 			break;
 
 		case 0x70:
-			fg = mda->rgb[0];
-			bg = ((attr & 0x80) && !blink) ? mda->rgb[15] : mda->rgb[7];
+			fgi = 0;
+			bgi = ((attr & 0x80) && !blink) ? 3 : 2;
 			break;
 
 		case 0x78:
-			fg = mda->rgb[8];
-			bg = ((attr & 0x80) && !blink) ? mda->rgb[15] : mda->rgb[7];
+			fgi = 1;
+			bgi = ((attr & 0x80) && !blink) ? 3 : 2;
 			break;
 
 		default:
-			fg = (attr & 0x08) ? mda->rgb[15] : mda->rgb[7];
-			bg = mda->rgb[0];
+			fgi = (attr & 0x08) ? 3 : 2;
+			bgi = 0;
 			break;
 		}
+
+		fg = mda->rgb[fgi];
+		bg = mda->rgb[bgi];
 
 		for (j = 0; j < 9; j++) {
 			col = (val & 0x100) ? fg : bg;
@@ -255,51 +260,23 @@ void mda_set_blink_rate (mda_t *mda, unsigned rate)
 }
 
 static
-void mda_set_color (mda_t *mda, unsigned i1, unsigned i2, unsigned r, unsigned g, unsigned b)
+void mda_set_color_index (mda_t *mda, unsigned i, unsigned long col)
 {
-	if ((i1 > 15) || (i2 > 15)) {
-		return;
+	if (i < 4) {
+		mda->rgb[i][0] = (col >> 16) & 0xff;
+		mda->rgb[i][1] = (col >> 8) & 0xff;
+		mda->rgb[i][2] = col & 0xff;
+		mda->mod_cnt = 2;
 	}
-
-	r &= 0xff;
-	g &= 0xff;
-	b &= 0xff;
-
-	while (i1 <= i2) {
-		mda->rgb[i1][0] = r;
-		mda->rgb[i1][1] = g;
-		mda->rgb[i1][2] = b;
-		i1 += 1;
-	}
-
-	mda->mod_cnt = 2;
 }
 
-/*
- * Map a color name to background/normal/bright RGB values
- */
 static
-void mda_get_color (const char *name,
-	unsigned long *back, unsigned long *normal, unsigned long *bright)
+void mda_set_color (mda_t *mda, unsigned long col)
 {
-	*back = 0x000000;
-
-	if (strcmp (name, "amber") == 0) {
-		*normal = 0xe89050;
-		*bright = 0xfff0c8;
-	}
-	else if (strcmp (name, "green") == 0) {
-		*normal = 0x55aa55;
-		*bright = 0xaaffaa;
-	}
-	else if (strcmp (name, "gray") == 0) {
-		*normal = 0xaaaaaa;
-		*bright = 0xffffff;
-	}
-	else {
-		*normal = 0xe89050;
-		*bright = 0xfff0c8;
-	}
+	mda_set_color_index (mda, 0, 0);
+	mda_set_color_index (mda, 1, pce_color_sub (col, 0x555555));
+	mda_set_color_index (mda, 2, col);
+	mda_set_color_index (mda, 3, pce_color_add (col, 0x555555));
 }
 
 /*
@@ -448,6 +425,17 @@ int mda_set_msg (mda_t *mda, const char *msg, const char *val)
 
 		return (0);
 	}
+	else if (msg_is_message ("emu.video.color", msg)) {
+		unsigned long v;
+
+		if (pce_color_get (val, &v)) {
+			return (1);
+		}
+
+		mda_set_color (mda, v);
+
+		return (0);
+	}
 
 	return (-1);
 }
@@ -579,9 +567,7 @@ mda_t *mda_new (unsigned long io, unsigned long mem)
 	mda->blink_cnt = 0;
 	mda->blink_rate = 16;
 
-	mda_set_color (mda, 0, 0, 0x00, 0x00, 0x00);
-	mda_set_color (mda, 1, 7, 0x00, 0xaa, 0x00);
-	mda_set_color (mda, 8, 15, 0xaa, 0xff, 0xaa);
+	mda_set_color (mda, 0xaaaaaa);
 
 	return (mda);
 }
@@ -601,35 +587,44 @@ void mda_del (mda_t *mda)
 
 video_t *mda_new_ini (ini_sct_t *sct)
 {
+	unsigned      i;
 	unsigned long io, addr;
-	unsigned long col0, col1, col2;
+	unsigned long col[4];
 	unsigned      blink;
-	const char    *col;
+	const char    *colname;
 	mda_t         *mda;
 
 	ini_get_uint32 (sct, "io", &io, 0x3b0);
 	ini_get_uint32 (sct, "address", &addr, 0xb0000);
 	ini_get_uint16 (sct, "blink", &blink, 16);
-	ini_get_string (sct, "color", &col, "green");
+	ini_get_string (sct, "color", &colname, "green");
 
 	pce_log_tag (MSG_INF,
-		"VIDEO:", "MDA io=0x%04lx addr=0x%05lx blink=%u\n",
-		io, addr, blink
+		"VIDEO:", "MDA io=0x%04lx addr=0x%05lx blink=%u color=%s\n",
+		io, addr, blink, colname
 	);
 
-	mda_get_color (col, &col0, &col1, &col2);
+	if (pce_color_get (colname, col + 2)) {
+		pce_log (MSG_ERR, "*** unknown color (%s)\n", colname);
+		col[2] = 0xaaaaaa;
+	}
 
-	ini_get_uint32 (sct, "color_background", &col0, col0);
-	ini_get_uint32 (sct, "color_normal", &col1, col1);
-	ini_get_uint32 (sct, "color_bright", &col2, col2);
+	col[0] = 0;
+	col[1] = pce_color_sub (col[2], 0x555555);
+	col[3] = pce_color_add (col[2], 0x555555);
+
+	ini_get_uint32 (sct, "color_background", &col[0], col[0]);
+	ini_get_uint32 (sct, "color_dim", &col[1], col[1]);
+	ini_get_uint32 (sct, "color_normal", &col[2], col[2]);
+	ini_get_uint32 (sct, "color_bright", &col[3], col[3]);
 
 	if ((mda = mda_new (io, addr)) == NULL) {
 		return (NULL);
 	}
 
-	mda_set_color (mda, 0, 0, col0 >> 16, col0 >> 8, col0);
-	mda_set_color (mda, 1, 7, col1 >> 16, col1 >> 8, col1);
-	mda_set_color (mda, 8, 15, col2 >> 16, col2 >> 8, col2);
+	for (i = 0; i < 4; i++) {
+		mda_set_color_index (mda, i, col[i]);
+	}
 
 	mda_set_blink_rate (mda, blink);
 

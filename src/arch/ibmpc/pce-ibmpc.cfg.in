@@ -332,9 +332,10 @@ video {
 	color = "green"
 
 	#color_background = 0x000000
-	#color_normal = 0x55aa55
-	#color_bright = 0xaaffaa
-	#color_graphics = 0xaaffaa
+	#color_dim = 0x005500
+	#color_normal = 0x00aa25
+	#color_bright = 0x55ff7a
+	#color_graphics = 0x00aa25
 
 	# The blink rate for blinking characters and the
 	# cursor. Setting this to 0 will turn off blinking.

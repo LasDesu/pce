@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/video/mda.h                                      *
  * Created:     2003-04-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -48,7 +48,7 @@ typedef struct {
 
 	unsigned char       mod_cnt;
 
-	unsigned char       rgb[16][3];
+	unsigned char       rgb[4][3];
 
 	unsigned short      lfsr;
 
