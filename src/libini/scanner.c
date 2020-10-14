@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/libini/scanner.c                                         *
  * Created:     2000-12-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2000-2010 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2000-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -148,7 +148,7 @@ void scn_set_str (scanner_t *scn, const char *str)
 	scn->str = str;
 }
 
-int scn_add_file (scanner_t *scn, const char *fname, FILE *fp, int del)
+int scn_add_file (scanner_t *scn, const char *fname, FILE *fp, int del, int rel)
 {
 	char       *name;
 	scn_file_t *scf;
@@ -159,12 +159,14 @@ int scn_add_file (scanner_t *scn, const char *fname, FILE *fp, int del)
 		return (1);
 	}
 
-	if (scn->file == NULL) {
+	if ((scn->file == NULL) || (rel == 0)) {
 		name = scn_file_get_name (NULL, fname);
 	}
 	else {
 		name = scn_file_get_name (scn->file->name, fname);
+	}
 
+	if (scn->file != NULL) {
 		scn->file->line = scn->line;
 		scn->file->offset = scn->offset;
 	}
