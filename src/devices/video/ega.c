@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/video/ega.c                                      *
  * Created:     2003-09-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2014 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -337,31 +337,15 @@ void ega_get_palette (ega_t *ega, unsigned idx,
 	v = ega->reg_atc[idx & 0x0f];
 
 	if (mon == EGA_MONITOR_MDA) {
-		*r = 0;
-		*g = 0;
-		*b = 0;
+		*r = ((v & 0x08) ? 0xaa : 0) + ((v & 0x10) ? 0x55 : 0);
+		*g = *r;
+		*b = *r;
 
-		if (v & 0x08) {
-			*r += 0xe8;
-			*g += 0x90;
-			*b += 0x50;
-		}
-
-		if (v & 0x10) {
-			*r += 0x17;
-			*g += 0x60;
-			*b += 0x78;
-		}
 	}
 	else if (mon == EGA_MONITOR_CGA) {
-		*r = (v & 0x04) ? 0xaa : 0x00;
-		*r += (v & 0x10) ? 0x55 : 0x00;
-
-		*g = (v & 0x02) ? 0xaa : 0x00;
-		*g += (v & 0x10) ? 0x55 : 0x00;
-
-		*b = (v & 0x01) ? 0xaa : 0x00;
-		*b += (v & 0x10) ? 0x55 : 0x00;
+		*r = ((v & 0x04) ? 0xaa : 0) + ((v & 0x10) ? 0x55 : 0);
+		*g = ((v & 0x02) ? 0xaa : 0) + ((v & 0x10) ? 0x55 : 0);
+		*b = ((v & 0x01) ? 0xaa : 0) + ((v & 0x10) ? 0x55 : 0);
 
 		if (v == 0x06) {
 			*g = 0x55;
