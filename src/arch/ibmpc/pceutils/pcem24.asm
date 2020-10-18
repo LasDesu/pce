@@ -5,7 +5,7 @@
 ;-----------------------------------------------------------------------------
 ; File name:    pcem24.asm
 ; Created:      2017-09-10 by Hampa Hug <hampa@hampa.ch>
-; Copyright:    (C) 2017 Hampa Hug <hampa@hampa.ch>
+; Copyright:    (C) 2017-2020 Hampa Hug <hampa@hampa.ch>
 ;-----------------------------------------------------------------------------
 
 ;-----------------------------------------------------------------------------
@@ -110,7 +110,12 @@ newint10:
 	je	.hires
 	cmp	al, 0x48		; 640 * 400 (80 * 50)
 	je	.hires
+	cmp	al, 0x06
+	jbe	.lores
 
+	iret
+
+.lores:
 	call	m24_reset		; reset high res mode
 	jmp	.skip
 
@@ -124,7 +129,8 @@ newint10:
 res_end:
 
 
-msg	db "Olivetti M24 BIOS extension", 0x0d, 0x0a, 0
+msg	db	"Olivetti M24 BIOS extension version ", PCE_VERSION_STR
+	db	0x0d, 0x0a, 0
 
 
 %define PCE_USE_PRINT_STRING 1
