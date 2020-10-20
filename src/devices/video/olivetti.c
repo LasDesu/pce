@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/video/olivetti.c                                 *
  * Created:     2011-09-26 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2011-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2011-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -414,9 +414,9 @@ void m24_clock (m24_t *m24, unsigned long cnt)
 }
 
 static
-void m24_set_blink_rate (m24_t *m24, unsigned rate)
+void m24_set_blink_rate (m24_t *m24, unsigned rate, int start)
 {
-	m24->blink = 1;
+	m24->blink = (start != 0);
 	m24->blink_cnt = rate;
 	m24->blink_rate = rate;
 	m24->mod_cnt = 2;
@@ -676,18 +676,7 @@ void m24_mem_set_uint16 (m24_t *m24, unsigned long addr, unsigned short val)
 static
 int m24_set_msg (m24_t *m24, const char *msg, const char *val)
 {
-	if (msg_is_message ("emu.video.blink", msg)) {
-		unsigned v;
-
-		if (msg_get_uint (val, &v)) {
-			return (1);
-		}
-
-		m24_set_blink_rate (m24, v);
-
-		return (0);
-	}
-	else if (msg_is_message ("emu.video.mono", msg)) {
+	if (msg_is_message ("emu.video.mono", msg)) {
 		unsigned mono;
 
 		if (msg_get_uint (val, &mono)) {
@@ -806,6 +795,7 @@ void m24_init (m24_t *m24, unsigned long io, unsigned long addr)
 	m24->video.set_terminal = (void *) m24_set_terminal;
 	m24->video.get_mem = (void *) m24_get_mem;
 	m24->video.get_reg = (void *) m24_get_reg;
+	m24->video.set_blink_rate = (void *) m24_set_blink_rate;
 	m24->video.print_info = (void *) m24_print_info;
 	m24->video.clock = (void *) m24_clock;
 
@@ -900,7 +890,7 @@ video_t *m24_new_ini (ini_sct_t *sct)
 	}
 
 	m24_set_mono (m24, mono);
-	m24_set_blink_rate (m24, blink);
+	m24_set_blink_rate (m24, blink, 1);
 
 	return (&m24->video);
 }

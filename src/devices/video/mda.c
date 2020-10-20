@@ -251,9 +251,9 @@ void mda_clock (mda_t *mda, unsigned long cnt)
 }
 
 static
-void mda_set_blink_rate (mda_t *mda, unsigned rate)
+void mda_set_blink_rate (mda_t *mda, unsigned rate, int start)
 {
-	mda->blink = 1;
+	mda->blink = (start != 0);
 	mda->blink_cnt = rate;
 	mda->blink_rate = rate;
 	mda->mod_cnt = 2;
@@ -414,18 +414,7 @@ void mda_mem_set_uint16 (mda_t *mda, unsigned long addr, unsigned short val)
 static
 int mda_set_msg (mda_t *mda, const char *msg, const char *val)
 {
-	if (msg_is_message ("emu.video.blink", msg)) {
-		unsigned v;
-
-		if (msg_get_uint (val, &v)) {
-			return (1);
-		}
-
-		mda_set_blink_rate (mda, v);
-
-		return (0);
-	}
-	else if (msg_is_message ("emu.video.color", msg)) {
+	if (msg_is_message ("emu.video.color", msg)) {
 		unsigned long v;
 
 		if (pce_color_get (val, &v)) {
@@ -538,6 +527,7 @@ mda_t *mda_new (unsigned long io, unsigned long mem)
 	mda->video.set_terminal = (void *) mda_set_terminal;
 	mda->video.get_mem = (void *) mda_get_mem;
 	mda->video.get_reg = (void *) mda_get_reg;
+	mda->video.set_blink_rate = (void *) mda_set_blink_rate;
 	mda->video.print_info = (void *) mda_print_info;
 	mda->video.clock = (void *) mda_clock;
 
@@ -626,7 +616,7 @@ video_t *mda_new_ini (ini_sct_t *sct)
 		mda_set_color_index (mda, i, col[i]);
 	}
 
-	mda_set_blink_rate (mda, blink);
+	mda_set_blink_rate (mda, blink, 1);
 
 	return (&mda->video);
 }

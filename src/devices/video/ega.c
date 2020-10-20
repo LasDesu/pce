@@ -209,11 +209,11 @@ void ega_set_switches (ega_t *ega, unsigned val)
  * Set the blink frequency
  */
 static
-void ega_set_blink_rate (ega_t *ega, unsigned freq)
+void ega_set_blink_rate (ega_t *ega, unsigned rate, int start)
 {
-	ega->blink_on = 1;
-	ega->blink_cnt = freq;
-	ega->blink_freq = freq;
+	ega->blink_on = (start != 0);
+	ega->blink_cnt = rate;
+	ega->blink_freq = rate;
 
 	ega->update_state |= EGA_UPDATE_DIRTY;
 }
@@ -1544,18 +1544,6 @@ void ega_reg_set_uint16 (ega_t *ega, unsigned long addr, unsigned short val)
 static
 int ega_set_msg (ega_t *ega, const char *msg, const char *val)
 {
-	if (msg_is_message ("emu.video.blink", msg)) {
-		unsigned freq;
-
-		if (msg_get_uint (val, &freq)) {
-			return (1);
-		}
-
-		ega_set_blink_rate (ega, freq);
-
-		return (0);
-	}
-
 	return (-1);
 }
 
@@ -1748,6 +1736,7 @@ void ega_init (ega_t *ega, unsigned long io, unsigned long addr)
 	ega->video.set_terminal = (void *) ega_set_terminal;
 	ega->video.get_mem = (void *) ega_get_mem;
 	ega->video.get_reg = (void *) ega_get_reg;
+	ega->video.set_blink_rate = (void *) ega_set_blink_rate;
 	ega->video.print_info = (void *) ega_print_info;
 	ega->video.redraw = (void *) ega_redraw;
 	ega->video.clock = (void *) ega_clock;
@@ -1862,7 +1851,7 @@ video_t *ega_new_ini (ini_sct_t *sct)
 	}
 
 	ega_set_switches (ega, switches);
-	ega_set_blink_rate (ega, blink);
+	ega_set_blink_rate (ega, blink, 1);
 
 	return (&ega->video);
 }

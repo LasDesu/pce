@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/video/cga.c                                      *
  * Created:     2003-04-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -757,9 +757,9 @@ void cga_clock (cga_t *cga, unsigned long cnt)
 }
 
 static
-void cga_set_blink_rate (cga_t *cga, unsigned rate)
+void cga_set_blink_rate (cga_t *cga, unsigned rate, int start)
 {
-	cga->blink = 1;
+	cga->blink = (start != 0);
 	cga->blink_cnt = rate;
 	cga->blink_rate = rate;
 	cga->mod_cnt = 2;
@@ -1000,18 +1000,7 @@ void cga_mem_set_uint16 (cga_t *cga, unsigned long addr, unsigned short val)
 static
 int cga_set_msg (cga_t *cga, const char *msg, const char *val)
 {
-	if (msg_is_message ("emu.video.blink", msg)) {
-		unsigned v;
-
-		if (msg_get_uint (val, &v)) {
-			return (1);
-		}
-
-		cga_set_blink_rate (cga, v);
-
-		return (0);
-	}
-	else if (msg_is_message ("emu.video.brightness", msg)) {
+	if (msg_is_message ("emu.video.brightness", msg)) {
 		int v;
 
 		if (msg_get_sint (val, &v)) {
@@ -1206,6 +1195,7 @@ void cga_init (cga_t *cga, unsigned long io, unsigned long addr)
 	cga->video.set_terminal = (void *) cga_set_terminal;
 	cga->video.get_mem = (void *) cga_get_mem;
 	cga->video.get_reg = (void *) cga_get_reg;
+	cga->video.set_blink_rate = (void *) cga_set_blink_rate;
 	cga->video.print_info = (void *) cga_print_info;
 	cga->video.clock = (void *) cga_clock;
 
@@ -1306,7 +1296,7 @@ video_t *cga_new_ini (ini_sct_t *sct)
 		return (NULL);
 	}
 
-	cga_set_blink_rate (cga, blink);
+	cga_set_blink_rate (cga, blink, 1);
 	cga_set_font (cga, font);
 
 	return (&cga->video);

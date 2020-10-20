@@ -51,6 +51,7 @@ void pce_video_init (video_t *vid)
 	vid->set_terminal = NULL;
 	vid->get_mem = NULL;
 	vid->get_reg = NULL;
+	vid->set_blink_rate = NULL;
 	vid->print_info = NULL;
 	vid->redraw = NULL;
 	vid->clock = NULL;
@@ -67,7 +68,30 @@ void pce_video_del (video_t *vid)
 
 int pce_video_set_msg (video_t *vid, const char *msg, const char *val)
 {
-	if (msg_is_message ("emu.video.redraw", msg)) {
+	if (msg_is_message ("emu.video.blink", msg)) {
+		int      s;
+		unsigned v;
+
+		if (strcmp (val, "on") == 0) {
+			v = 0;
+			s = 1;
+		}
+		else if (strcmp (val, "off") == 0) {
+			v = 0;
+			s = 0;
+		}
+		else if (msg_get_uint (val, &v) == 0) {
+			s = 1;
+		}
+		else {
+			return (1);
+		}
+
+		pce_video_set_blink_rate (vid, v, s);
+
+		return (0);
+	}
+	else if (msg_is_message ("emu.video.redraw", msg)) {
 		int v;
 
 		if (msg_get_bool (val, &v)) {
@@ -109,6 +133,13 @@ mem_blk_t *pce_video_get_reg (video_t *vid)
 	}
 
 	return (NULL);
+}
+
+void pce_video_set_blink_rate (video_t *vid, unsigned rate, int start)
+{
+	if (vid->set_blink_rate != NULL) {
+		vid->set_blink_rate (vid->ext, rate, start);
+	}
 }
 
 void pce_video_print_info (video_t *vid, FILE *fp)

@@ -39,6 +39,8 @@ typedef struct {
 	mem_blk_t *(*get_mem) (void *ext);
 	mem_blk_t *(*get_reg) (void *ext);
 
+	void      (*set_blink_rate) (void *ext, unsigned rate, int start);
+
 	void      (*print_info) (void *ext, FILE *fp);
 
 	void      (*redraw) (void *ext, int now);
@@ -81,6 +83,8 @@ void pce_video_set_terminal (video_t *vid, void *trm);
 
 mem_blk_t *pce_video_get_mem (video_t *vid);
 mem_blk_t *pce_video_get_reg (video_t *vid);
+
+void pce_video_set_blink_rate (video_t *vid, unsigned rate, int start);
 
 void pce_video_print_info (video_t *vid, FILE *fp);
 

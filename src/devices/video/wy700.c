@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/video/wy700.c                                    *
  * Created:     2008-10-13 by John Elliott <jce@seasip.demon.co.uk>          *
- * Copyright:   (C) 2008-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2008-2020 Hampa Hug <hampa@hampa.ch>                     *
  *              (C) 2008 John Elliott <jce@seasip.demon.co.uk>               *
  *****************************************************************************/
 
@@ -763,9 +763,9 @@ void wy700_clock (wy700_t *wy, unsigned long cnt)
 }
 
 static
-void wy700_set_blink_rate (wy700_t *wy, unsigned rate)
+void wy700_set_blink_rate (wy700_t *wy, unsigned rate, int start)
 {
-	wy->blink = 1;
+	wy->blink = (start != 0);
 	wy->blink_cnt = rate;
 	wy->blink_rate = rate;
 	wy->mod_cnt = 2;
@@ -1041,18 +1041,7 @@ void wy700_mem_set_uint16 (wy700_t *wy, unsigned long addr, unsigned short val)
 static
 int wy700_set_msg (wy700_t *wy, const char *msg, const char *val)
 {
-	if (msg_is_message ("emu.video.blink", msg)) {
-		unsigned v;
-
-		if (msg_get_uint (val, &v)) {
-			return (1);
-		}
-
-		wy700_set_blink_rate (wy, v);
-
-		return (0);
-	}
-	else if (msg_is_message ("emu.video.font", msg)) {
+	if (msg_is_message ("emu.video.font", msg)) {
 		unsigned font;
 
 		if (msg_get_uint (val, &font)) {
@@ -1168,6 +1157,7 @@ void wy700_init (wy700_t *wy, unsigned long io, unsigned long addr)
 	wy->video.set_terminal = (void *) wy700_set_terminal;
 	wy->video.get_mem = (void *) wy700_get_mem;
 	wy->video.get_reg = (void *) wy700_get_reg;
+	wy->video.set_blink_rate = (void *) wy700_set_blink_rate;
 	wy->video.print_info = (void *) wy700_print_info;
 	wy->video.clock = (void *) wy700_clock;
 
@@ -1251,7 +1241,7 @@ video_t *wy700_new_ini (ini_sct_t *sct)
 	}
 
 	wy700_set_font (wy, font);
-	wy700_set_blink_rate (wy, blink);
+	wy700_set_blink_rate (wy, blink, 1);
 
 	return (&wy->video);
 }

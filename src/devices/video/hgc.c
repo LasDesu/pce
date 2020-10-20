@@ -317,9 +317,9 @@ void hgc_clock (hgc_t *hgc, unsigned long cnt)
 }
 
 static
-void hgc_set_blink_rate (hgc_t *hgc, unsigned rate)
+void hgc_set_blink_rate (hgc_t *hgc, unsigned rate, int start)
 {
-	hgc->blink = 1;
+	hgc->blink = (start != 0);
 	hgc->blink_cnt = rate;
 	hgc->blink_rate = rate;
 	hgc->mod_cnt = 2;
@@ -573,18 +573,7 @@ void hgc_mem_set_uint16 (hgc_t *hgc, unsigned long addr, unsigned short val)
 static
 int hgc_set_msg (hgc_t *hgc, const char *msg, const char *val)
 {
-	if (msg_is_message ("emu.video.blink", msg)) {
-		unsigned v;
-
-		if (msg_get_uint (val, &v)) {
-			return (1);
-		}
-
-		hgc_set_blink_rate (hgc, v);
-
-		return (0);
-	}
-	else if (msg_is_message ("emu.video.color", msg)) {
+	if (msg_is_message ("emu.video.color", msg)) {
 		unsigned long v;
 
 		if (pce_color_get (val, &v)) {
@@ -700,6 +689,7 @@ hgc_t *hgc_new (unsigned long io, unsigned long mem)
 	hgc->video.set_terminal = (void *) hgc_set_terminal;
 	hgc->video.get_mem = (void *) hgc_get_mem;
 	hgc->video.get_reg = (void *) hgc_get_reg;
+	hgc->video.set_blink_rate = (void *) hgc_set_blink_rate;
 	hgc->video.print_info = (void *) hgc_print_info;
 	hgc->video.clock = (void *) hgc_clock;
 
@@ -791,7 +781,7 @@ video_t *hgc_new_ini (ini_sct_t *sct)
 		hgc_set_color_index (hgc, i, col[i]);
 	}
 
-	hgc_set_blink_rate (hgc, blink);
+	hgc_set_blink_rate (hgc, blink, 1);
 
 	return (&hgc->video);
 }

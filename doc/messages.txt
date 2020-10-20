@@ -190,6 +190,12 @@ emu.ser2.multi <count>
 emu.stop
 	Fall back to the monitor.
 
+emu.video.blink <rate>
+	Set the blink rate for the text mode cursor and blinking characters.
+	Higher values cause slower blinking. A value of 0 turns blinking off.
+	If <rate> is "off" or "on", turn blinking characters and the text
+	mode cursor permanently off or on.
+
 emu.video.brightness <brightness>
 	Set the video brightness in the range of 0 - 1000.
 

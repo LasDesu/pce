@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/video/plantronics.c                              *
  * Created:     2008-10-13 by John Elliott <jce@seasip.demon.co.uk>          *
- * Copyright:   (C) 2008-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2008-2020 Hampa Hug <hampa@hampa.ch>                     *
  *              (C) 2008-2016 John Elliott <jce@seasip.demon.co.uk>          *
  *****************************************************************************/
 
@@ -473,9 +473,9 @@ void pla_clock (plantronics_t *pla, unsigned long cnt)
 }
 
 static
-void pla_set_blink_rate (plantronics_t *pla, unsigned rate)
+void pla_set_blink_rate (plantronics_t *pla, unsigned rate, int start)
 {
-	pla->blink = 1;
+	pla->blink = (start != 0);
 	pla->blink_cnt = rate;
 	pla->blink_rate = rate;
 	pla->mod_cnt = 2;
@@ -789,18 +789,7 @@ unsigned short pla_mem_get_uint16 (plantronics_t *pla, unsigned long addr)
 static
 int pla_set_msg (plantronics_t *pla, const char *msg, const char *val)
 {
-	if (msg_is_message ("emu.video.blink", msg)) {
-		unsigned v;
-
-		if (msg_get_uint (val, &v)) {
-			return (1);
-		}
-
-		pla_set_blink_rate (pla, v);
-
-		return (0);
-	}
-	else if (msg_is_message ("emu.video.font", msg)) {
+	if (msg_is_message ("emu.video.font", msg)) {
 		unsigned font;
 
 		if (msg_get_uint (val, &font)) {
@@ -919,6 +908,7 @@ void pla_init (plantronics_t *pla, unsigned long io, unsigned long addr)
 	pla->video.set_terminal = (void *) pla_set_terminal;
 	pla->video.get_mem = (void *) pla_get_mem;
 	pla->video.get_reg = (void *) pla_get_reg;
+	pla->video.set_blink_rate = (void *) pla_set_blink_rate;
 	pla->video.print_info = (void *) pla_print_info;
 	pla->video.clock = (void *) pla_clock;
 
@@ -1004,7 +994,7 @@ video_t *pla_new_ini (ini_sct_t *sct)
 		return (NULL);
 	}
 
-	pla_set_blink_rate (pla, blink);
+	pla_set_blink_rate (pla, blink, 1);
 	pla_set_font (pla, font);
 
 	return (&pla->video);
