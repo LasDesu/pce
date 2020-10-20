@@ -558,7 +558,17 @@ psi_img_t *psi_load_image (const char *fname)
 		fprintf (stderr, "%s: load image from %s\n", arg0, fname);
 	}
 
-	img = psi_load (fname, par_fmt_inp);
+	if (strcmp (fname, "-") == 0) {
+		if (par_fmt_inp == PSI_FORMAT_NONE) {
+			fprintf (stderr, "%s: need an input file type\n", arg0);
+			return (NULL);
+		}
+
+		img = psi_load_fp (stdin, par_fmt_inp);
+	}
+	else {
+		img = psi_load (fname, par_fmt_inp);
+	}
 
 	if (img == NULL) {
 		fprintf (stderr, "%s: loading failed (%s)\n", arg0, fname);
@@ -581,6 +591,40 @@ psi_img_t *psi_load_image (const char *fname)
 	}
 
 	return (img);
+}
+
+static
+int psi_save_image (psi_img_t *img, const char *fname)
+{
+	int      r;
+	unsigned fmt;
+
+	if (par_verbose) {
+		fprintf (stderr, "%s: save image to %s\n", arg0, fname);
+	}
+
+	if (strcmp (fname, "-") == 0) {
+		fmt = par_fmt_out;
+
+		if (fmt == PSI_FORMAT_NONE) {
+			fmt = PSI_FORMAT_PSI;
+		}
+
+		r = psi_save_fp (stdout, img, fmt);
+	}
+	else {
+		r = psi_save (fname, img, par_fmt_out);
+	}
+
+	if (r) {
+		fprintf (stderr, "%s: saving failed (%s)\n",
+			arg0, fname
+		);
+
+		return (1);
+	}
+
+	return (0);
 }
 
 static
@@ -900,16 +944,7 @@ int main (int argc, char **argv)
 	}
 
 	if ((img != NULL) && (out != NULL)) {
-		if (par_verbose) {
-			fprintf (stderr, "%s: save image to %s\n", arg0, out);
-		}
-
-		r = psi_save (out, img, par_fmt_out);
-
-		if (r) {
-			fprintf (stderr, "%s: saving failed (%s)\n",
-				argv[0], out
-			);
+		if (psi_save_image (img, out)) {
 			return (1);
 		}
 	}
