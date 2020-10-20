@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/psi/main.c                                         *
  * Created:     2010-08-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -97,6 +97,7 @@ static pce_option_t opts[] = {
 	{ 'r', 3, "record", "c h s", "Select sectors [all all all]" },
 	{ 's', 1, "sectors", "s", "Select logical sectors [all]" },
 	{ 'S', 1, "real-sectors", "s", "Select real sectors [all]" },
+	{ 't', 2, "track", "c h", "Select tracks [all]" },
 	{ 'v', 0, "verbose", NULL, "Verbose operation [no]" },
 	{ 'V', 0, "version", NULL, "Print version information" },
 	{ 'x', 0, "invert", NULL, "Invert the selection [no]" },
@@ -164,7 +165,7 @@ void print_version (void)
 	fputs (
 		"psi version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2010-2018 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2010-2020 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -842,6 +843,16 @@ int main (int argc, char **argv)
 
 		case 'S':
 			if (psi_parse_range (optarg[0], &par_rsc[0], &par_rsc[1], &par_rsc_all)) {
+				return (1);
+			}
+			break;
+
+		case 't':
+			if (psi_parse_range (optarg[0], &par_cyl[0], &par_cyl[1], &par_cyl_all)) {
+				return (1);
+			}
+
+			if (psi_parse_range (optarg[1], &par_trk[0], &par_trk[1], &par_trk_all)) {
 				return (1);
 			}
 			break;
