@@ -348,7 +348,11 @@ static
 void pc_set_key (ibmpc_t *pc, unsigned event, unsigned key)
 {
 	if (event == PCE_KEY_EVENT_MAGIC) {
-		if (key == PCE_KEY_O) {
+		if (key == PCE_KEY_B) {
+			pc->blink = !pc->blink;
+			pc_set_msg (pc, "emu.video.blink", pc->blink ? "on" : "off");
+		}
+		else if (key == PCE_KEY_O) {
 			pc_set_msg (pc, "emu.video.composite.cycle", "");
 		}
 		else if (key == PCE_KEY_F9) {
@@ -481,6 +485,7 @@ void pc_setup_system (ibmpc_t *pc, ini_sct_t *ini)
 	pc->switches1_val = 0;
 	pc->switches1_msk = 0;
 
+	pc->blink = 0;
 	pc->force_keyboard_enable = 0;
 
 	pc->fd_cnt = 0;

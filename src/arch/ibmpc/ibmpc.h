@@ -120,6 +120,7 @@ typedef struct ibmpc_t {
 	/* allow int 1a to get real time */
 	int                support_rtc;
 
+	char               blink;
 	char               force_keyboard_enable;
 
 	unsigned           fd_cnt;
