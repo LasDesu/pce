@@ -182,6 +182,15 @@ void sim_stop (void)
 	mac_set_msg (sim, "emu.stop", NULL);
 }
 
+void mac_stop (macplus_t *sim)
+{
+	if (sim == NULL) {
+		sim = par_sim;
+	}
+
+	mac_set_msg (sim, "emu.stop", NULL);
+}
+
 void mac_log_deb (const char *msg, ...)
 {
 	va_list       va;

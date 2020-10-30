@@ -58,6 +58,7 @@ extern unsigned   par_sig_int;
 
 
 void sim_stop (void);
+void mac_stop (macplus_t *sim);
 
 void mac_log_deb (const char *msg, ...);
 
