@@ -64,6 +64,9 @@ void e68_init (e68000_t *c)
 	c->hook_ext = NULL;
 	c->hook = NULL;
 
+	c->trap_ext = NULL;
+	c->trap = NULL;
+
 	c->supervisor = 1;
 	c->halt = 2;
 
@@ -179,6 +182,12 @@ void e68_set_hook_fct (e68000_t *c, void *ext, void *fct)
 {
 	c->hook_ext = ext;
 	c->hook = fct;
+}
+
+void e68_set_trap_fct (e68000_t *c, void *ext, void *fct)
+{
+	c->trap_ext = ext;
+	c->trap = fct;
 }
 
 void e68_set_flags (e68000_t *c, unsigned flags, int set)
@@ -547,12 +556,19 @@ void e68_double_exception (e68000_t *c, unsigned vct, const char *name)
 }
 
 static
-void e68_exception (e68000_t *c, unsigned vct, unsigned fmt, const char *name)
+int e68_exception (e68000_t *c, unsigned vct, unsigned fmt, const char *name)
 {
 	uint16_t sr1, sr2;
 	uint32_t addr;
 
 	vct &= 0xff;
+
+	if (c->trap != NULL) {
+		if (c->trap (c->trap_ext, vct)) {
+			e68_set_clk (c, 4);
+			return (1);
+		}
+	}
 
 	c->except_cnt += 1;
 	c->except_addr = e68_get_pc (c);
@@ -585,6 +601,10 @@ void e68_exception (e68000_t *c, unsigned vct, unsigned fmt, const char *name)
 	addr = e68_get_mem32 (c, addr);
 
 	e68_set_pc_prefetch (c, addr);
+
+	e68_set_clk (c, 62);
+
+	return (0);
 }
 
 void e68_exception_reset (e68000_t *c)
@@ -632,15 +652,13 @@ void e68_exception_bus (e68000_t *c, uint32_t addr, int data, int wr)
 
 	c->exception = 1;
 
-	e68_exception (c, 2, 0, "BUSE");
-
-	e68_push16 (c, c->ir[0]);
-	e68_push32 (c, addr);
-	e68_push16 (c, val);
+	if (e68_exception (c, 2, 0, "BUSE") == 0) {
+		e68_push16 (c, c->ir[0]);
+		e68_push32 (c, addr);
+		e68_push16 (c, val);
+	}
 
 	c->exception = 0;
-
-	e68_set_clk (c, 62);
 }
 
 void e68_exception_address (e68000_t *c, uint32_t addr, int data, int wr)
@@ -665,15 +683,13 @@ void e68_exception_address (e68000_t *c, uint32_t addr, int data, int wr)
 
 	c->exception = 1;
 
-	e68_exception (c, 3, 8, "ADDR");
-
-	e68_push16 (c, c->ir[0]);
-	e68_push32 (c, addr);
-	e68_push16 (c, val);
+	if (e68_exception (c, 3, 8, "ADDR") == 0) {
+		e68_push16 (c, c->ir[0]);
+		e68_push32 (c, addr);
+		e68_push16 (c, val);
+	}
 
 	c->exception = 0;
-
-	e68_set_clk (c, 64);
 }
 
 void e68_exception_illegal (e68000_t *c)
@@ -683,75 +699,68 @@ void e68_exception_illegal (e68000_t *c)
 	}
 
 	e68_exception (c, 4, 0, "ILLG");
-	e68_set_clk (c, 62);
 }
 
 void e68_exception_divzero (e68000_t *c)
 {
 	e68_exception (c, 5, 0, "DIVZ");
-	e68_set_clk (c, 66);
+	e68_set_clk (c, 4);
 }
 
 void e68_exception_check (e68000_t *c)
 {
 	e68_exception (c, 6, 0, "CHK");
-	e68_set_clk (c, 68);
+	e68_set_clk (c, 6);
 }
 
 void e68_exception_overflow (e68000_t *c)
 {
 	e68_exception (c, 7, 0, "OFLW");
-	e68_set_clk (c, 68);
+	e68_set_clk (c, 6);
 }
 
 void e68_exception_privilege (e68000_t *c)
 {
 	e68_exception (c, 8, 0, "PRIV");
-	e68_set_clk (c, 62);
 }
 
 void e68_exception_trace (e68000_t *c)
 {
 	e68_exception (c, 9, 0, "TRACE");
-	e68_set_clk (c, 62);
 }
 
 void e68_exception_axxx (e68000_t *c)
 {
 	e68_exception (c, 10, 0, "AXXX");
-	e68_set_clk (c, 62);
 }
 
 void e68_exception_fxxx (e68000_t *c)
 {
 	e68_exception (c, 11, 0, "FXXX");
-	e68_set_clk (c, 62);
 }
 
 void e68_exception_format (e68000_t *c)
 {
 	e68_exception (c, 14, 0, "FRMT");
-	e68_set_clk (c, 62);
 }
 
 void e68_exception_avec (e68000_t *c, unsigned level)
 {
-	e68_exception (c, 24 + level, 0, "AVEC");
-	e68_set_iml (c, level & 7);
-	e68_set_clk (c, 62);
+	if (e68_exception (c, 24 + level, 0, "AVEC") == 0) {
+		e68_set_iml (c, level & 7);
+	}
 }
 
 void e68_exception_trap (e68000_t *c, unsigned n)
 {
 	e68_exception (c, 32 + n, 0, "TRAP");
-	e68_set_clk (c, 62);
 }
 
 void e68_exception_intr (e68000_t *c, unsigned level, unsigned vect)
 {
-	e68_exception (c, vect, 0, "INTR");
-	e68_set_iml (c, level & 7);
-	e68_set_clk (c, 62);
+	if (e68_exception (c, vect, 0, "INTR") == 0) {
+		e68_set_iml (c, level & 7);
+	}
 }
 
 void e68_interrupt (e68000_t *c, unsigned level)

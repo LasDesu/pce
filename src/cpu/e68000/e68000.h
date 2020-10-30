@@ -135,6 +135,9 @@ typedef struct e68000_s {
 	void           *hook_ext;
 	int            (*hook) (void *ext, unsigned val);
 
+	void           *trap_ext;
+	int            (*trap) (void *ext, unsigned n);
+
 	void           *log_ext;
 	void           (*log_opcode) (void *ext, unsigned long ir);
 	void           (*log_undef) (void *ext, unsigned long ir);
@@ -389,6 +392,8 @@ void e68_set_reset_fct (e68000_t *c, void *ext, void *fct);
 void e68_set_inta_fct (e68000_t *c, void *ext, void *fct);
 
 void e68_set_hook_fct (e68000_t *c, void *ext, void *fct);
+
+void e68_set_trap_fct (e68000_t *c, void *ext, void *fct);
 
 void e68_set_flags (e68000_t *c, unsigned flags, int set);
 
