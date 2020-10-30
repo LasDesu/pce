@@ -647,8 +647,6 @@ int sdl_open (sdl_t *sdl, unsigned w, unsigned h)
 
 	sdl_set_window_size (sdl, fx * w + bx, fy * h + by, 0);
 
-	trm_set_size (&sdl->trm, w, h);
-
 	return (0);
 }
 

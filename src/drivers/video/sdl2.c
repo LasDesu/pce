@@ -741,8 +741,6 @@ int sdl2_open (sdl2_t *sdl, unsigned w, unsigned h)
 		return (1);
 	}
 
-	trm_set_size (&sdl->trm, w, h);
-
 	return (0);
 }
 

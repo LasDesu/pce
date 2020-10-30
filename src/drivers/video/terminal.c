@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/video/terminal.c                                 *
  * Created:     2003-04-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2013 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -117,6 +117,8 @@ int trm_open (terminal_t *trm, unsigned w, unsigned h)
 	if (trm->is_open) {
 		return (0);
 	}
+
+	trm_set_size (trm, w, h);
 
 	if (trm->open != NULL) {
 		if (trm->open (trm->ext, w, h)) {
