@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e68000/e68000.h                                      *
  * Created:     2005-07-17 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2005-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2005-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -61,6 +61,7 @@ struct e68000_s;
 #define e68_get_areg16(c, n) (((c)->areg[(n) & 7]) & 0xffff)
 #define e68_get_areg32(c, n) ((c)->areg[(n) & 7] & 0xffffffff)
 #define e68_get_pc(c) ((c)->pc & 0xffffffff)
+#define e68_get_sp(c) ((c)->areg[7] & 0xffffffff)
 #define e68_get_ir_pc(c) ((c)->ir_pc & 0xffffffff)
 #define e68_get_usp(c) (((c)->supervisor ? (c)->usp : (c)->areg[7]) & 0xffffffff)
 #define e68_get_ssp(c) (((c)->supervisor ? (c)->areg[7] : (c)->ssp) & 0xffffffff)
