@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e68000/e68000.c                                      *
  * Created:     2005-07-17 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2005-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2005-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -333,6 +333,14 @@ int e68_get_reg (e68000_t *c, const char *reg, unsigned long *val)
 	}
 	else if (strcmp (reg, "ssp") == 0) {
 		*val = e68_get_ssp (c);
+		return (0);
+	}
+	else if (strcmp (reg, "iw0") == 0) {
+		*val = c->ir[1];
+		return (0);
+	}
+	else if (strcmp (reg, "iw1") == 0) {
+		*val = c->ir[2];
 		return (0);
 	}
 
