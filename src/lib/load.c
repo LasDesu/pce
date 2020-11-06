@@ -56,10 +56,6 @@ int pce_load_mem_ihex (memory_t *mem, const char *fname)
 	int  r;
 	FILE *fp;
 
-	pce_log_tag (MSG_INF, "Load:", "file=%s format=ihex\n",
-		fname
-	);
-
 	fp = fopen (fname, "rb");
 	if (fp == NULL) {
 		return (1);
@@ -77,10 +73,6 @@ int pce_load_mem_mhex (memory_t *mem, const char *fname)
 	int  r;
 	FILE *fp;
 
-	pce_log_tag (MSG_INF, "Load:", "file=%s format=mhex\n",
-		fname
-	);
-
 	if ((fp = fopen (fname, "rb")) == NULL) {
 		return (1);
 	}
@@ -96,10 +88,6 @@ int pce_load_mem_srec (memory_t *mem, const char *fname)
 {
 	int  r;
 	FILE *fp;
-
-	pce_log_tag (MSG_INF, "Load:", "file=%s format=srec\n",
-		fname
-	);
 
 	fp = fopen (fname, "rb");
 	if (fp == NULL) {
@@ -117,10 +105,6 @@ int pce_load_mem_bin (memory_t *mem, const char *fname, unsigned long base)
 {
 	int  c;
 	FILE *fp;
-
-	pce_log_tag (MSG_INF, "Load:", "file=%s format=binary addr=0x%08lx\n",
-		fname, base
-	);
 
 	fp = fopen (fname, "rb");
 	if (fp == NULL) {
@@ -214,6 +198,10 @@ int pce_load_mem_ini (memory_t *mem, ini_sct_t *ini)
 
 		if (fname != NULL) {
 			path = pce_path_get (fname);
+
+			pce_log_tag (MSG_INF, "Load:", "file=%s format=%s\n",
+				fname, fmt
+			);
 
 			if (pce_load_mem (mem, path, fmt, addr)) {
 				r = 1;
