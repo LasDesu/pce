@@ -2901,6 +2901,7 @@ src/lib/initerm.o: src/lib/initerm.c \
 	src/libini/libini.h
 
 src/lib/load.o: src/lib/load.c \
+	src/config.h \
 	src/devices/memory.h \
 	src/lib/ihex.h \
 	src/lib/load.h \

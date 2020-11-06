@@ -20,6 +20,8 @@
  *****************************************************************************/
 
 
+#include <config.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -127,14 +129,21 @@ int pce_load_mem (memory_t *mem, const char *fname, const char *fmt, unsigned lo
 
 	if ((fmt == NULL) || (strcmp (fmt, "auto") == 0)) {
 		i = 0;
-		ext = fname;
+		ext = NULL;
 
 		while (fname[i] != 0) {
 			if (fname[i] == '.') {
 				ext = fname + i + 1;
 			}
+			else if (fname[i] == PCE_DIR_SEP) {
+				ext = NULL;
+			}
 
 			i += 1;
+		}
+
+		if (ext == NULL) {
+			return (1);
 		}
 
 		if ((strcasecmp (ext, "ihex") == 0) || (strcasecmp (ext, "ihx") == 0)) {
