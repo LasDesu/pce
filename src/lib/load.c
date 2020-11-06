@@ -36,11 +36,9 @@
 
 int pce_load_blk_bin (mem_blk_t *blk, const char *fname)
 {
-	FILE   *fp;
+	FILE *fp;
 
-	fp = fopen (fname, "rb");
-
-	if (fp == NULL) {
+	if ((fp = fopen (fname, "rb")) == NULL) {
 		return (1);
 	}
 
@@ -56,12 +54,11 @@ int pce_load_mem_ihex (memory_t *mem, const char *fname)
 	int  r;
 	FILE *fp;
 
-	fp = fopen (fname, "rb");
-	if (fp == NULL) {
+	if ((fp = fopen (fname, "r")) == NULL) {
 		return (1);
 	}
 
-	r = ihex_load_fp (fp, mem, (ihex_set_f) &mem_set_uint8_rw);
+	r = ihex_load_fp (fp, mem, (ihex_set_f) mem_set_uint8_rw);
 
 	fclose (fp);
 
@@ -73,7 +70,7 @@ int pce_load_mem_mhex (memory_t *mem, const char *fname)
 	int  r;
 	FILE *fp;
 
-	if ((fp = fopen (fname, "rb")) == NULL) {
+	if ((fp = fopen (fname, "r")) == NULL) {
 		return (1);
 	}
 
@@ -89,33 +86,29 @@ int pce_load_mem_srec (memory_t *mem, const char *fname)
 	int  r;
 	FILE *fp;
 
-	fp = fopen (fname, "rb");
-	if (fp == NULL) {
+	if ((fp = fopen (fname, "r")) == NULL) {
 		return (1);
 	}
 
-	r = srec_load_fp (fp, mem, (ihex_set_f) &mem_set_uint8_rw);
+	r = srec_load_fp (fp, mem, (ihex_set_f) mem_set_uint8_rw);
 
 	fclose (fp);
 
 	return (r);
 }
 
-int pce_load_mem_bin (memory_t *mem, const char *fname, unsigned long base)
+int pce_load_mem_bin (memory_t *mem, const char *fname, unsigned long addr)
 {
 	int  c;
 	FILE *fp;
 
-	fp = fopen (fname, "rb");
-	if (fp == NULL) {
+	if ((fp = fopen (fname, "r")) == NULL) {
 		return (1);
 	}
 
-	c = fgetc (fp);
-	while (c != EOF) {
-		mem_set_uint8_rw (mem, base, c & 0xff);
-		base += 1;
-		c = fgetc (fp);
+	while ((c = fgetc (fp)) != EOF) {
+		mem_set_uint8_rw (mem, addr, c & 0xff);
+		addr += 1;
 	}
 
 	fclose (fp);
@@ -189,9 +182,11 @@ int pce_load_mem_ini (memory_t *mem, ini_sct_t *ini)
 	r = 0;
 
 	sct = NULL;
+
 	while ((sct = ini_next_sct (ini, sct, "load")) != NULL) {
 		ini_get_string (sct, "format", &fmt, "binary");
 		ini_get_string (sct, "file", &fname, NULL);
+
 		if (ini_get_uint32 (sct, "address", &addr, 0)) {
 			ini_get_uint32 (sct, "base", &addr, 0);
 		}
