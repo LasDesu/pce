@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/cpm80/msg.c                                         *
  * Created:     2012-11-30 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2016 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -53,6 +53,26 @@ int c80_set_msg_emu_cpu_speed (cpm80_t *sim, const char *msg, const char *val)
 
 	if (msg_get_uint (val, &v)) {
 		return (1);
+	}
+
+	c80_set_speed (sim, v);
+
+	return (0);
+}
+
+static
+int c80_set_msg_emu_cpu_speed_step (cpm80_t *sim, const char *msg, const char *val)
+{
+	int v;
+
+	if (msg_get_sint (val, &v)) {
+		return (1);
+	}
+
+	v += (int) sim->speed;
+
+	if (v <= 0) {
+		v = 1;
 	}
 
 	c80_set_speed (sim, v);
@@ -177,6 +197,7 @@ int c80_set_msg_emu_stop (cpm80_t *sim, const char *msg, const char *val)
 
 static c80_msg_list_t set_msg_list[] = {
 	{ "emu.cpu.speed", c80_set_msg_emu_cpu_speed },
+	{ "emu.cpu.speed.step", c80_set_msg_emu_cpu_speed_step },
 	{ "emu.disk.commit", c80_set_msg_emu_disk_commit },
 	{ "emu.disk.eject", c80_set_msg_emu_disk_eject },
 	{ "emu.disk.insert", c80_set_msg_emu_disk_insert },

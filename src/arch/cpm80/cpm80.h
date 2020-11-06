@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/cpm80/cpm80.h                                       *
  * Created:     2012-11-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2016 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -63,6 +63,8 @@ typedef struct cpm80_s {
 	unsigned long  sync_clk;
 	unsigned long  sync_us;
 	long           sync_sleep;
+
+	unsigned       speed;
 
 	unsigned       brk;
 
