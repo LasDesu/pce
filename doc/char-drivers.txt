@@ -8,6 +8,17 @@ The syntax of a character driver specification is:
 White space around option names and values is ignored. If a value contains
 a colon, it must be escaped by repeating it.
 
+If a file name is prefixed by an '@' character, the file is opened for
+appending instead of truncated.
+
+
+These options can be used with any character driver:
+	cap=[@]<filename>
+		Copy the output to the character driver to <filename>.
+
+	log=[@]<filename>
+		Log input and output to <filename>.
+
 
 The following is a list of character drivers and their options:
 
@@ -34,22 +45,13 @@ mouse:
 	ydiv=<int>
 		The vertical mouse speed is multiplied by (ymul / ydiv).
 
-	log=<filename>
-		Set the log file name.
 
 null:
-	cap=<filename>
-		Set the capture file name.
-
-	log=<filename>
-		Set the log file name.
+	Output is discarded and no input is ever provided.
 
 posix:
 	The "read" and "write" options are used only if "file" is not
 	set.
-
-	cap=<filename>
-		Set the capture file name.
 
 	file=<filename>
 		Set the input and output file name.
@@ -75,9 +77,6 @@ posix:
 	write=--
 		Write output to stderr.
 
-	log=<filename>
-		Set the log file name.
-
 
 ppp:
 	For this driver to work, tun/tap support must be enabled.
@@ -91,19 +90,10 @@ ppp:
 	guest-ip=<ip-addr>
 		Set the guest side IP address.
 
-	log=<filename>
-		Set the log file name.
-
 
 pty:
-	cap=<filename>
-		Set the capture file name.
-
 	symlink=<filename>
 		Create a symlink pointing to the new pseudo terminal device.
-
-	log=<filename>
-		Set the log file name.
 
 
 slip:
@@ -116,9 +106,6 @@ slip:
 stdio:
 	Output is written to a file. No input is ever provided.
 
-	cap=<filename>
-		Set the capture file name.
-
 	file=<filename>
 		Set the output file name.
 
@@ -128,14 +115,8 @@ stdio:
 	flush=[0|1]
 		If true, flush the output file whenever data is written.
 
-	log=<filename>
-		Set the log file name.
-
 
 tcp:
-	cap=<filename>
-		Set the capture file name.
-
 	connect=[0|1]
 		If true, initiate a connection to the host and port
 		specified in the host and port options. Otherwise
@@ -144,9 +125,6 @@ tcp:
 
 	host=<hostname>
 		Set the host name to connect to if connect is true.
-
-	log=<filename>
-		Set the log file name.
 
 	port=<port>
 		Set the TCP port number.
@@ -173,24 +151,12 @@ tcp:
 		connection is closed manually. Defaults to true.
 
 tios:
-	cap=<filename>
-		Set the capture file name.
-
 	file=<filename>
 		The character device to connect to
-
-	log=<filename>
-		Set the log file name
 
 wincom:
 	Windows COM port support. This driver is only available under
 	Windows.
-
-	cap=<filename>
-		Set the capture file name.
-
-	log=<filename>
-		Set the log file name.
 
 	port=<port>
 		Set the windows COM port to use, for example "COM1" or

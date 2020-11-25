@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/char/char.c                                      *
  * Created:     2009-03-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2009-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2009-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -577,6 +577,20 @@ int chr_set_params (char_drv_t *cdrv, unsigned long bps, unsigned bpc, unsigned 
 	return (cdrv->set_params (cdrv, bps, bpc, parity, stop));
 }
 
+FILE *chr_open_file (const char *name, const char *mode, const char *modeapp)
+{
+	if (name == NULL) {
+		return (NULL);
+	}
+
+	if (*name == '@') {
+		name += 1;
+		return (fopen (name, modeapp));
+	}
+
+	return (fopen (name, mode));
+}
+
 int chr_set_log (char_drv_t *cdrv, const char *fname)
 {
 	if (cdrv->log_fp != NULL) {
@@ -584,9 +598,7 @@ int chr_set_log (char_drv_t *cdrv, const char *fname)
 		fclose (cdrv->log_fp);
 	}
 
-	cdrv->log_fp = fopen (fname, "w");
-
-	if (cdrv->log_fp == NULL) {
+	if ((cdrv->log_fp = chr_open_file (fname, "w", "a")) == NULL) {
 		return (1);
 	}
 
@@ -599,9 +611,7 @@ int chr_set_cap (char_drv_t *cdrv, const char *fname)
 		fclose (cdrv->cap_fp);
 	}
 
-	cdrv->cap_fp = fopen (fname, "wb");
-
-	if (cdrv->cap_fp == NULL) {
+	if ((cdrv->cap_fp = chr_open_file (fname, "wb", "ab")) == NULL) {
 		return (1);
 	}
 

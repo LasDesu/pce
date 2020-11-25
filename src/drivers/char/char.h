@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/char/char.h                                      *
  * Created:     2009-03-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2009-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2009-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -89,6 +89,8 @@ int chr_get_ctl (char_drv_t *cdrv, unsigned *ctl);
 int chr_set_ctl (char_drv_t *cdrv, unsigned ctl);
 
 int chr_set_params (char_drv_t *cdrv, unsigned long bps, unsigned bpc, unsigned parity, unsigned stop);
+
+FILE *chr_open_file (const char *name, const char *mode, const char *modeapp);
 
 int chr_set_log (char_drv_t *cdrv, const char *fname);
 int chr_set_cap (char_drv_t *cdrv, const char *fname);
