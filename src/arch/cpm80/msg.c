@@ -47,6 +47,16 @@ extern cpm80_t   *par_sim;
 
 
 static
+int c80_set_msg_emu_cpu_model (cpm80_t *sim, const char *msg, const char *val)
+{
+	if (c80_set_cpu_model (sim, val)) {
+		pce_log (MSG_ERR, "*** failed to set CPU model (%s)\n", val);
+	}
+
+	return (0);
+}
+
+static
 int c80_set_msg_emu_cpu_speed (cpm80_t *sim, const char *msg, const char *val)
 {
 	unsigned v;
@@ -196,6 +206,7 @@ int c80_set_msg_emu_stop (cpm80_t *sim, const char *msg, const char *val)
 }
 
 static c80_msg_list_t set_msg_list[] = {
+	{ "emu.cpu.model", c80_set_msg_emu_cpu_model },
 	{ "emu.cpu.speed", c80_set_msg_emu_cpu_speed },
 	{ "emu.cpu.speed.step", c80_set_msg_emu_cpu_speed_step },
 	{ "emu.disk.commit", c80_set_msg_emu_disk_commit },
