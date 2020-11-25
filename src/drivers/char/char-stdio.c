@@ -129,6 +129,8 @@ unsigned chr_stdio_write (char_drv_t *cdrv, const void *buf, unsigned cnt)
 static
 int chr_stdio_init (char_stdio_t *drv, const char *name)
 {
+	const char *mode;
+
 	chr_init (&drv->cdrv, drv);
 
 	drv->cdrv.close = chr_stdio_close;
@@ -142,6 +144,7 @@ int chr_stdio_init (char_stdio_t *drv, const char *name)
 
 	drv->flush = drv_get_option_bool (name, "flush", 1);
 	drv->reopen = drv_get_option_bool (name, "reopen", 0);
+	drv->append = drv_get_option_bool (name, "append", 0);
 
 	drv->write_name = drv_get_option (name, "write");
 
@@ -155,7 +158,9 @@ int chr_stdio_init (char_stdio_t *drv, const char *name)
 			drv->reopen = 0;
 		}
 		else {
-			drv->write_fp = fopen (drv->write_name, "wb");
+			mode = drv->append ? "ab" : "wb";
+
+			drv->write_fp = fopen (drv->write_name, mode);
 
 			if (drv->write_fp == NULL) {
 				return (1);

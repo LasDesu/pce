@@ -34,6 +34,7 @@ typedef struct char_stdio_t {
 
 	char       flush;
 	char       reopen;
+	char       append;
 
 	char       *read_name;
 	FILE       *read_fp;

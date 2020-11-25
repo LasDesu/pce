@@ -106,6 +106,10 @@ slip:
 stdio:
 	Output is written to a file. Input is read from a file.
 
+	append=[0|1]
+		If true, open the output file for appending instead of
+		truncating it.
+
 	file=<filename>
 		Set the output file name.
 
