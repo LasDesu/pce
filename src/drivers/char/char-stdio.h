@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/char/char-stdio.h                                *
  * Created:     2009-03-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2009-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2009-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -32,12 +32,14 @@
 typedef struct char_stdio_t {
 	char_drv_t cdrv;
 
-	char       *fname;
-
 	char       flush;
 	char       reopen;
 
-	FILE       *fp;
+	char       *read_name;
+	FILE       *read_fp;
+
+	char       *write_name;
+	FILE       *write_fp;
 } char_stdio_t;
 
 

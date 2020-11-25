@@ -104,7 +104,7 @@ slip:
 
 
 stdio:
-	Output is written to a file. No input is ever provided.
+	Output is written to a file. Input is read from a file.
 
 	file=<filename>
 		Set the output file name.
@@ -114,6 +114,13 @@ stdio:
 
 	flush=[0|1]
 		If true, flush the output file whenever data is written.
+
+	read=<filename>
+		Set the input file name.
+
+	write=<filename>
+		Set the output file name. This option is synonymous to
+		the "file" options.
 
 
 tcp:
