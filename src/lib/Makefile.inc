@@ -25,7 +25,8 @@ LIBPCE_BAS := \
 	path \
 	srec \
 	string \
-	sysdep
+	sysdep \
+	thex
 
 ifeq "$(PCE_ENABLE_TUN)" "1"
 LIBPCE_BAS += tun
@@ -38,7 +39,7 @@ LIBPCE_OBJ := $(foreach f,$(LIBPCE_BAS),$(rel)/$(f).o)
 LIBPCE_HDR := $(foreach f,$(LIBPCE_BAS),$(rel)/$(f).h)
 LIBPCE_SDP := src/config.h
 
-LIBPCE_LOAD_OBJ := $(rel)/ihex.o $(rel)/mhex.o $(rel)/srec.o $(rel)/load.o
+LIBPCE_LOAD_OBJ := $(rel)/ihex.o $(rel)/mhex.o $(rel)/srec.o $(rel)/thex.o $(rel)/load.o
 
 CLN  += $(LIBPCE_OBJ)
 DIST += $(LIBPCE_SRC) $(LIBPCE_HDR)
@@ -63,3 +64,4 @@ $(rel)/tun.o:		$(rel)/tun.c
 $(rel)/srec.o:		$(rel)/srec.c
 $(rel)/string.o:	$(rel)/string.c
 $(rel)/sysdep.o:	$(rel)/sysdep.c
+$(rel)/thex.o:		$(rel)/thex.c

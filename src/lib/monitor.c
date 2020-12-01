@@ -31,6 +31,7 @@
 #include <lib/ihex.h>
 #include <lib/mhex.h>
 #include <lib/srec.h>
+#include <lib/thex.h>
 
 
 #define MON_FORMAT_NONE   0
@@ -38,6 +39,7 @@
 #define MON_FORMAT_IHEX   2
 #define MON_FORMAT_MHEX   3
 #define MON_FORMAT_SREC   4
+#define MON_FORMAT_THEX   5
 
 
 static mon_cmd_t par_cmd[] = {
@@ -259,6 +261,9 @@ unsigned mon_guess_format (const char *fname)
 	else if (strcasecmp (ext, "srec") == 0) {
 		return (MON_FORMAT_SREC);
 	}
+	else if (strcasecmp (ext, "thex") == 0) {
+		return (MON_FORMAT_THEX);
+	}
 
 	return (MON_FORMAT_BINARY);
 }
@@ -277,6 +282,9 @@ int mon_match_format (monitor_t *mon, cmd_t *cmd, unsigned *fmt)
 	}
 	else if (cmd_match (cmd, "srec")) {
 		*fmt = MON_FORMAT_SREC;
+	}
+	else if (cmd_match (cmd, "thex")) {
+		*fmt = MON_FORMAT_THEX;
 	}
 	else {
 		*fmt = MON_FORMAT_NONE;
@@ -757,6 +765,12 @@ void mon_cmd_load (monitor_t *mon, cmd_t *cmd)
 			pce_printf ("loading srec failed\n");
 		}
 		break;
+
+	case MON_FORMAT_THEX:
+		if (thex_load_fp (fp, mon, (thex_set_f) mon_set_mem8)) {
+			pce_printf ("loading thex failed\n");
+		}
+		break;
 	}
 
 	fclose (fp);
@@ -849,6 +863,10 @@ void mon_cmd_save (monitor_t *mon, cmd_t *cmd)
 		return;
 	}
 
+	if (fmt == MON_FORMAT_THEX) {
+		thex_save_start (fp);
+	}
+
 	while (cmd_match_eol (cmd) == 0) {
 		if (!mon_match_address (mon, cmd, &addr, &seg, &ofs)) {
 			cmd_error (cmd, "need an address");
@@ -899,6 +917,20 @@ void mon_cmd_save (monitor_t *mon, cmd_t *cmd)
 				pce_printf ("saving srec failed\n");
 			}
 			break;
+
+		case MON_FORMAT_THEX:
+			if (mon->memory_mode == 0) {
+				if (thex_save (fp, addr, cnt, mon, (thex_get_f) mon_get_mem8)) {
+					pce_printf ("saving thex failed\n");
+				}
+			}
+			else {
+				if (thex_save_seg (fp, seg, ofs, cnt, mon, (thex_get_f) mon_get_mem8)) {
+					pce_printf ("saving thex failed\n");
+				}
+			}
+			break;
+
 		}
 	}
 
@@ -907,6 +939,9 @@ void mon_cmd_save (monitor_t *mon, cmd_t *cmd)
 	}
 	else if (fmt == MON_FORMAT_SREC) {
 		srec_save_done (fp);
+	}
+	else if (fmt == MON_FORMAT_THEX) {
+		thex_save_done (fp);
 	}
 
 	fclose (fp);

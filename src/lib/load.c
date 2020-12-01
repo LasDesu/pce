@@ -32,6 +32,7 @@
 #include <lib/ihex.h>
 #include <lib/mhex.h>
 #include <lib/srec.h>
+#include <lib/thex.h>
 #include <lib/load.h>
 #include <lib/path.h>
 
@@ -99,6 +100,22 @@ int pce_load_mem_srec (memory_t *mem, const char *fname)
 	return (r);
 }
 
+int pce_load_mem_thex (memory_t *mem, const char *fname)
+{
+	int  r;
+	FILE *fp;
+
+	if ((fp = fopen (fname, "r")) == NULL) {
+		return (1);
+	}
+
+	r = thex_load_fp (fp, mem, (thex_set_f) mem_set_uint8_rw);
+
+	fclose (fp);
+
+	return (r);
+}
+
 int pce_load_mem_bin (memory_t *mem, const char *fname, unsigned long addr)
 {
 	int  c;
@@ -155,6 +172,9 @@ int pce_load_mem (memory_t *mem, const char *fname, const char *fmt, unsigned lo
 		else if (strcasecmp (ext, "srec") == 0) {
 			fmt = "srec";
 		}
+		else if (strcasecmp (ext, "thex") == 0) {
+			fmt = "thex";
+		}
 		else if (strcasecmp (ext, "bin") == 0) {
 			fmt = "binary";
 		}
@@ -174,6 +194,9 @@ int pce_load_mem (memory_t *mem, const char *fname, const char *fmt, unsigned lo
 	}
 	else if (strcmp (fmt, "srec") == 0) {
 		return (pce_load_mem_srec (mem, fname));
+	}
+	else if (strcmp (fmt, "thex") == 0) {
+		return (pce_load_mem_thex (mem, fname));
 	}
 
 	return (1);

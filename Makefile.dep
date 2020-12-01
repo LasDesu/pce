@@ -2909,6 +2909,7 @@ src/lib/load.o: src/lib/load.c \
 	src/lib/mhex.h \
 	src/lib/path.h \
 	src/lib/srec.h \
+	src/lib/thex.h \
 	src/libini/libini.h
 
 src/lib/log.o: src/lib/log.c \
@@ -2923,7 +2924,8 @@ src/lib/monitor.o: src/lib/monitor.c \
 	src/lib/ihex.h \
 	src/lib/mhex.h \
 	src/lib/monitor.h \
-	src/lib/srec.h
+	src/lib/srec.h \
+	src/lib/thex.h
 
 src/lib/msg.o: src/lib/msg.c \
 	src/lib/msg.h \
@@ -2956,6 +2958,9 @@ src/lib/string.o: src/lib/string.c \
 src/lib/sysdep.o: src/lib/sysdep.c \
 	src/config.h \
 	src/lib/sysdep.h
+
+src/lib/thex.o: src/lib/thex.c \
+	src/lib/thex.h
 
 src/lib/tun.o: src/lib/tun.c \
 	src/config.h \
