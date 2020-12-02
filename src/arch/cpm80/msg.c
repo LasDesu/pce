@@ -47,6 +47,46 @@ extern cpm80_t   *par_sim;
 
 
 static
+int c80_set_msg_emu_aux_read (cpm80_t *sim, const char *msg, const char *val)
+{
+	if (c80_set_aux_read (sim, (*val == 0) ? NULL : val)) {
+		pce_log (MSG_ERR, "*** can't open file (%s)\n", val);
+	}
+
+	return (0);
+}
+
+static
+int c80_set_msg_emu_aux_write (cpm80_t *sim, const char *msg, const char *val)
+{
+	if (c80_set_aux_write (sim, (*val == 0) ? NULL : val, 1)) {
+		pce_log (MSG_ERR, "*** can't open file (%s)\n", val);
+	}
+
+	return (0);
+}
+
+static
+int c80_set_msg_emu_con_read (cpm80_t *sim, const char *msg, const char *val)
+{
+	if (c80_set_con_read (sim, (*val == 0) ? NULL : val)) {
+		pce_log (MSG_ERR, "*** can't open file (%s)\n", val);
+	}
+
+	return (0);
+}
+
+static
+int c80_set_msg_emu_con_write (cpm80_t *sim, const char *msg, const char *val)
+{
+	if (c80_set_con_write (sim, (*val == 0) ? NULL : val, 1)) {
+		pce_log (MSG_ERR, "*** can't open file (%s)\n", val);
+	}
+
+	return (0);
+}
+
+static
 int c80_set_msg_emu_cpu_model (cpm80_t *sim, const char *msg, const char *val)
 {
 	if (c80_set_cpu_model (sim, val)) {
@@ -206,6 +246,10 @@ int c80_set_msg_emu_stop (cpm80_t *sim, const char *msg, const char *val)
 }
 
 static c80_msg_list_t set_msg_list[] = {
+	{ "emu.aux.read", c80_set_msg_emu_aux_read },
+	{ "emu.aux.write", c80_set_msg_emu_aux_write },
+	{ "emu.con.read", c80_set_msg_emu_con_read },
+	{ "emu.con.write", c80_set_msg_emu_con_write },
 	{ "emu.cpu.model", c80_set_msg_emu_cpu_model },
 	{ "emu.cpu.speed", c80_set_msg_emu_cpu_speed },
 	{ "emu.cpu.speed.step", c80_set_msg_emu_cpu_speed_step },

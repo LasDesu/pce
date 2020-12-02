@@ -72,8 +72,15 @@ typedef struct cpm80_s {
 	char_drv_t     *aux;
 	char_drv_t     *lst;
 
+	FILE           *con_read;
+	FILE           *con_write;
+	FILE           *aux_read;
+	FILE           *aux_write;
+
 	unsigned char  con_buf;
 	unsigned char  con_buf_cnt;
+	unsigned char  aux_buf;
+	unsigned char  aux_buf_cnt;
 
 	disks_t        *dsks;
 
@@ -100,6 +107,11 @@ void c80_stop (cpm80_t *sim);
 void c80_reset (cpm80_t *sim);
 
 int c80_set_cpu_model (cpm80_t *sim, const char *str);
+
+int c80_set_con_read (cpm80_t *sim, const char *fname);
+int c80_set_con_write (cpm80_t *sim, const char *fname, int append);
+int c80_set_aux_read (cpm80_t *sim, const char *fname);
+int c80_set_aux_write (cpm80_t *sim, const char *fname, int append);
 
 void c80_idle (cpm80_t *sim);
 

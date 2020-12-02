@@ -226,8 +226,16 @@ void c80_setup_char (cpm80_t *sim, ini_sct_t *ini)
 	sim->aux = NULL;
 	sim->lst = NULL;
 
+	sim->con_read = NULL;
+	sim->con_write = NULL;
+	sim->aux_read = NULL;
+	sim->aux_write = NULL;
+
 	sim->con_buf = 0;
 	sim->con_buf_cnt = 0;
+
+	sim->aux_buf = 0;
+	sim->aux_buf_cnt = 0;
 
 	sct = ini_next_sct (ini, NULL, "system");
 
@@ -364,6 +372,78 @@ int c80_set_cpu_model (cpm80_t *sim, const char *str)
 	}
 	else {
 		return (1);
+	}
+
+	return (0);
+}
+
+int c80_set_con_read (cpm80_t *sim, const char *fname)
+{
+	if (sim->con_read != NULL) {
+		fclose (sim->con_read);
+	}
+
+	if (fname == NULL) {
+		sim->con_read = NULL;
+	}
+	else {
+		if ((sim->con_read = fopen (fname, "rb")) == NULL) {
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
+int c80_set_con_write (cpm80_t *sim, const char *fname, int append)
+{
+	if (sim->con_write != NULL) {
+		fclose (sim->con_write);
+	}
+
+	if (fname == NULL) {
+		sim->con_write = NULL;
+	}
+	else {
+		if ((sim->con_write = fopen (fname, append ? "ab" : "wb")) == NULL) {
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
+int c80_set_aux_read (cpm80_t *sim, const char *fname)
+{
+	if (sim->aux_read != NULL) {
+		fclose (sim->aux_read);
+	}
+
+	if (fname == NULL) {
+		sim->aux_read = NULL;
+	}
+	else {
+		if ((sim->aux_read = fopen (fname, "rb")) == NULL) {
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
+int c80_set_aux_write (cpm80_t *sim, const char *fname, int append)
+{
+	if (sim->aux_write != NULL) {
+		fclose (sim->aux_write);
+	}
+
+	if (fname == NULL) {
+		sim->aux_write = NULL;
+	}
+	else {
+		if ((sim->aux_write = fopen (fname, append ? "ab" : "wb")) == NULL) {
+			return (1);
+		}
 	}
 
 	return (0);

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/cpm80/bios.c                                        *
  * Created:     2012-11-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2016 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -113,62 +113,101 @@ void bios_init_traps (cpm80_t *sim, int warm)
 	}
 }
 
-int con_ready (cpm80_t *sim)
+static
+int con_read_buf (cpm80_t *sim)
 {
-	if (sim->con == NULL) {
+	int c;
+
+	if (sim->con_buf_cnt > 0) {
 		return (0);
 	}
 
-	if (sim->con_buf_cnt) {
-		return (1);
-	}
-
-	if (chr_read (sim->con, &sim->con_buf, 1) == 1) {
-		if (sim->con_buf == 0) {
-			c80_stop (sim);
+	if (sim->con_read != NULL) {
+		if ((c = fgetc (sim->con_read)) != EOF) {
+			sim->con_buf = c & 0xff;
+			sim->con_buf_cnt = 1;
 			return (0);
 		}
 
-		sim->con_buf_cnt = 1;
-
-		return (1);
+		fclose (sim->con_read);
+		sim->con_read = NULL;
 	}
 
-	return (0);
+	if (sim->con != NULL) {
+		if (chr_read (sim->con, &sim->con_buf, 1) == 1) {
+			if (sim->con_buf == 0) {
+				c80_stop (sim);
+				return (0);
+			}
+
+			sim->con_buf_cnt = 1;
+
+			return (0);
+		}
+	}
+
+	return (1);
+}
+
+static
+int aux_read_buf (cpm80_t *sim)
+{
+	int c;
+
+	if (sim->aux_buf_cnt > 0) {
+		return (0);
+	}
+
+	if (sim->aux_read != NULL) {
+		if ((c = fgetc (sim->aux_read)) != EOF) {
+			sim->aux_buf = c & 0xff;
+			sim->aux_buf_cnt = 1;
+			return (0);
+		}
+
+		fclose (sim->aux_read);
+		sim->aux_read = NULL;
+	}
+
+	if (sim->aux != NULL) {
+		if (chr_read (sim->aux, &sim->aux_buf, 1) == 1) {
+			sim->aux_buf_cnt = 1;
+			return (0);
+		}
+	}
+
+	return (1);
+}
+
+int con_ready (cpm80_t *sim)
+{
+	con_read_buf (sim);
+
+	return (sim->con_buf_cnt > 0);
 }
 
 int con_getc (cpm80_t *sim, unsigned char *c)
 {
-	if (sim->con_buf_cnt) {
+	con_read_buf (sim);
+
+	if (sim->con_buf_cnt > 0) {
 		*c = sim->con_buf;
 		sim->con_buf_cnt = 0;
 		return (0);
 	}
 
-	if (sim->con == NULL) {
-		return (1);
-	}
-
-	if (chr_read (sim->con, c, 1) != 1) {
-		return (1);
-	}
-
-	if (*c == 0) {
-		c80_stop (sim);
-		return (1);
-	}
-
-	return (0);
+	return (1);
 }
 
 int con_putc (cpm80_t *sim, unsigned char c)
 {
-	if (sim->con == NULL) {
-		return (0);
+	if (sim->con_write != NULL) {
+		fputc (c, sim->con_write);
 	}
-
-	if (chr_write (sim->con, &c, 1) != 1) {
-		return (1);
+	else if (sim->con != NULL) {
+		if (chr_write (sim->con, &c, 1) != 1) {
+			return (1);
+		}
 	}
 
 	return (0);
@@ -178,9 +217,12 @@ int con_puts (cpm80_t *sim, const char *str)
 {
 	unsigned n;
 
-	n = strlen (str);
+	if (sim->con_write != NULL) {
+		fputs (str, sim->con_write);
+	}
+	else if (sim->con != NULL) {
+		n = strlen (str);
 
-	if (sim->con != NULL) {
 		if (chr_write (sim->con, str, n) != n) {
 			return (1);
 		}
@@ -189,27 +231,35 @@ int con_puts (cpm80_t *sim, const char *str)
 	return (0);
 }
 
+int aux_ready (cpm80_t *sim)
+{
+	aux_read_buf (sim);
+
+	return (sim->aux_buf_cnt > 0);
+}
+
 int aux_getc (cpm80_t *sim, unsigned char *c)
 {
-	if (sim->aux == NULL) {
-		return (1);
+	aux_read_buf (sim);
+
+	if (sim->aux_buf_cnt > 0) {
+		*c = sim->aux_buf;
+		sim->aux_buf_cnt = 0;
+		return (0);
 	}
 
-	if (chr_read (sim->aux, c, 1) != 1) {
-		return (1);
-	}
-
-	return (0);
+	return (1);
 }
 
 int aux_putc (cpm80_t *sim, unsigned char c)
 {
-	if (sim->aux == NULL) {
-		return (0);
+	if (sim->aux_write != NULL) {
+		fputc (c, sim->aux_write);
 	}
-
-	if (chr_write (sim->aux, &c, 1) != 1) {
-		return (1);
+	else if (sim->aux != NULL) {
+		if (chr_write (sim->aux, &c, 1) != 1) {
+			return (1);
+		}
 	}
 
 	return (0);
