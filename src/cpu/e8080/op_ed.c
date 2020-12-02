@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e8080/op_ed.c                                        *
  * Created:     2012-12-11 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2014 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -194,6 +194,18 @@ static void op_ed_5b (e8080_t *c)
 	adr = e8080_uint16 (c->inst[2], c->inst[3]);
 	e8080_set_de (c, e8080_get_mem16 (c, adr));
 	e8080_set_clk (c, 4, 20);
+}
+
+/* OP ED 5F: LD A, R */
+static void op_ed_5f (e8080_t *c)
+{
+	unsigned char d;
+
+	d = 0;
+	e8080_set_a (c, d);
+	e8080_set_psw_szp (c, d, 0, E8080_FLG_A | E8080_FLG_N);
+	e8080_set_pf (c, c->iff2);
+	e8080_set_clk (c, 2, 9);
 }
 
 /* OP ED 62: SBC HL, HL */
@@ -659,7 +671,7 @@ static e8080_opcode_f opcodes_ed[256] = {
 	op_ed_40, op_ed_41, op_ed_42, op_ed_43, op_ed_44, op_ed_45, op_ed_ud, op_ed_ud, /* 40 */
 	op_ed_40, op_ed_41, op_ed_4a, op_ed_4b, op_ed_ud, op_ed_4d, op_ed_ud, op_ed_ud,
 	op_ed_40, op_ed_41, op_ed_52, op_ed_53, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_57, /* 50 */
-	op_ed_40, op_ed_41, op_ed_5a, op_ed_5b, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud,
+	op_ed_40, op_ed_41, op_ed_5a, op_ed_5b, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_5f,
 	op_ed_40, op_ed_41, op_ed_62, op_ed_63, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_67, /* 60 */
 	op_ed_40, op_ed_41, op_ed_6a, op_ed_6b, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_6f,
 	op_ed_70, op_ed_71, op_ed_72, op_ed_73, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, /* 70 */

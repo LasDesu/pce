@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e8080/dis_z80.c                                      *
  * Created:     2012-12-07 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2014 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -899,7 +899,7 @@ static e8080_dop_t e8080_op_ed[256] = {
 	{ 0x5c, "DB",   NULL,   NULL,   ARG_OPC8, ARG_NONE, 1,  4, E8080_OPF_UND },
 	{ 0x5d, "DB",   NULL,   NULL,   ARG_OPC8, ARG_NONE, 1,  4, E8080_OPF_UND },
 	{ 0x5e, "DB",   NULL,   NULL,   ARG_OPC8, ARG_NONE, 1,  4, E8080_OPF_UND },
-	{ 0x5f, "DB",   NULL,   NULL,   ARG_OPC8, ARG_NONE, 1,  4, E8080_OPF_UND },
+	{ 0x5f, "LD",   "A",    "R",    ARG_STR,  ARG_STR,  2,  9, E8080_OPF_Z80 },
 	{ 0x60, "IN",   "H",    "(C)",  ARG_STR,  ARG_STR,  2, 12, E8080_OPF_Z80 },
 	{ 0x61, "OUT",  "(C)",  "H",    ARG_STR,  ARG_STR,  2, 12, E8080_OPF_Z80 },
 	{ 0x62, "SBC",  "HL",   "HL",   ARG_STR,  ARG_STR,  2, 15, E8080_OPF_Z80 },
