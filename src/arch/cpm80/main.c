@@ -85,7 +85,7 @@ void print_version (void)
 	fputs (
 		"pce-cpm80 version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2012-2020 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2012-2021 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -97,7 +97,7 @@ void sim_log_banner (void)
 {
 	pce_log (MSG_MSG,
 		"pce-cpm80 version " PCE_VERSION_STR "\n"
-		"Copyright (C) 2012-2020 Hampa Hug <hampa@hampa.ch>\n"
+		"Copyright (C) 2012-2021 Hampa Hug <hampa@hampa.ch>\n"
 	);
 }
 
