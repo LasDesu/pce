@@ -95,6 +95,7 @@ typedef struct cpm80_s {
 
 	unsigned       bios_disk_cnt;
 	unsigned char  bios_disk_type[CPM80_DRIVE_MAX];
+	unsigned short bios_disk_dph[CPM80_DRIVE_MAX];
 
 	unsigned short bios_index;
 	unsigned long  bios_limit;

@@ -35,13 +35,22 @@
 #include <lib/log.h>
 
 
-#define ORD_CHS 0
-#define ORD_HCS 1
-
-
 #ifndef DEBUG_BIOS
 #define DEBUG_BIOS 0
 #endif
+
+
+#define ORD_CHS 0
+#define ORD_HCS 1
+#define ORD_HTS 2
+
+
+typedef struct {
+	unsigned short c;
+	unsigned short h;
+	unsigned short s;
+	unsigned short i;
+} c80_chsi_t;
 
 
 typedef struct {
@@ -52,20 +61,21 @@ typedef struct {
 	unsigned short s;
 	unsigned short n;
 
-	unsigned char  order;
-	unsigned short spt;
-	unsigned short bls;
-	unsigned char  exm;
-	unsigned short dsm;
-	unsigned short drm;
-	unsigned short al0;
-	unsigned short off;
+	unsigned char  order;	/* track order */
+	unsigned short spt;	/* sectors per track */
+	unsigned short bls;	/* block size */
+	unsigned char  exm;	/* extent mask */
+	unsigned short dsm;	/* number of blocks on disk */
+	unsigned short drm;	/* number of dir entries */
+	unsigned short al0;	/* directory allocation bitmap */
+	unsigned short off;	/* system tracks */
+	char           cpmtrn;	/* let cpm translate sectors */
 	unsigned char  *trn0;
 	unsigned char  *trn1;
 } c80_disk_t;
 
 
-static unsigned char map_26_6[32] = {
+static unsigned char map_26_6[] = {
 	 1,  7, 13, 19, 25,  5, 11, 17, 23,  3,  9, 15, 21,
 	 2,  8, 14, 20, 26,  6, 12, 18, 24,  4, 10, 16, 22
 };
@@ -77,17 +87,23 @@ static unsigned char map_0[32] = {
 
 
 static c80_disk_t par_disks[] = {
-	{ "A1",   77, 1, 26, 128,  ORD_CHS, 26 * 1, 1024, 0, 242,  63, 0xc000, 2, map_26_6 },
-	{ "IBM1", 40, 1,  8, 512,  ORD_CHS,  8 * 4, 1024, 0, 155,  63, 0xc000, 1, NULL },
-	{ "IBM2", 40, 2,  8, 512,  ORD_HCS,  8 * 4, 2048, 1, 157,  63, 0x8000, 1, NULL },
-	{ "KAY1", 40, 1, 10, 512,  ORD_CHS, 10 * 4, 1024, 0, 194,  63, 0xf000, 1, map_0 },
-	{ "KAY2", 40, 2, 10, 512,  ORD_CHS, 10 * 4, 2048, 1, 196,  63, 0xc000, 1, map_0, map_0 + 10 },
-	{ "KAY3", 80, 2, 10, 512,  ORD_CHS, 10 * 4, 4096, 3, 196,  95, 0x8000, 2, map_0, map_0 + 20 },
-	{ NULL,   40, 2,  9, 512,  ORD_HCS,  9 * 4, 2048, 1, 170,  63, 0x8000, 4, NULL },
-	{ NULL,   80, 2,  9, 512,  ORD_HCS,  9 * 4, 2048, 0, 354, 255, 0xf000, 2, NULL },
-	{ NULL,   80, 2, 15, 512,  ORD_HCS, 15 * 4, 4096, 1, 295, 255, 0xc000, 2, NULL },
-	{ NULL,   80, 2, 18, 512,  ORD_HCS, 18 * 4, 4096, 1, 354, 255, 0xc000, 2, NULL },
-	{ 0, 0, 0, 0 }
+	{ "IBM250",   77, 1, 26, 128, ORD_HTS, 26 * 1, 1024, 0, 243,  64, 0xc000, 2, 1, map_26_6 },
+	{ "IBM500",   77, 2, 26, 128, ORD_HTS, 26 * 1, 2048, 1, 247, 128, 0xc000, 2, 0, NULL },
+	{ "IBM160",   40, 1,  8, 512, ORD_HTS,  8 * 4, 1024, 0, 156,  64, 0xc000, 1, 0, NULL },
+	{ "IBM320",   40, 2,  8, 512, ORD_HTS,  8 * 4, 2048, 1, 158,  64, 0x8000, 1, 0, NULL },
+	{ "IBM180",   40, 1,  9, 512, ORD_HTS,  9 * 4, 1024, 0, 175,  64, 0xc000, 1, 0, NULL },
+	{ "IBM360",   40, 2,  9, 512, ORD_HTS,  9 * 4, 2048, 1, 177, 128, 0xc000, 1, 0, NULL },
+	{ "IBM720",   80, 2,  9, 512, ORD_HTS,  9 * 4, 2048, 0, 355, 256, 0xf000, 2, 0, NULL },
+	{ "IBM1200",  80, 2, 15, 512, ORD_HTS, 15 * 4, 4096, 1, 296, 256, 0xc000, 2, 0, NULL },
+	{ "IBM1440",  80, 2, 18, 512, ORD_HTS, 18 * 4, 4096, 1, 355, 256, 0xc000, 2, 0, NULL },
+	{ "PCE512",  256, 1,  8, 256, ORD_CHS,  8 * 2, 2048, 1, 254, 128, 0xc000, 1, 0, NULL },
+	{ "PCE1024", 256, 1, 16, 256, ORD_CHS, 16 * 2, 2048, 0, 510, 128, 0xc000, 1, 0, NULL },
+	{ "PCE2048", 256, 1, 32, 256, ORD_CHS, 32 * 2, 4096, 1, 510, 256, 0xc000, 1, 0, NULL },
+	{ "PCE4096", 256, 1, 64, 256, ORD_CHS, 64 * 2, 8192, 3, 510, 256, 0xc000, 1, 0, NULL },
+	{ "KAY1",     40, 1, 10, 512, ORD_CHS, 10 * 4, 1024, 0, 195,  64, 0xf000, 1, 0, map_0 },
+	{ "KAY2",     40, 2, 10, 512, ORD_CHS, 10 * 4, 2048, 1, 197,  64, 0xc000, 1, 0, map_0, map_0 + 10 },
+	{ "KAY3",     80, 2, 10, 512, ORD_CHS, 10 * 4, 4096, 3, 197,  96, 0x8000, 2, 0, map_0, map_0 + 20 },
+	{ NULL, 0, 0, 0, 0 }
 };
 
 
@@ -280,15 +296,193 @@ int lst_putc (cpm80_t *sim, unsigned char c)
 }
 
 static
+int bios_get_disk (cpm80_t *sim, unsigned drv, disk_t **dsk, c80_disk_t **dt)
+{
+	unsigned type;
+
+	if (drv >= sim->bios_disk_cnt) {
+		return (1);
+	}
+
+	if ((type = sim->bios_disk_type[drv]) == 0) {
+		return (1);
+	}
+
+	*dt = &par_disks[type - 1];
+
+	if ((*dsk = dsks_get_disk (sim->dsks, drv)) == NULL) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
+int bios_map_sector (c80_disk_t *dt, unsigned trk, unsigned sct, c80_chsi_t *chs)
+{
+	unsigned char *trn;
+
+	if ((dt->order == ORD_HTS) || (dt->order == ORD_HCS)) {
+		chs->c = trk % dt->c;
+		chs->h = trk / dt->c;
+
+		if (dt->order == ORD_HTS) {
+			if (chs->h & 1) {
+				chs->c = dt->c - chs->c - 1;
+			}
+		}
+	}
+	else {
+		/* ORD_CHS */
+		chs->c = trk / dt->h;
+		chs->h = trk % dt->h;
+	}
+
+	chs->s = sct / (dt->n / 128);
+	chs->i = sct % (dt->n / 128);
+
+	if (dt->cpmtrn) {
+		return (0);
+	}
+
+	trn = NULL;
+
+	if (trk >= dt->off) {
+		if (chs->h & 1) {
+			trn = dt->trn1;
+		}
+		else {
+			trn = dt->trn0;
+		}
+	}
+
+	if (trn != NULL) {
+		chs->s = trn[chs->s];
+	}
+	else {
+		chs->s += 1;
+	}
+
+	return (0);
+}
+
+static
+int bios_read_sector (cpm80_t *sim, void *buf, unsigned drv, unsigned trk, unsigned sct)
+{
+	unsigned      cnt;
+	disk_t        *dsk;
+	c80_disk_t    *dt;
+	c80_chsi_t    chs;
+	unsigned char tmp[2048];
+
+	if (bios_get_disk (sim, drv, &dsk, &dt)) {
+		return (1);
+	}
+
+	if (dt->n > 2048) {
+		return (1);
+	}
+
+	if (bios_map_sector (dt, trk, sct, &chs)) {
+		return (1);
+	}
+
+	if (dsk_get_type (dsk) == PCE_DISK_PSI) {
+		cnt = dt->n;
+
+		if (dsk_psi_read_chs (dsk->ext, tmp, &cnt, chs.c, chs.h, chs.s, 0) != 0) {
+			return (1);
+		}
+
+		if (cnt != dt->n) {
+			return (1);
+		}
+	}
+	else {
+		if (dt->n != 512) {
+			return (1);
+		}
+
+		if (dsk_read_chs (dsk, tmp, chs.c, chs.h, chs.s, 1)) {
+			return (1);
+		}
+
+	}
+
+	memcpy (buf, tmp + 128 * chs.i, 128);
+
+	return (0);
+}
+
+static
+int bios_write_sector (cpm80_t *sim, const void *buf, unsigned drv, unsigned trk, unsigned sct)
+{
+	unsigned      cnt;
+	disk_t        *dsk;
+	c80_disk_t    *dt;
+	c80_chsi_t    chs;
+	unsigned char tmp[512];
+
+	if (bios_get_disk (sim, drv, &dsk, &dt)) {
+		return (1);
+	}
+
+	if (dt->n > 2048) {
+		return (1);
+	}
+
+	if (bios_map_sector (dt, trk, sct, &chs)) {
+		return (1);
+	}
+
+	if (dsk_get_type (dsk) == PCE_DISK_PSI) {
+		cnt = dt->n;
+
+		if (dsk_psi_read_chs (dsk->ext, tmp, &cnt, chs.c, chs.h, chs.s, 0) != 0) {
+			return (1);
+		}
+
+		if (cnt != dt->n) {
+			return (1);
+		}
+
+		memcpy (tmp + 128 * chs.i, buf, 128);
+
+		if (dsk_psi_write_chs (dsk->ext, tmp, &cnt, chs.c, chs.h, chs.s, 0) != 0) {
+			return (1);
+		}
+
+		if (cnt != dt->n) {
+			return (1);
+		}
+	}
+	else {
+		if (dt->n != 512) {
+			return (1);
+		}
+
+		if (dsk_read_chs (dsk, tmp, chs.c, chs.h, chs.s, 1)) {
+			return (1);
+		}
+
+		memcpy (tmp + 128 * chs.i, buf, 128);
+
+		if (dsk_write_chs (dsk, tmp, chs.c, chs.h, chs.s, 1)) {
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
+static
 unsigned bios_get_disk_type (cpm80_t *sim, unsigned drv)
 {
 	unsigned   i;
 	c80_disk_t *dt;
 	disk_t     *dsk;
 
-	dsk = dsks_get_disk (sim->dsks, drv);
-
-	if (dsk == NULL) {
+	if ((dsk = dsks_get_disk (sim->dsks, drv)) == NULL) {
 		return (0);
 	}
 
@@ -310,249 +504,61 @@ unsigned bios_get_disk_type (cpm80_t *sim, unsigned drv)
 }
 
 static
-int bios_get_disk (cpm80_t *sim, unsigned drv, disk_t **dsk, c80_disk_t **dt)
-{
-	unsigned type;
-
-	if (drv >= sim->bios_disk_cnt) {
-		return (1);
-	}
-
-	type = sim->bios_disk_type[drv];
-
-	if (type == 0) {
-		return (1);
-	}
-
-	*dt = &par_disks[type - 1];
-
-	*dsk = dsks_get_disk (sim->dsks, drv);
-
-	if (*dsk == NULL) {
-		return (1);
-	}
-
-	return (0);
-}
-
-static
-int bios_map_sector (c80_disk_t *dt, unsigned trk, unsigned sct, unsigned *c, unsigned *h, unsigned *s, unsigned *i)
-{
-	unsigned char *trn;
-
-	if (dt->order == ORD_CHS) {
-		*c = trk / dt->h;
-		*h = trk % dt->h;
-	}
-	else {
-		*c = trk % dt->c;
-		*h = trk / dt->c;
-
-		if (*h & 1) {
-			*c = dt->c - *c - 1;
-		}
-	}
-
-	*s = sct / (dt->n / 128);
-	*i = sct % (dt->n / 128);
-
-	trn = NULL;
-
-	if (trk >= dt->off) {
-		if (*h == 0) {
-			trn = dt->trn0;
-		}
-		else {
-			trn = dt->trn1;
-		}
-	}
-
-	if (trn != NULL) {
-		*s = trn[*s];
-	}
-	else {
-		*s += 1;
-	}
-
-	return (0);
-}
-
-static
-int bios_read_sector (cpm80_t *sim, void *buf, unsigned drv, unsigned trk, unsigned sct)
-{
-	unsigned      c, h, s, idx, cnt;
-	disk_t        *dsk;
-	c80_disk_t    *dt;
-	unsigned char tmp[2048];
-
-	if (bios_get_disk (sim, drv, &dsk, &dt)) {
-		return (1);
-	}
-
-	if (dt->n > 2048) {
-		return (1);
-	}
-
-	if (bios_map_sector (dt, trk, sct, &c, &h, &s, &idx)) {
-		return (1);
-	}
-
-	if (dsk_get_type (dsk) == PCE_DISK_PSI) {
-		cnt = dt->n;
-
-		if (dsk_psi_read_chs (dsk->ext, tmp, &cnt, c, h, s, 0) != 0) {
-			return (1);
-		}
-
-		if (cnt != dt->n) {
-			return (1);
-		}
-
-		memcpy (buf, tmp + 128 * idx, 128);
-	}
-	else {
-		if (dt->n != 512) {
-			return (1);
-		}
-
-		if (dsk_read_chs (dsk, tmp, c, h, s, 1)) {
-			return (1);
-		}
-
-		memcpy (buf, tmp + 128 * idx, 128);
-	}
-
-	return (0);
-}
-
-static
-int bios_write_sector (cpm80_t *sim, const void *buf, unsigned drv, unsigned trk, unsigned sct)
-{
-	unsigned      c, h, s, idx, cnt;
-	disk_t        *dsk;
-	c80_disk_t    *dt;
-	unsigned char tmp[512];
-
-	if (bios_get_disk (sim, drv, &dsk, &dt)) {
-		return (1);
-	}
-
-	if (dt->n > 2048) {
-		return (1);
-	}
-
-	if (bios_map_sector (dt, trk, sct, &c, &h, &s, &idx)) {
-		return (1);
-	}
-
-	if (dsk_get_type (dsk) == PCE_DISK_PSI) {
-		cnt = dt->n;
-
-		if (dsk_psi_read_chs (dsk->ext, tmp, &cnt, c, h, s, 0) != 0) {
-			return (1);
-		}
-
-		if (cnt != dt->n) {
-			return (1);
-		}
-
-		memcpy (tmp + 128 * idx, buf, 128);
-
-		if (dsk_psi_write_chs (dsk->ext, tmp, &cnt, c, h, s, 0) != 0) {
-			return (1);
-		}
-
-		if (cnt != dt->n) {
-			return (1);
-		}
-	}
-	else {
-		if (dt->n != 512) {
-			return (1);
-		}
-
-		if (dsk_read_chs (dsk, tmp, c, h, s, 1)) {
-			return (1);
-		}
-
-		memcpy (tmp + 128 * idx, buf, 128);
-
-		if (dsk_write_chs (dsk, tmp, c, h, s, 1)) {
-			return (1);
-		}
-	}
-
-	return (0);
-}
-
-static
 unsigned bios_setup_disk (cpm80_t *sim, unsigned drv)
 {
-	unsigned type;
+	unsigned      i;
+	unsigned      type;
+	unsigned long dph, dir, dpb, chk, all, trn, end;
+	unsigned      bsh;
+	c80_disk_t    *dt;
 
 	if (drv >= sim->bios_disk_cnt) {
 		return (0);
 	}
 
-	type = bios_get_disk_type (sim, drv);
+	sim->bios_disk_type[drv] = 0;
+
+	if ((type = bios_get_disk_type (sim, drv)) == 0) {
+		mem_set_uint8 (sim->mem, 4, 0);
+		return (0);
+	}
 
 	sim->bios_disk_type[drv] = type;
 
-	return (type);
-}
-
-static
-unsigned bios_setup_dpb (cpm80_t *sim, unsigned drv)
-{
-	unsigned   i;
-	unsigned   type;
-	unsigned   dph, dir, dpb, chk, all, end;
-	unsigned   bsh;
-	c80_disk_t *dt;
-
-	if (drv >= sim->bios_disk_cnt) {
-		return (0);
-	}
-
-	type = sim->bios_disk_type[drv];
-
-	if (type == 0) {
-		return (0);
-	}
-
 	dt = &par_disks[type - 1];
 
+	if (sim->bios_disk_dph[drv] != 0) {
+		return (sim->bios_disk_dph[drv]);
+	}
+
 	dir = sim->addr_bios + 128;
-	dph = sim->addr_bios + 256 + 160 * drv;
+	dph = sim->bios_index;
 	dpb = dph + 16;
 	chk = dpb + 16;
-	all = chk + (dt->drm + 1) / 4;
-	end = all + (dt->dsm + 1 + 7) / 8;
+	all = chk + dt->drm / 4;
+	trn = 0;
+	end = all + (dt->dsm + 7) / 8;
 
-	if ((end - dph) > 160) {
+	if (dt->cpmtrn) {
+		trn = end;
+		end = trn + dt->spt;
+	}
+
+	if (end > sim->bios_limit) {
+		fprintf (stderr, "bios error: drive %u: %04lX %04lX %04lX\n",
+			drv, dph, end, sim->bios_limit
+		);
 		return (0);
 	}
 
-	if ((end & 0xffff) < (sim->addr_bios & 0xffff)) {
-		return (0);
-	}
+	sim->bios_disk_dph[drv] = dph;
+	sim->bios_index = end;
 
-	mem_set_uint16_le (sim->mem, dph + 0, 0);
+	mem_set_uint16_le (sim->mem, dph + 0, trn);
 	mem_set_uint16_le (sim->mem, dph + 8, dir);
 	mem_set_uint16_le (sim->mem, dph + 10, dpb);
 	mem_set_uint16_le (sim->mem, dph + 12, chk);
 	mem_set_uint16_le (sim->mem, dph + 14, all);
-
-	if ((sim->cpm_version < 0x20) && (type == 1)) {
-		dt->trn0 = map_0;
-		dt->trn1 = map_0;
-
-		mem_set_uint16_le (sim->mem, dph + 0, end);
-
-		for (i = 0; i < 26; i++) {
-			mem_set_uint8 (sim->mem, end + i, map_26_6[i]);
-		}
-	}
 
 	bsh = 0;
 	while ((128U << bsh) < dt->bls) {
@@ -563,12 +569,18 @@ unsigned bios_setup_dpb (cpm80_t *sim, unsigned drv)
 	mem_set_uint8     (sim->mem, dpb + 2, bsh);
 	mem_set_uint8     (sim->mem, dpb + 3, (1 << bsh) - 1);
 	mem_set_uint8     (sim->mem, dpb + 4, dt->exm);
-	mem_set_uint16_le (sim->mem, dpb + 5, dt->dsm);
-	mem_set_uint16_le (sim->mem, dpb + 7, dt->drm);
+	mem_set_uint16_le (sim->mem, dpb + 5, dt->dsm - 1);
+	mem_set_uint16_le (sim->mem, dpb + 7, dt->drm - 1);
 	mem_set_uint8     (sim->mem, dpb + 9, dt->al0 >> 8);
 	mem_set_uint8     (sim->mem, dpb + 10, dt->al0 & 0xff);
-	mem_set_uint16_le (sim->mem, dpb + 11, (dt->drm + 1) / 4);
+	mem_set_uint16_le (sim->mem, dpb + 11, dt->drm / 4);
 	mem_set_uint16_le (sim->mem, dpb + 13, dt->off);
+
+	if (dt->cpmtrn) {
+		for (i = 0; i < dt->spt; i++) {
+			mem_set_uint8 (sim->mem, trn + i, dt->trn0[i]);
+		}
+	}
 
 	return (dph);
 }
@@ -668,6 +680,7 @@ void bios_boot (cpm80_t *sim, int warm)
 
 	for (i = 0; i < sim->bios_disk_cnt; i++) {
 		sim->bios_disk_type[i] = 0;
+		sim->bios_disk_dph[i] = 0;
 	}
 
 	mem_set_uint8 (sim->mem, 0x0005, 0xc3);
@@ -778,8 +791,8 @@ void bios_reader (cpm80_t *sim)
 static
 void bios_home (cpm80_t *sim)
 {
-#if DEBUG_BIOS >= 1
-	sim_log_deb ("BIOS: HOME\n");
+#if DEBUG_BIOS >= 2
+	sim_log_deb ("BIOS: %c: HOME\n", 'A' + sim->bios_dsk);
 #endif
 
 	sim->bios_trk = 0;
@@ -795,13 +808,18 @@ void bios_seldsk (cpm80_t *sim)
 
 	sim->bios_dsk = e8080_get_c (sim->cpu);
 
-#if DEBUG_BIOS >= 2
-	sim_log_deb ("BIOS: SELDSK=%02X\n", sim->bios_dsk);
+	addr = bios_setup_disk (sim, sim->bios_dsk);
+
+#if DEBUG_BIOS >= 1
+	sim_log_deb ("BIOS: %c: SELDSK D=%u DPH=%04lX-%04lX+%04lX\n",
+		'A' + sim->bios_dsk, sim->bios_dsk, addr, sim->bios_index,
+		sim->bios_limit - sim->bios_index
+	);
 #endif
 
-	bios_setup_disk (sim, sim->bios_dsk);
-
-	addr = bios_setup_dpb (sim, sim->bios_dsk);
+	if (addr == 0) {
+		e8080_set_a (sim->cpu, 0xff);
+	}
 
 	e8080_set_hl (sim->cpu, addr);
 }
@@ -814,8 +832,10 @@ void bios_seltrk (cpm80_t *sim)
 {
 	sim->bios_trk = e8080_get_c (sim->cpu);
 
-#if DEBUG_BIOS >= 2
-	sim_log_deb ("BIOS: SELTRK=%02X\n", sim->bios_trk);
+#if DEBUG_BIOS >= 3
+	sim_log_deb ("BIOS: %c: SELTRK T=%02X\n",
+		'A' + sim->bios_dsk, sim->bios_trk
+	);
 #endif
 }
 
@@ -827,8 +847,10 @@ void bios_setsec (cpm80_t *sim)
 {
 	sim->bios_sec = e8080_get_c (sim->cpu);
 
-#if DEBUG_BIOS >= 2
-	sim_log_deb ("BIOS: SETSEC=%02X\n", sim->bios_sec);
+#if DEBUG_BIOS >= 3
+	sim_log_deb ("BIOS: %c: SETSEC S=%02X\n",
+		'A' + sim->bios_dsk, sim->bios_sec
+	);
 #endif
 }
 
@@ -840,8 +862,10 @@ void bios_setdma (cpm80_t *sim)
 {
 	sim->bios_dma = e8080_get_bc (sim->cpu);
 
-#if DEBUG_BIOS >= 2
-	sim_log_deb ("BIOS: SETDMA=%04X\n", sim->bios_dma);
+#if DEBUG_BIOS >= 3
+	sim_log_deb ("BIOS: %c: SETDMA A=%04X\n",
+		'A' + sim->bios_dsk, sim->bios_dma
+	);
 #endif
 }
 
@@ -854,9 +878,9 @@ void bios_read (cpm80_t *sim)
 	unsigned      i;
 	unsigned char buf[128];
 
-#if DEBUG_BIOS >= 1
-	sim_log_deb ("BIOS: READ DMA=%04X D=%02X T=%02X S=%02X\n",
-		sim->bios_dma, sim->bios_dsk, sim->bios_trk, sim->bios_sec
+#if DEBUG_BIOS >= 2
+	sim_log_deb ("BIOS: %c: READ T=%02X S=%02X A=%04X\n",
+		'A' + sim->bios_dsk, sim->bios_trk, sim->bios_sec, sim->bios_dma
 	);
 #endif
 
@@ -881,9 +905,9 @@ void bios_write (cpm80_t *sim)
 	unsigned      i;
 	unsigned char buf[128];
 
-#if DEBUG_BIOS >= 1
-	sim_log_deb ("BIOS: WRITE DMA=%04X D=%02X T=%02X S=%02X\n",
-		sim->bios_dma, sim->bios_dsk, sim->bios_trk, sim->bios_sec
+#if DEBUG_BIOS >= 2
+	sim_log_deb ("BIOS: %c: WRITE T=%02X S=%02X A=%04X\n",
+		'A' + sim->bios_dsk, sim->bios_trk, sim->bios_sec, sim->bios_dma
 	);
 #endif
 
@@ -923,15 +947,13 @@ void bios_sectran (cpm80_t *sim)
 		new = sec;
 	}
 	else {
-		if (sec > 25) {
-			sim_log_deb ("bios: sectran: %u\n", sec);
-		}
-
 		new = mem_get_uint8 (sim->mem, tab + sec);
 	}
 
-#if DEBUG_BIOS >= 1
-	sim_log_deb ("BIOS: SECTRANS %u -> %u\n", sec, new);
+#if DEBUG_BIOS >= 3
+	sim_log_deb ("BIOS: %c: SECTRAN %u -> %u (T=%04X)\n",
+		'A' + sim->bios_dsk, sec, new, tab
+	);
 #endif
 
 	e8080_set_hl (sim->cpu, new);
@@ -943,7 +965,7 @@ void c80_bios (cpm80_t *sim, unsigned fct)
 		return;
 	}
 
-#if DEBUG_BIOS >= 3
+#if DEBUG_BIOS >= 4
 	sim_log_deb ("bios: function %02X\n", fct);
 #endif
 
