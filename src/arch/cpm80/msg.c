@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/cpm80/msg.c                                         *
  * Created:     2012-11-30 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -105,7 +105,29 @@ int c80_set_msg_emu_cpu_speed (cpm80_t *sim, const char *msg, const char *val)
 		return (1);
 	}
 
+	if (v > 4) {
+		v = 8 * (v - 4);
+	}
+
 	c80_set_speed (sim, v);
+
+	return (0);
+}
+
+static
+int c80_set_msg_emu_cpu_speed_double (cpm80_t *sim, const char *msg, const char *val)
+{
+	c80_set_speed (sim, 2 * sim->speed);
+
+	return (0);
+}
+
+static
+int c80_set_msg_emu_cpu_speed_half (cpm80_t *sim, const char *msg, const char *val)
+{
+	if (sim->speed > 1) {
+		c80_set_speed (sim, sim->speed / 2);
+	}
 
 	return (0);
 }
@@ -252,6 +274,8 @@ static c80_msg_list_t set_msg_list[] = {
 	{ "emu.con.write", c80_set_msg_emu_con_write },
 	{ "emu.cpu.model", c80_set_msg_emu_cpu_model },
 	{ "emu.cpu.speed", c80_set_msg_emu_cpu_speed },
+	{ "emu.cpu.speed.double", c80_set_msg_emu_cpu_speed_double },
+	{ "emu.cpu.speed.half", c80_set_msg_emu_cpu_speed_half },
 	{ "emu.cpu.speed.step", c80_set_msg_emu_cpu_speed_step },
 	{ "emu.disk.commit", c80_set_msg_emu_disk_commit },
 	{ "emu.disk.eject", c80_set_msg_emu_disk_eject },

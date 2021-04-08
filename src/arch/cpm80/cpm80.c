@@ -3,9 +3,9 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * File name:   src/arch/sim8080/sim8080.c                                   *
+ * File name:   src/arch/cpm80/cpm80.c                                       *
  * Created:     2012-11-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -174,12 +174,7 @@ void c80_setup_cpu (cpm80_t *sim, ini_sct_t *ini)
 	if (ini_get_uint32 (sct, "clock", &clock, 0)) {
 		ini_get_uint16 (sct, "speed", &speed, 1);
 
-		if (speed <= 4) {
-			clock = 1000000UL * speed;
-		}
-		else {
-			clock = 8000000UL * (speed - 4);
-		}
+		clock = 1000000UL * speed;
 
 		sim->speed = speed;
 	}
@@ -476,18 +471,9 @@ void c80_set_clock (cpm80_t *sim, unsigned long clock)
 
 void c80_set_speed (cpm80_t *sim, unsigned speed)
 {
-	unsigned long clk;
-
 	sim->speed = speed;
 
-	if (speed <= 4) {
-		clk = 1000000UL * speed;
-	}
-	else {
-		clk = 8000000UL * (speed - 4);
-	}
-
-	c80_set_clock (sim, clk);
+	c80_set_clock (sim, 1000000UL * speed);
 }
 
 static
