@@ -609,7 +609,7 @@ void bios_boot (cpm80_t *sim, int warm)
 
 	if (warm == 0) {
 		con_puts (sim, "\x0d\x0aPCE-CPM80 BIOS\x0d\x0a\x0d\x0a");
-		drv = 0;
+		drv = sim->boot;
 	}
 	else {
 		drv = mem_get_uint8 (sim->mem, 4);

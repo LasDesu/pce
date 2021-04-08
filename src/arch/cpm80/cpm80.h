@@ -84,6 +84,8 @@ typedef struct cpm80_s {
 
 	disks_t        *dsks;
 
+	unsigned char  boot;
+
 	unsigned char  altair_switches;
 
 	char           *cpm;

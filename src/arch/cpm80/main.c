@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/cpm80/main.c                                        *
  * Created:     2012-11-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -52,6 +52,7 @@ static ini_strings_t par_ini_str;
 
 static pce_option_t opts[] = {
 	{ '?', 0, "help", NULL, "Print usage information" },
+	{ 'b', 1, "boot", "int", "Set the boot drive [0]" },
 	{ 'c', 1, "config", "string", "Set the config file name [none]" },
 	{ 'd', 1, "path", "string", "Add a directory to the search path" },
 	{ 'i', 1, "ini-prefix", "string", "Add an ini string before the config file" },
@@ -238,6 +239,10 @@ int main (int argc, char *argv[])
 		case 'V':
 			print_version();
 			return (0);
+
+		case 'b':
+			ini_str_add (&par_ini_str, "system.boot = ", optarg[0], "\n");
+			break;
 
 		case 'c':
 			cfg = optarg[0];
