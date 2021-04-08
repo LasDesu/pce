@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/cpm80/cpm80.h                                       *
  * Created:     2012-11-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -86,12 +86,18 @@ typedef struct cpm80_s {
 
 	unsigned char  altair_switches;
 
-	unsigned       addr_ccp;
-	unsigned       addr_bdos;
-	unsigned       addr_bios;
+	char           *cpm;
+	unsigned char  cpm_version;
+	unsigned char  zcpr_version;
+	unsigned short addr_ccp;
+	unsigned short addr_bdos;
+	unsigned short addr_bios;
 
 	unsigned       bios_disk_cnt;
 	unsigned char  bios_disk_type[CPM80_DRIVE_MAX];
+
+	unsigned short bios_index;
+	unsigned long  bios_limit;
 
 	unsigned short bios_dma;
 	unsigned char  bios_dsk;

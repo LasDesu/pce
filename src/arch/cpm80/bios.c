@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/cpm80/bios.c                                        *
  * Created:     2012-11-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -31,6 +31,7 @@
 #include <devices/memory.h>
 #include <drivers/block/block.h>
 #include <drivers/block/blkpsi.h>
+#include <lib/load.h>
 #include <lib/log.h>
 
 
@@ -485,48 +486,6 @@ int bios_write_sector (cpm80_t *sim, const void *buf, unsigned drv, unsigned trk
 }
 
 static
-int bios_read_system (cpm80_t *sim, unsigned addr, unsigned size)
-{
-	unsigned      i, j;
-	unsigned      track, sector;
-	c80_disk_t    *dt;
-	unsigned char buf[128];
-
-	if (sim->bios_disk_type[0] == 0) {
-		return (1);
-	}
-
-	dt = &par_disks[sim->bios_disk_type[0] - 1];
-
-	track = 0;
-	sector = 1;
-
-	i = 0;
-
-	while (i < size) {
-		if (bios_read_sector (sim, buf, 0, track, sector)) {
-			return (1);
-		}
-
-		for (j = 0; j < 128; j++) {
-			mem_set_uint8 (sim->mem, addr + j, buf[j]);
-		}
-
-		sector += 1;
-
-		if (sector >= dt->spt) {
-			track += 1;
-			sector = 0;
-		}
-
-		i += 128;
-		addr += 128;
-	}
-
-	return (0);
-}
-
-static
 unsigned bios_setup_disk (cpm80_t *sim, unsigned drv)
 {
 	unsigned type;
@@ -545,6 +504,7 @@ unsigned bios_setup_disk (cpm80_t *sim, unsigned drv)
 static
 unsigned bios_setup_dpb (cpm80_t *sim, unsigned drv)
 {
+	unsigned   i;
 	unsigned   type;
 	unsigned   dph, dir, dpb, chk, all, end;
 	unsigned   bsh;
@@ -583,19 +543,14 @@ unsigned bios_setup_dpb (cpm80_t *sim, unsigned drv)
 	mem_set_uint16_le (sim->mem, dph + 12, chk);
 	mem_set_uint16_le (sim->mem, dph + 14, all);
 
-	if (mem_get_uint8 (sim->mem, sim->addr_bdos + 1) == 0x0e) {
-		if (type == 1) {
-			unsigned i;
-			/* hack for cp/m 1.4 */
+	if ((sim->cpm_version < 0x20) && (type == 1)) {
+		dt->trn0 = map_0;
+		dt->trn1 = map_0;
 
-			dt->trn0 = map_0;
-			dt->trn1 = map_0;
+		mem_set_uint16_le (sim->mem, dph + 0, end);
 
-			mem_set_uint16_le (sim->mem, dph + 0, end);
-
-			for (i = 0; i < 26; i++) {
-				mem_set_uint8 (sim->mem, end + i, map_26_6[i]);
-			}
+		for (i = 0; i < 26; i++) {
+			mem_set_uint8 (sim->mem, end + i, map_26_6[i]);
 		}
 	}
 
@@ -624,82 +579,103 @@ unsigned bios_setup_dpb (cpm80_t *sim, unsigned drv)
 static
 void bios_boot (cpm80_t *sim, int warm)
 {
-	unsigned      addr, size;
+	unsigned      i;
+	unsigned      tpa;
 	unsigned char drv;
-	unsigned char buf[128];
 	char          str[128];
+	unsigned char save[128];
+	unsigned long ram;
+
+	for (i = 0; i < 128; i++) {
+		save[i] = mem_get_uint8 (sim->mem, 0x80 + i);
+	}
 
 	/* endless loop, in case boot fails */
-	mem_set_uint8 (sim->mem, 0x0000, 0xc3);
-	mem_set_uint16_le (sim->mem, 0x0001, 0x0000);
-	e8080_set_pc (sim->cpu, sim->addr_ccp);
+	mem_set_uint8 (sim->mem, 0xc0, 0xc3);
+	mem_set_uint16_le (sim->mem, 0xc1, 0x00c0);
+	e8080_set_pc (sim->cpu, 0x00c0);
 
 	if (warm == 0) {
-		con_puts (sim,
-			"\x0d\x0a"
-			"PCE-CPM80 BIOS VERSION " PCE_VERSION_STR
-			"\x0d\x0a\x0d\x0a"
-		);
-
+		con_puts (sim, "\x0d\x0aPCE-CPM80 BIOS\x0d\x0a\x0d\x0a");
 		drv = 0;
 	}
 	else {
 		drv = mem_get_uint8 (sim->mem, 4);
+		fprintf (stderr, "bios: boot (%c:)\n", 'A' + drv);
 	}
 
-	sim->addr_ccp = 0;
-	sim->addr_bdos = 0;
-	sim->addr_bios = 0;
-
-	if (bios_setup_disk (sim, 0) == 0) {
-		con_puts (sim, "UNKNOWN STARTUP DISK\x0d\x0a");
+	if (pce_load_mem (sim->mem, sim->cpm, NULL, 0)) {
+		con_puts (sim, "ERROR 01: ");
+		con_puts (sim, sim->cpm);
 		return;
 	}
 
-	if (bios_read_sector (sim, buf, 0, 0, 0)) {
-		con_puts (sim, "BOOT BLOCK READ ERROR\x0d\x0a");
+	if (mem_get_uint16_le (sim->mem, 0x80) != 0x3141) {
+		con_puts (sim, "ERROR 02: ");
+		con_puts (sim, sim->cpm);
 		return;
 	}
 
-	if (memcmp (buf, "PCE-CPM80", 10) != 0) {
-		con_puts (sim, "NO SYSTEM\x0d\x0a");
-		return;
+	sim->cpm_version = mem_get_uint8 (sim->mem, 0x82);
+	sim->zcpr_version = mem_get_uint8 (sim->mem, 0x83);
+	sim->addr_ccp = mem_get_uint16_le (sim->mem, 0x84);
+	sim->addr_bdos = mem_get_uint16_le (sim->mem, 0x86);
+	sim->addr_bios = mem_get_uint16_le (sim->mem, 0x88);
+	sim->bios_limit = mem_get_uint16_le (sim->mem, 0x8a);
+
+	if (sim->bios_limit == 0) {
+		sim->bios_limit = 0x10000;
 	}
 
-	addr = buf_get_uint16_le (buf, 16);
-	size = buf_get_uint16_le (buf, 18);
+	ram = mem_blk_get_size (sim->ram);
 
-	sim->addr_ccp = buf_get_uint16_le (buf, 20);
-	sim->addr_bdos = buf_get_uint16_le (buf, 22);
-	sim->addr_bios = buf_get_uint16_le (buf, 24);
+	if (sim->bios_limit > ram) {
+		sim->bios_limit = ram;
+	}
 
 	if (warm == 0) {
+		tpa = sim->addr_bdos - 0x0100;
+
 		sprintf (str,
-			"CCP=%04X  BDOS=%04X  BIOS=%04X  TPA=%uK\x0d\x0a",
-			sim->addr_ccp,
-			sim->addr_bdos,
-			sim->addr_bios,
-			(sim->addr_bdos - 0x0100) / 1024
+			"CCP=%04X BDOS=%04X BIOS=%04X END=%04lX\x0d\x0a"
+			"\x0d\x0a"
+			"CP/M %u.%u [%u.%02uK]",
+			sim->addr_ccp, sim->addr_bdos, sim->addr_bios, sim->bios_limit,
+			(sim->cpm_version >> 4) & 0x0f, sim->cpm_version & 0x0f,
+			tpa / 1024, 100 * (tpa % 1024) / 1024
 		);
 
 		con_puts (sim, str);
-	}
 
-	if (bios_read_system (sim, addr, size)) {
-		con_puts (sim, "READ ERROR");
-		return;
+		if (sim->zcpr_version > 0) {
+			sprintf (str, " ZCPR%u", sim->zcpr_version);
+			con_puts (sim, str);
+		}
+
+		con_puts (sim, "\x0d\x0a");
+
+		/* iobyte */
+		mem_set_uint8 (sim->mem, 0x0003, 0x00);
+
+		/* user / drive */
+		mem_set_uint8 (sim->mem, 0x0004, drv);
 	}
 
 	bios_init_traps (sim, 1);
 
-	/* iobyte */
-	mem_set_uint8 (sim->mem, 0x0003, 0x00);
+	sim->bios_index = sim->addr_bios + 256;
+	sim->bios_limit = mem_blk_get_size (sim->ram);
 
-	/* user / drive */
-	mem_set_uint8 (sim->mem, 0x0004, 0x00);
+	for (i = 0; i < sim->bios_disk_cnt; i++) {
+		sim->bios_disk_type[i] = 0;
+	}
 
 	mem_set_uint8 (sim->mem, 0x0005, 0xc3);
 	mem_set_uint16_le (sim->mem, 0x0006, sim->addr_bdos + 6);
+
+	for (i = 0; i < 128; i++) {
+		mem_set_uint8 (sim->mem, 0x80 + i, save[i]);
+	}
 
 	e8080_set_c (sim->cpu, drv);
 	e8080_set_pc (sim->cpu, sim->addr_ccp);
@@ -1033,11 +1009,15 @@ void c80_bios (cpm80_t *sim, unsigned fct)
 		break;
 
 	case 15:
-		bios_listst (sim);
+		if (sim->cpm_version >= 0x20) {
+			bios_listst (sim);
+		}
 		break;
 
 	case 16:
-		bios_sectran (sim);
+		if (sim->cpm_version >= 0x20) {
+			bios_sectran (sim);
+		}
 		break;
 
 	default:

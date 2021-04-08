@@ -274,6 +274,7 @@ src/arch/cpm80/bios.o: src/arch/cpm80/bios.c \
 	src/drivers/psi/psi.h \
 	src/lib/brkpt.h \
 	src/lib/cmd.h \
+	src/lib/load.h \
 	src/lib/log.h \
 	src/libini/libini.h
 
@@ -312,6 +313,7 @@ src/arch/cpm80/cpm80.o: src/arch/cpm80/cpm80.c \
 	src/lib/log.h \
 	src/lib/msg.h \
 	src/lib/path.h \
+	src/lib/string.h \
 	src/lib/sysdep.h \
 	src/libini/libini.h
 

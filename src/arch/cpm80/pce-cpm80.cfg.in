@@ -15,6 +15,9 @@ system {
 	# The CPU clock speed in MHz. Zero means all out.
 	speed = 0
 
+	# The CP/M kernel
+	cpm = "cpm.ihex"
+
 	con = "sercon"
 	aux = "stdio:file=aux.out:flush=1"
 	lst = "stdio:file=lst.out:flush=1"

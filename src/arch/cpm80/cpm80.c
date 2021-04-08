@@ -44,6 +44,7 @@
 #include <lib/log.h>
 #include <lib/msg.h>
 #include <lib/path.h>
+#include <lib/string.h>
 #include <lib/sysdep.h>
 
 
@@ -143,7 +144,7 @@ static
 void c80_setup_system (cpm80_t *sim, ini_sct_t *ini)
 {
 	unsigned   altair;
-	const char *model;
+	const char *model, *cpm;
 	ini_sct_t  *sct;
 
 	sim->brk = 0;
@@ -152,16 +153,24 @@ void c80_setup_system (cpm80_t *sim, ini_sct_t *ini)
 
 	sim->altair_switches = 0xff;
 
+	sim->cpm = NULL;
+	sim->cpm_version = 0;
+	sim->addr_ccp = 0;
+	sim->addr_bdos = 0;
+	sim->addr_bios = 0;
+
 	sim->model = CPM80_MODEL_PLAIN;
 
 	sct = ini_next_sct (ini, NULL, "system");
 
 	ini_get_string (sct, "model", &model, "cpm");
+	ini_get_string (sct, "cpm", &cpm, "cpm.ihex");
 	ini_get_uint16 (sct, "altair_switches", &altair, 0xff);
 
 	pce_log_tag (MSG_INF,
 		"SYSTEM:",
-		"model=%s altair=0x%02x\n", model, altair
+		"model=%s cpm=\"%s\" altair=0x%02x\n",
+		model, cpm, altair
 	);
 
 	sim->altair_switches = altair;
@@ -175,6 +184,8 @@ void c80_setup_system (cpm80_t *sim, ini_sct_t *ini)
 	else {
 		pce_log (MSG_ERR, "*** unknown machine model (%s)\n", model);
 	}
+
+	sim->cpm = str_copy_alloc (cpm);
 }
 
 static
