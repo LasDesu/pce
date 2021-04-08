@@ -47,20 +47,34 @@
 #include <lib/sysdep.h>
 
 
+#ifndef BASIC_DELETE
+#define BASIC_DELETE 1
+#endif
+
+
 static
 void c80_set_port8 (cpm80_t *sim, unsigned long addr, unsigned char val)
 {
 	switch (addr) {
+	case 0x00:
+	case 0x10:
+		break;
+
 	case 0x01:
 	case 0x11:
+#if BASIC_DELETE
 		if (val == 0x5f) {
 			val = 0x08;
 		}
+#endif
 		con_putc (sim, val);
 		break;
 
-	case 0x00:
-	case 0x02:
+	case 0x06:
+		break;
+
+	case 0x07:
+		aux_putc (sim, val);
 		break;
 
 	case 0xfe:
@@ -82,11 +96,11 @@ unsigned char c80_get_port8 (cpm80_t *sim, unsigned long addr)
 
 	switch (addr) {
 	case 0x00:
+		val = con_ready (sim) ? 0x22 : 0x03;
+		break;
+
 	case 0x10:
-		val = 0x02;
-		if (con_ready (sim)) {
-			val |= (addr == 0) ? 0x20 : 0x21;
-		}
+		val = con_ready (sim) ? 0x03 : 0x02;
 		break;
 
 	case 0x01:
@@ -94,16 +108,23 @@ unsigned char c80_get_port8 (cpm80_t *sim, unsigned long addr)
 		if (con_getc (sim, &val)) {
 			val = 0;
 		}
+#if BASIC_DELETE
 		else {
 			if ((val == 0x7f) || (val == 0x08)) {
 				val = 0x5f;
 			}
 		}
+#endif
 		break;
 
-	case 0x13:
-	case 0x20:
-		val = 0;
+	case 0x06:
+		val = aux_ready (sim) ? 0x22 : 0x03;
+		break;
+
+	case 0x07:
+		if (aux_getc (sim, &val)) {
+			val = 0;
+		}
 		break;
 
 	case 0xff:
