@@ -107,7 +107,7 @@ unsigned char c80_get_port8 (cpm80_t *sim, unsigned long addr)
 		break;
 
 	case 0xff:
-		val = 0xff;
+		val = sim->altair_switches;
 		break;
 
 	default:
@@ -121,6 +121,7 @@ unsigned char c80_get_port8 (cpm80_t *sim, unsigned long addr)
 static
 void c80_setup_system (cpm80_t *sim, ini_sct_t *ini)
 {
+	unsigned   altair;
 	const char *model;
 	ini_sct_t  *sct;
 
@@ -128,16 +129,21 @@ void c80_setup_system (cpm80_t *sim, ini_sct_t *ini)
 	sim->clk_cnt = 0;
 	sim->clk_div = 0;
 
+	sim->altair_switches = 0xff;
+
 	sim->model = CPM80_MODEL_PLAIN;
 
 	sct = ini_next_sct (ini, NULL, "system");
 
 	ini_get_string (sct, "model", &model, "cpm");
+	ini_get_uint16 (sct, "altair_switches", &altair, 0xff);
 
 	pce_log_tag (MSG_INF,
 		"SYSTEM:",
-		"model=%s\n", model
+		"model=%s altair=0x%02x\n", model, altair
 	);
+
+	sim->altair_switches = altair;
 
 	if (strcmp (model, "plain") == 0) {
 		sim->model = CPM80_MODEL_PLAIN;
