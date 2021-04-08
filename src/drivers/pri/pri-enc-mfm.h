@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pri/pri-enc-mfm.h                                *
  * Created:     2012-02-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2014 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -48,7 +48,7 @@ typedef struct {
 
 
 void pri_decode_mfm_init (pri_dec_mfm_t *par);
-psi_trk_t *pri_decode_mfm_trk (pri_trk_t *trk, unsigned h, pri_dec_mfm_t *par);
+psi_trk_t *pri_decode_mfm_trk (pri_trk_t *trk, unsigned c, unsigned h, pri_dec_mfm_t *par);
 psi_img_t *pri_decode_mfm (pri_img_t *img, pri_dec_mfm_t *par);
 
 void pri_encode_mfm_init (pri_enc_mfm_t *par, unsigned long clock, unsigned rpm);

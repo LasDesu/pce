@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/decode.c                                       *
  * Created:     2013-12-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -262,7 +262,7 @@ int pri_decode_psi_auto_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, uns
 
 	dec = opaque;
 
-	if ((dtrk = pri_decode_mfm_trk (trk, h, &dec->mfm)) == NULL) {
+	if ((dtrk = pri_decode_mfm_trk (trk, c, h, &dec->mfm)) == NULL) {
 		return (1);
 	}
 
@@ -298,7 +298,7 @@ int pri_decode_psi_mfm_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsi
 
 	dec = opaque;
 
-	if ((dtrk = pri_decode_mfm_trk (trk, h, &dec->mfm)) == NULL) {
+	if ((dtrk = pri_decode_mfm_trk (trk, c, h, &dec->mfm)) == NULL) {
 		return (1);
 	}
 

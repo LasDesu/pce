@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pri/pri-enc-mfm.c                                *
  * Created:     2012-02-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -33,6 +33,9 @@
 
 typedef struct {
 	pri_trk_t     *trk;
+
+	unsigned      c;
+	unsigned      h;
 
 	char          last;
 	char          clock;
@@ -224,6 +227,10 @@ psi_sct_t *mfm_decode_idam (mfm_code_t *mfm)
 	psi_sct_set_flags (sct, PSI_FLAG_NO_DAM, 1);
 
 	if (mfm->crc != crc) {
+		fprintf (stderr, "mfm: sector %u/%u/%u: id crc error\n",
+			mfm->c, mfm->h, s
+		);
+
 		psi_sct_set_flags (sct, PSI_FLAG_CRC_ID, 1);
 	}
 
@@ -379,6 +386,10 @@ int mfm_decode_dam (mfm_code_t *mfm, psi_sct_t *sct, unsigned mark)
 	mfm->crc = mfm_crc (mfm->crc, sct->data, sct->n);
 
 	if (mfm->crc != crc) {
+		fprintf (stderr, "mfm: sector %u/%u/%u: data crc error\n",
+			mfm->c, mfm->h, sct->s
+		);
+
 		psi_sct_set_flags (sct, PSI_FLAG_CRC_DATA, 1);
 	}
 
@@ -437,19 +448,22 @@ int mfm_decode_mark (mfm_code_t *mfm, psi_trk_t *trk, unsigned mark)
 
 	case 0xfb: /* data address mark */
 	case 0xf8: /* deleted data address mark */
-		fprintf (stderr, "mfm: dam without idam\n");
+		fprintf (stderr, "mfm: track %u/%u: dam without idam\n",
+			mfm->c, mfm->h
+		);
 		break;
 
 	default:
 		fprintf (stderr,
-			"mfm: unknown mark (0x%02x)\n", mark
+			"mfm: track %u/%u: unknown mark (0x%02x)\n",
+			mfm->c, mfm->h, mark
 		);
 	}
 
 	return (0);
 }
 
-psi_trk_t *pri_decode_mfm_trk (pri_trk_t *trk, unsigned h, pri_dec_mfm_t *par)
+psi_trk_t *pri_decode_mfm_trk (pri_trk_t *trk, unsigned c, unsigned h, pri_dec_mfm_t *par)
 {
 	unsigned char mark;
 	psi_trk_t     *dtrk;
@@ -467,6 +481,8 @@ psi_trk_t *pri_decode_mfm_trk (pri_trk_t *trk, unsigned h, pri_dec_mfm_t *par)
 	}
 
 	mfm.trk = trk;
+	mfm.c = c;
+	mfm.h = h;
 	mfm.clock = 0;
 	mfm.min_sct_size = par->min_sct_size;
 
@@ -518,7 +534,7 @@ psi_img_t *pri_decode_mfm (pri_img_t *img, pri_dec_mfm_t *par)
 				dtrk = psi_trk_new (h);
 			}
 			else {
-				dtrk = pri_decode_mfm_trk (trk, h, par);
+				dtrk = pri_decode_mfm_trk (trk, c, h, par);
 			}
 
 			if (dtrk == NULL) {
