@@ -113,7 +113,7 @@ DCL += Makefile Makefile.inc configure config.log config.status
 DIST += AUTHORS COPYING ChangeLog INSTALL \
 	Makefile.dep Makefile.in Makefile.inc.in \
 	NEWS README TODO autogen.sh config.guess config.sub \
-	configure configure.in gendep install-sh
+	configure configure.ac gendep install-sh
 
 DIST += doc/char-drivers.txt doc/keys.txt doc/messages.txt \
 	doc/monitor.txt doc/pce-ibmpc.txt doc/pce-macplus.txt \
