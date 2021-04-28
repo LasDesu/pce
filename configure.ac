@@ -5,7 +5,7 @@
 #*****************************************************************************
 #* File name:   configure.ac                                                 *
 #* Created:     2002-05-20 by Hampa Hug <hampa@hampa.ch>                     *
-#* Copyright:   (C) 2002-2020 Hampa Hug <hampa@hampa.ch>                     *
+#* Copyright:   (C) 2002-2021 Hampa Hug <hampa@hampa.ch>                     *
 #*****************************************************************************
 
 #*****************************************************************************
@@ -20,11 +20,11 @@
 #*****************************************************************************
 
 
-AC_PREREQ(2.50)
+AC_PREREQ(2.64)
 
-AC_INIT(pce)
-AC_CONFIG_SRCDIR(Makefile.in)
-AC_CONFIG_HEADER(src/config.h)
+AC_INIT([pce])
+AC_CONFIG_SRCDIR([Makefile.in])
+AC_CONFIG_HEADERS([src/config.h])
 
 
 #-----------------------------------------------------------------------------
@@ -178,7 +178,6 @@ AC_SUBST(PCE_HAVE_IHEX)
 #-----------------------------------------------------------------------------
 # Checks for header files.
 
-AC_HEADER_STDC
 AC_CHECK_HEADERS( \
 	arpa/inet.h \
 	fcntl.h \
@@ -1104,7 +1103,8 @@ else
 fi
 
 
-AC_OUTPUT(Makefile Makefile.inc src/config.inc)
+AC_CONFIG_FILES([Makefile Makefile.inc src/config.inc])
+AC_OUTPUT
 
 
 #-----------------------------------------------------------------------------
