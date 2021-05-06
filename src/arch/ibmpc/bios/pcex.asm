@@ -320,17 +320,20 @@ init_dma:
 	out	0x01, al			; count
 	out	0x01, al
 
-	mov	al, 0x58			; mode channel 0
-	out	0x0b, al
+	mov	al, 0x58
+	out	0x0b, al			; mode channel 0
 
 	mov	al, 0x41
-	out	0x0b, al
+	out	0x0b, al			; mode channel 1
 
 	inc	ax
-	out	0x0b, al
+	out	0x0b, al			; mode channel 2
 
 	inc	ax
-	out	0x0b, al
+	out	0x0b, al			; mode channel 3
+
+	xor	al, al
+	out	0x0a, al			; unmask channel 0
 
 	pop	ax
 	ret
