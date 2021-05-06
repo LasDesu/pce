@@ -900,11 +900,11 @@ inttab:
 	dw	0x0000, 0xf600			; 18: F600:0000
 	dw	int_19, 0x0000			; 19: F000:E6F2
 	dw	int_1a, 0x0000			; 1A: F000:FE6E
-	dw	int_1b, 0x0000			; 1B: F000:FF53
+	dw	0xff53, 0xf000			; 1B: F000:FF53
 	dw	0xff53, 0xf000			; 1C: F000:FF53
 	dw	0xf0a4, 0xf000			; 1D: F000:F0A4
 	dw	0xefc7, 0xf000			; 1E: F000:EFC7
-	dw	int_1f, 0x0000			; 1F: F000:0000
+	dw	0x0000, 0xf000			; 1F: F000:0000
 
 
 int_default:
@@ -921,10 +921,6 @@ int_01:
 	pceh	PCEH_INT, 0x01
 	iret
 
-int_02:
-	pceh	PCEH_INT, 0x02
-	iret
-
 int_03:
 	pceh	PCEH_INT, 0x03
 	iret
@@ -933,56 +929,12 @@ int_04:
 	pceh	PCEH_INT, 0x04
 	iret
 
-int_05:
-	pceh	PCEH_INT, 0x05
-	iret
-
 int_06:
 	pceh	PCEH_INT, 0x06
 	iret
 
 int_07:
 	pceh	PCEH_INT, 0x07
-	iret
-
-int_09:
-	pceh	PCEH_INT, 0x09
-	iret
-
-int_0a:
-	pceh	PCEH_INT, 0x0a
-	iret
-
-int_0b:
-	pceh	PCEH_INT, 0x0b
-	iret
-
-int_0c:
-	pceh	PCEH_INT, 0x0c
-	iret
-
-int_0d:
-	pceh	PCEH_INT, 0x0d
-	iret
-
-int_0e:
-	pceh	PCEH_INT, 0x0e
-	iret
-
-int_0f:
-	pceh	PCEH_INT, 0x0f
-	iret
-
-int_10:
-	pceh	PCEH_INT, 0x10
-	iret
-
-int_11:
-	pceh	PCEH_INT, 0x11
-	iret
-
-int_12:
-	pceh	PCEH_INT, 0x12
 	iret
 
 int_13:
@@ -1000,10 +952,6 @@ int_13:
 	pop	ax
 	jmp	0xf000:0xec59
 
-int_14:
-	pceh	PCEH_INT, 0x14
-	iret
-
 int_15:
 	cmp	ah, 3
 	jbe	.cassette
@@ -1012,26 +960,6 @@ int_15:
 	retf	2
 .cassette:
 	jmp	0xf000:0xf859			; bios int 15
-
-int_17:
-	pceh	PCEH_INT, 0x17
-	iret
-
-int_1b:
-	pceh	PCEH_INT, 0x1b
-	iret
-
-int_1d:
-	pceh	PCEH_INT, 0x1d
-	iret
-
-int_1e:
-	pceh	PCEH_INT, 0x1e
-	iret
-
-int_1f:
-	pceh	PCEH_INT, 0x1f
-	iret
 
 
 ;-----------------------------------------------------------------------------
