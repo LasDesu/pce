@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e8086/opcodes.c                                      *
  * Created:     1996-04-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 1996-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 1996-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -496,7 +496,7 @@ unsigned op_17 (e8086_t *c)
 	e86_set_ss (c, e86_pop (c));
 	e86_set_clk (c, 8);
 
-	c->enable_int = 0;
+	c->save_flags &= ~E86_FLG_I;
 
 	return (1);
 }
@@ -2350,7 +2350,7 @@ unsigned op_8e (e8086_t *c)
 		e86_pq_init (c);
 	}
 	else if (reg == E86_REG_SS) {
-		c->enable_int = 0;
+		c->save_flags &= ~E86_FLG_I;
 	}
 
 	return (c->ea.cnt + 1);
@@ -3368,8 +3368,6 @@ unsigned op_cf (e8086_t *c)
 	e86_set_ip (c, e86_pop (c));
 	e86_set_cs (c, e86_pop (c));
 	c->flg = e86_pop (c);
-
-	c->enable_int = 0;
 
 	e86_pq_init (c);
 

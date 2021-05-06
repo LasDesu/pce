@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e8086/e8086.c                                        *
  * Created:     1996-04-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 1996-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 1996-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -392,7 +392,7 @@ void e86_trap (e8086_t *c, unsigned n)
 	e86_set_cs (c, e86_get_mem16 (c, 0, ofs + 2));
 	c->flg &= ~(E86_FLG_I | E86_FLG_T);
 
-	c->trap_flag = c->flg;
+	c->save_flags = e86_get_flags (c);
 
 	e86_pq_init (c);
 }
@@ -465,7 +465,7 @@ void e86_reset (e8086_t *c)
 	e86_set_ip (c, 0xfff0);
 	e86_set_flags (c, c->reset_flags);
 
-	c->trap_flag = 0;
+	c->save_flags = 0;
 
 	c->pq_cnt = 0;
 
@@ -503,11 +503,9 @@ void e86_execute (e8086_t *c)
 		c->cur_ip = c->ip;
 	}
 
-	c->trap_flag = c->flg;
+	c->save_flags = e86_get_flags (c);
 
 	irq = c->irq;
-
-	c->enable_int = 1;
 
 	do {
 		e86_pq_fill (c);
@@ -531,14 +529,12 @@ void e86_execute (e8086_t *c)
 
 	c->opcnt += 1;
 
-	if (c->enable_int) {
-		if (c->trap_flag & E86_FLG_T) {
-			c->state &= ~E86_STATE_HALT;
-			e86_trap (c, 1);
-		}
-		else if (irq && c->irq && e86_get_if (c)) {
-			e86_irq_ack (c);
-		}
+	if (c->save_flags & E86_FLG_T) {
+		c->state &= ~E86_STATE_HALT;
+		e86_trap (c, 1);
+	}
+	else if (irq && c->irq && (c->save_flags & e86_get_flags (c) & E86_FLG_I)) {
+		e86_irq_ack (c);
 	}
 }
 
