@@ -1026,6 +1026,8 @@ void e8250_reset (e8250_t *uart)
 	uart->clocking = 0;
 
 	uart->divisor = 0;
+
+	e8250_set_irq (uart, 0);
 }
 
 void e8250_clock (e8250_t *uart, unsigned clk)
