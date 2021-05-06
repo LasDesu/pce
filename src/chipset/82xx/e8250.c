@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/82xx/e8250.c                                     *
  * Created:     2003-08-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -812,9 +812,11 @@ void e8250_write_txd (e8250_t *uart, unsigned char val)
 static
 void e8250_write_ier (e8250_t *uart, unsigned char val)
 {
-	uart->ier = val & 0x0f;
+	if ((uart->ier ^ val) & val & E8250_IER_TBE) {
+		uart->tbe_ack = 0;
+	}
 
-	uart->tbe_ack = 0;
+	uart->ier = val & 0x0f;
 
 	e8250_set_int_cond (uart);
 }
