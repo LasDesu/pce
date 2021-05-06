@@ -5,7 +5,7 @@
 ;*****************************************************************************
 ;* File name:   src/arch/ibmpc/bios/pcex.asm                                 *
 ;* Created:     2003-04-14 by Hampa Hug <hampa@hampa.ch>                     *
-;* Copyright:   (C) 2003-2011 Hampa Hug <hampa@hampa.ch>                     *
+;* Copyright:   (C) 2003-2021 Hampa Hug <hampa@hampa.ch>                     *
 ;*****************************************************************************
 
 ;*****************************************************************************
@@ -343,26 +343,30 @@ init_video:
 	push	ax
 	push	si
 
-	mov	ax, [0x0010]
-	and	al, 0x30
+	mov	ax, [0x0010]			; configuration
+	and	ax, 0x30			; initial video mode
 
-	cmp	al, 0x30
-	je	.mda
+	sub	al, 0x10
+	jc	.done				; 00
+	jz	.cga40				; 01
 
-	cmp	al, 0x20
-	je	.cga
-
-	jmp	.done
-
-.cga:
-	mov	ax, 0x0003
-	int	0x10
-	jmp	.done
+	sub	al, 0x10
+	jz	.cga80				; 02
 
 .mda:
-	mov	ax, 0x0007
-	int	0x10
-	jmp	.done
+	mov	al, 0x07
+	jmp	.set
+
+.cga40:
+	mov	al, 0x01
+	jmp	.set
+
+.cga80:
+	mov	al, 0x03
+	;jmp	.set
+
+.set:
+	int	0x10				; set video mode
 
 .done:
 	pop	si
