@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/ibmpc.h                                       *
  * Created:     2001-05-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2001-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2001-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -121,6 +121,7 @@ typedef struct ibmpc_t {
 	int                support_rtc;
 
 	char               blink;
+	char               cga40;
 	char               force_keyboard_enable;
 
 	unsigned           fd_cnt;

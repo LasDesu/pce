@@ -40,6 +40,10 @@ system {
 	# Enable read access to the host's RTC.
 	rtc = 1
 
+	# When a CGA compatible video card is selected, start up
+	# in 40 column mode.
+	cga40 = 0
+
 	# Patch the main BIOS before the emulator starts running.
 	# If this option is set, the main BIOS is patched to use
 	# a custom initialization routine.
