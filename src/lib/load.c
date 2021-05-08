@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/lib/load.c                                               *
  * Created:     2004-08-02 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -121,7 +121,7 @@ int pce_load_mem_bin (memory_t *mem, const char *fname, unsigned long addr)
 	int  c;
 	FILE *fp;
 
-	if ((fp = fopen (fname, "r")) == NULL) {
+	if ((fp = fopen (fname, "rb")) == NULL) {
 		return (1);
 	}
 
