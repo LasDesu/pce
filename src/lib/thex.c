@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/lib/thex.c                                               *
  * Created:     2020-11-27 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2020-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -189,6 +189,7 @@ int thex_load_fp (FILE *fp, void *ext, thex_set_f set)
 
 			seg2 = 0;
 			ofs2 = (rec.data[0] << 8) | rec.data[1];
+			ofs &= 0xffff;
 
 			if (rec.type == 0x03) {
 				if ((seg != seg2) || (ofs != ofs2)) {
@@ -230,6 +231,7 @@ int thex_load_fp (FILE *fp, void *ext, thex_set_f set)
 			seg2 = (rec.data[0] << 8) | rec.data[1];
 			ofs2 = (rec.data[2] << 8) | rec.data[3];
 			seg2 <<= 4;
+			ofs &= 0xffff;
 
 			if (rec.type == 0x07) {
 				if ((seg != seg2) || (ofs != ofs2)) {
