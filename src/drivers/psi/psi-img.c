@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/psi/psi-img.c                                    *
  * Created:     2012-02-14 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2016 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -116,6 +116,18 @@ unsigned psi_guess_type (const char *fname)
 
 psi_img_t *psi_load_fp (FILE *fp, unsigned type)
 {
+	int c;
+
+	if ((c = fgetc (fp)) == EOF) {
+		if (ferror (fp)) {
+			return (NULL);
+		}
+
+		return (psi_img_new());
+	}
+
+	ungetc (c, fp);
+
 	switch (type) {
 	case PSI_FORMAT_ANADISK:
 		return (psi_load_anadisk (fp));
