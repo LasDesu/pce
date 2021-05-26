@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pri/pri-enc-gcr.c                                *
  * Created:     2012-02-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -104,36 +104,6 @@ unsigned gcr_get_format (psi_img_t *img)
 	}
 
 	return (0x02);
-}
-
-static
-void gcr_fill_track (pri_trk_t *trk)
-{
-	unsigned      i, n;
-	unsigned long cnt;
-
-	cnt = trk->size - trk->idx;
-
-	i = 0;
-
-	while (cnt > 0) {
-		n = (cnt < 10) ? cnt : 10;
-
-		if ((i == 0) && (n > 8)) {
-			n = 8;
-		}
-
-		pri_trk_set_bits (trk, 0xff, n);
-
-		cnt -= n;
-
-		i += 1;
-
-		if (i > 4) {
-			i = 0;
-		}
-	}
-
 }
 
 int pri_mac_gcr_checksum (unsigned char *dst, const unsigned char *src, int enc)
@@ -452,6 +422,14 @@ psi_img_t *pri_decode_gcr (pri_img_t *img)
 
 
 static
+void pri_encode_gcr_sync (pri_trk_t *trk, unsigned cnt)
+{
+	while (cnt-- > 0) {
+		pri_trk_set_bits (trk, 0xff, 10);
+	}
+}
+
+static
 void pri_encode_gcr_sync_group (pri_trk_t *trk, unsigned cnt)
 {
 	unsigned i;
@@ -467,17 +445,43 @@ void pri_encode_gcr_sync_group (pri_trk_t *trk, unsigned cnt)
 	}
 }
 
+/*
+ * Fill the track with SYNCs, aligned to the end of the track.
+ */
+static
+void pri_encode_gcr_eot (pri_trk_t *trk)
+{
+	unsigned      n;
+	unsigned long cnt;
+
+	cnt = trk->size - trk->idx;
+
+	while (cnt > 0) {
+		n = cnt % 10;
+
+		if (n == 0) {
+			n = 10;
+		}
+
+		pri_trk_set_bits (trk, 0xff, n);
+
+		cnt -= n;
+	}
+
+}
+
 static
 void pri_encode_gcr_sct (pri_trk_t *trk, unsigned char *src, const psi_sct_t *sct, unsigned fmt)
 {
 	unsigned      i, v;
-	unsigned      c, h, s;
+	unsigned      c, h, s, z;
 	unsigned char buf[527];
 	unsigned char *p;
 
 	c = sct->c;
 	h = sct->h;
 	s = sct->s;
+	z = sct->c / 16;
 
 	h = (h << 5) | ((c >> 6) & 0x1f);
 
@@ -485,7 +489,7 @@ void pri_encode_gcr_sct (pri_trk_t *trk, unsigned char *src, const psi_sct_t *sc
 		fmt ^= 0xff;
 	}
 
-	pri_encode_gcr_sync_group (trk, 8);
+	pri_encode_gcr_sync (trk, (z == 1) ? 38 : 40);
 
 	pri_trk_set_bits (trk, 0xd5aa96, 24);
 	pri_trk_set_bits (trk, gcr_enc_tab[c & 0x3f], 8);
@@ -568,7 +572,7 @@ int pri_encode_gcr_trk (pri_trk_t *dtrk, psi_trk_t *strk, unsigned fmt)
 		return (1);
 	}
 
-	gcr_fill_track (dtrk);
+	pri_encode_gcr_eot (dtrk);
 
 	return (0);
 }
