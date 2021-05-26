@@ -736,30 +736,50 @@ int mac_enc_fill_pattern (pri_text_t *ctx, unsigned long max, unsigned long val,
 }
 
 static
-int mac_enc_fill_sync_group (pri_text_t *ctx, unsigned long max)
+int mac_enc_fill_sync (pri_text_t *ctx, unsigned long max)
 {
-	unsigned      i;
-	unsigned long n1, n2;
-
-	i = 0;
+	unsigned n;
 
 	while (ctx->bit_cnt < max) {
-		n1 = max - ctx->bit_cnt;
-		n2 = (i == 0) ? 8 : 10;
+		n = (max - ctx->bit_cnt) % 10;
 
-		if (n1 > n2) {
-			n1 = n2;
+		if (n == 0) {
+			n = 10;
 		}
 
-		if (txt_enc_bits_raw (ctx, 0xff, n1)) {
+		if (txt_enc_bits_raw (ctx, 0xff, n)) {
 			return (1);
 		}
 
-		i += 1;
+	}
 
-		if (i >= 5) {
-			i = 0;
+	return (0);
+}
+
+static
+int mac_enc_fill_sync_group (pri_text_t *ctx, unsigned long max)
+{
+	unsigned n;
+
+	while (ctx->bit_cnt < max) {
+		n = (max - ctx->bit_cnt) % 48;
+
+		if (n == 0) {
+			n = 48;
 		}
+
+		if (n > 32) {
+			if (txt_enc_bits_raw (ctx, 0xff3f, n - 32)) {
+				return (1);
+			}
+
+			n = 32;
+		}
+
+		if (txt_enc_bits_raw (ctx, 0xcff3fcff, n)) {
+			return (1);
+		}
+
 	}
 
 	return (0);
@@ -784,7 +804,7 @@ int mac_enc_fill (pri_text_t *ctx)
 			return (mac_enc_fill_sync_group (ctx, max));
 		}
 
-		if (mac_enc_fill_pattern (ctx, max, 0xff, 10)) {
+		if (mac_enc_fill_sync (ctx, max)) {
 			return (1);
 		}
 
