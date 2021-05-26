@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text.h                                         *
  * Created:     2017-10-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2017-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -50,8 +50,6 @@ typedef struct {
 	unsigned long  c;
 	unsigned long  h;
 	unsigned       s;
-
-	char           first_track;
 
 	unsigned long  bit_cnt;
 	unsigned long  bit_max;

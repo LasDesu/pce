@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text-mac-gcr.c                                 *
  * Created:     2017-10-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2017-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -457,13 +457,7 @@ int txt_mac_dec_track (pri_text_t *ctx)
 	unsigned long bit;
 	unsigned char buf[3];
 
-	if (ctx->first_track == 0) {
-		fputs ("\n\n", ctx->fp);
-	}
-
-	ctx->first_track = 0;
-
-	fprintf (ctx->fp, "TRACK %lu %lu\n\n", ctx->c, ctx->h);
+	fprintf (ctx->fp, "\nTRACK %lu %lu\n\n", ctx->c, ctx->h);
 	fprintf (ctx->fp, "MODE MAC-GCR\n");
 	fprintf (ctx->fp, "RATE %lu\n\n", pri_trk_get_clock (ctx->trk));
 

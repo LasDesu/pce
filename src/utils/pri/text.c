@@ -184,7 +184,6 @@ void txt_dec_init (pri_text_t *ctx, FILE *fp, pri_img_t *img, pri_trk_t *trk, un
 	ctx->c = c;
 	ctx->h = h;
 	ctx->s = 0;
-	ctx->first_track = 1;
 
 	ctx->mac_no_slip = par_mac_no_slip;
 }
@@ -268,7 +267,7 @@ int pri_decode_text (pri_img_t *img, const char *fname, unsigned enc)
 		return (1);
 	}
 
-	fprintf (fp, "PRI 0\n\n");
+	fprintf (fp, "PRI 0\n");
 
 	if (enc == PRI_TEXT_AUTO) {
 		r = pri_for_all_tracks (img, pri_decode_text_auto_cb, fp);
