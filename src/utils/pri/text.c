@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text.c                                         *
  * Created:     2014-08-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2014-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2014-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -773,6 +773,20 @@ int txt_enc_raw (pri_text_t *ctx)
 }
 
 static
+int txt_enc_rotate (pri_text_t *ctx)
+{
+	unsigned long val;
+
+	if (txt_match_uint (ctx, 10, &val) == 0) {
+		return (1);
+	}
+
+	ctx->rotate = val;
+
+	return (0);
+}
+
+static
 int txt_enc_track_finish (pri_text_t *ctx)
 {
 	if (ctx->trk == NULL) {
@@ -783,13 +797,13 @@ int txt_enc_track_finish (pri_text_t *ctx)
 		return (1);
 	}
 
-	if (ctx->index_position != 0) {
+	if ((ctx->index_position != 0) || (ctx->rotate != 0)) {
 		unsigned long cnt, max;
 
 		max = pri_trk_get_size (ctx->trk);
 
 		if (max > 0) {
-			cnt = ctx->index_position % max;
+			cnt = (ctx->index_position + ctx->rotate) % max;
 			pri_trk_rotate (ctx->trk, cnt);
 		}
 	}
@@ -1013,6 +1027,11 @@ int txt_encode_pri0 (pri_text_t *ctx)
 				return (1);
 			}
 		}
+		else if (txt_match (ctx, "ROTATE", 1)) {
+			if (txt_enc_rotate (ctx)) {
+				return (1);
+			}
+		}
 		else if (txt_match (ctx, "TRACK", 1)) {
 			if (txt_enc_track_finish (ctx)) {
 				return (1);
@@ -1057,6 +1076,7 @@ int txt_encode (pri_text_t *ctx)
 	ctx->last_val = 0;
 	ctx->encoding = PRI_TEXT_RAW;
 	ctx->index_position = 0;
+	ctx->rotate = 0;
 	ctx->crc = 0xffff;
 
 	ctx->mac_check_active = 0;

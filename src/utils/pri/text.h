@@ -64,6 +64,7 @@ typedef struct {
 	unsigned short encoding;
 
 	unsigned long  index_position;
+	unsigned long  rotate;
 
 	unsigned long  offset;
 
