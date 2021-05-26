@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/psi/psi.c                                        *
  * Created:     2010-08-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -381,7 +381,9 @@ unsigned psi_sct_set_tags (psi_sct_t *sct, const void *buf, unsigned cnt)
 	unsigned            i;
 	const unsigned char *src;
 
-	src = buf;
+	if ((src = buf) == NULL) {
+		cnt = 0;
+	}
 
 	if (cnt > PSI_TAGS_MAX) {
 		cnt = PSI_TAGS_MAX;

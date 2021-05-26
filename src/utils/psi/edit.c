@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/psi/edit.c                                         *
  * Created:     2013-06-09 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2013-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -219,7 +219,7 @@ int psi_edit_tags_cb (psi_img_t *img, psi_sct_t *sct,
 		psi_sct_set_tags (sct, buf, 12);
 	}
 	else {
-		psi_sct_set_tags (sct, buf, 0);
+		psi_sct_set_tags (sct, NULL, 0);
 	}
 
 	par_cnt += 1;
